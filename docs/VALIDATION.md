@@ -1,4 +1,4 @@
-# Kiểm chứng bản 0.5.1
+# Kiểm chứng bản 0.5.2
 
 ## Đã chạy trên máy này
 
@@ -41,7 +41,7 @@
 
 - Thanh tiêu đề trong app hiện đúng file logo người dùng cung cấp, không còn khung viền bao quanh, ở cả chế độ sáng lẫn tối (chế độ tối đảo màu nên nền bo tròn chìm vào nền, chỉ còn nét bộ não trắng).
 - Trang chặn của tiện ích hiện logo mới.
-- Icon nhúng trong `The Brain Project.exe` và `The-Brain-Project-Setup-0.5.1.exe` đã được trích ra và xem — đúng logo bộ não.
+- Icon nhúng trong `The Brain Project.exe` và `The-Brain-Project-Setup-0.5.2.exe` đã được trích ra và xem — đúng logo bộ não.
 
 Chưa kiểm được bằng mắt: icon trên taskbar sau khi cài, và icon tiện ích trên thanh công cụ Chrome. Cả hai đều cần cài thật. Bản sửa `setAppUserModelId` là để Windows ghép cửa sổ với shortcut đã ghim; tôi đọc được id trong mã nguồn nhưng không kiểm chứng được hành vi taskbar nếu không cài.
 
@@ -54,9 +54,19 @@ Chưa kiểm được bằng mắt: icon trên taskbar sau khi cài, và icon ti
 
 Đo ba lần liên tiếp trên cùng máy, mỗi lần một thư mục dữ liệu mới.
 
+## Ba luồng người dùng, kiểm bằng thao tác thật
+
+`npm.cmd run test:flows` bấm đúng những nút mà người dùng bấm, không gọi tắt vào `action` đang được kiểm tra. Chỉ hai thứ được giả lập: đầu vào của Windows (danh sách ứng dụng, cửa sổ tiền cảnh) và lựa chọn trong hộp thoại hệ thống.
+
+- **Đổi credit từ lớp phủ.** Bấm nút trên lớp phủ thật: chọn gói vượt số dư thì hiện lỗi *chưa đủ credit* và không trừ gì; bấm nhanh hai lần chỉ trừ một lần; đổi xong lớp phủ tự ẩn. Lớp phủ **không** mượn được quyền của cửa sổ chính — thử `settings`, thử đổi credit cho website khác, thử lấy mã ghép nối đều bị từ chối. Lớp phủ đứng yên qua nhiều nhịp theo dõi và không reset lựa chọn phút mỗi giây. Khi đang có phiên tập trung hoặc đang khóa thì nút mở bị tắt kèm lời giải thích đúng.
+- **Hủy hộp chọn ứng dụng.** Hủy bằng nút *Quay lại* và bằng phím Escape; sau đó mở một hộp xác nhận khác và khẳng định nút *Xác nhận* vẫn còn. Danh sách ứng dụng trả về **muộn** sau khi đã hủy cũng không được phép ghi đè lên hộp xác nhận đang mở. Trường hợp đọc danh sách lỗi thì hiện thông báo thay vì treo.
+- **Đóng ứng dụng sau khi lớp phủ từng xuất hiện.** Ba trạng thái: lớp phủ đã ẩn, lớp phủ đang hiện, và đang có phiên tập trung. Bài kiểm chờ **tiến trình thật thoát với mã 0**, rồi mở lại và khẳng định dữ liệu còn nguyên. Ở trạng thái thứ ba còn kiểm chọn *Tiếp tục tập trung* thì cửa sổ và phiên được giữ, hộp thoại chỉ hỏi đúng một lần.
+
+Cả ba bài đã được thử ngược: gỡ từng bản sửa ra thì đúng bài tương ứng chuyển đỏ. Chạy được cả trên mã nguồn lẫn trên binary đã đóng gói qua `BRAIN_FLOW_EXE`.
+
 ## Nâng cấp từ dữ liệu thật
 
-Bản sửa 0.5.1 đã được thử trên **chính file dữ liệu v5 thật của người dùng** (chép ra thư mục tạm, không đụng bản gốc): mở được, giữ nguyên 95,2 credit, giữ mã ghép nối, không bị đẩy về màn hình mở đầu, và có bản sao `brain-data.enc.backup` trước khi chuyển.
+Bản sửa 0.5.2 đã được thử trên **chính file dữ liệu v5 thật của người dùng** (chép ra thư mục tạm, không đụng bản gốc): mở được, giữ nguyên 95,2 credit, giữ mã ghép nối, không bị đẩy về màn hình mở đầu, và có bản sao `brain-data.enc.backup` trước khi chuyển.
 
 Ghi chú rút ra từ lần gỡ lỗi này: `safeStorage` của Electron 44 trên Windows gói khóa mã hóa trong file `Local State` nằm cùng thư mục dữ liệu. Chép riêng `brain-data.enc` sang thư mục khác sẽ **không** giải mã được. Muốn sao lưu thì phải chép cả thư mục.
 
@@ -66,7 +76,7 @@ Chặn ứng dụng chưa được thử với **game thật chạy toàn màn h
 
 Chế độ khóa **chưa được thử với tiện ích thật trong trình duyệt thật** — bài `test:ui` kiểm phía ứng dụng và nội dung gói tin gửi đi, `npm.cmd test` kiểm logic tiện ích trong sandbox, nhưng chưa có bài nào nạp tiện ích vào Edge rồi khóa và thử ngắt kết nối. Hai đường thoát đã biết cũng chưa đo: gỡ tiện ích khỏi trình duyệt, và vặn đồng hồ hệ thống.
 
-Số đo tốc độ lấy trên thư mục `release/win-unpacked` — đúng những file mà NSIS chép vào máy, nhưng **tôi chưa chạy trình cài đặt trên máy này** để tránh cài phần mềm mà bạn chưa yêu cầu. Hãy chạy `The-Brain-Project-Setup-0.5.1.exe` một lần để xác nhận luồng cài và shortcut.
+Số đo tốc độ lấy trên thư mục `release/win-unpacked` — đúng những file mà NSIS chép vào máy, nhưng **tôi chưa chạy trình cài đặt trên máy này** để tránh cài phần mềm mà bạn chưa yêu cầu. Hãy chạy `The-Brain-Project-Setup-0.5.2.exe` một lần để xác nhận luồng cài và shortcut.
 
 Bài kiểm thử không đóng ứng dụng, khóa hay ru ngủ máy thật; đầu vào idle được mô phỏng trong bài timer. Chromium kèm Playwright không chạy được trên máy này nên bài extension dùng Edge. Chế độ tối mới chỉ được kiểm bằng giá trị màu tính toán, chưa có ai xem bằng mắt trong phòng tối. Chưa có kiểm thử nhiều ngày và chưa có bằng chứng nào về hiệu quả thay đổi hành vi thực tế.
 

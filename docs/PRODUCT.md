@@ -1,4 +1,4 @@
-# Phạm vi bản 0.5.1
+# Phạm vi bản 0.5.2
 
 Nguồn yêu cầu gốc `the_brain_project_questions.md` được giữ nguyên, không sửa.
 
@@ -32,7 +32,7 @@ Vấn đề số 1 (§2.2), điểm khác biệt cốt lõi (§21) và MVP (§24
 
 `scripts/icon.cjs` — script sinh icon từ chữ `b°` — đã bị xóa vì nay nguồn logo là file `.ico` do người dùng cung cấp; chạy lại nó sẽ ghi đè mất logo thật. Thay bằng `scripts/ico.cjs` để đọc và tách các khung ảnh trong file `.ico`.
 
-## Sửa trong 0.5.1
+## Sửa trong 0.3.3
 
 **Icon trên taskbar không đổi theo.** `app.setAppUserModelId` bị thiếu. NSIS gắn id `com.humanos.brain` lên shortcut, nhưng app đang chạy không khai báo id nào, nên Windows coi cửa sổ là một chương trình lạ và không ghép nó với shortcut đã ghim — kết quả là taskbar giữ icon cũ. Đã khai báo id khớp với `appId`.
 
@@ -43,7 +43,7 @@ Vấn đề số 1 (§2.2), điểm khác biệt cốt lõi (§21) và MVP (§24
 
 `assets/icon.svg` đã xóa vì không còn chỗ nào dùng.
 
-## Sửa trong 0.5.1
+## Sửa trong 0.3.4
 
 **Mở lại ứng dụng tưởng như phải ghép nối lại.** Mã ghép nối vốn đã được giữ nguyên qua các lần khởi động lại — không có lỗi ở đó. Lỗi là ở độ trễ: báo thức của Chrome không xuống dưới 30 giây, nên sau khi ứng dụng khởi động lại, tiện ích mất tới **27 giây** mới kết nối lại. Suốt quãng đó thanh trên ghi "Chưa chặn được website nào" và lệnh đổi credit bị từ chối, khiến người dùng tưởng phải dán mã mới.
 
@@ -53,7 +53,7 @@ Tiện ích nay thử kết nối lại ngay trong lúc service worker còn th�
 
 Thêm `npm.cmd run test:restart` — chạy ứng dụng thật và tiện ích thật, ghép nối một lần, khởi động lại ứng dụng rồi đo độ trễ kết nối lại mà không đụng vào popup.
 
-## Thêm trong 0.5.1
+## Thêm trong 0.3.5
 
 **Tặng 15 credit cho lần chạy đầu tiên.** Người mới cài có sẵn 15 phút để dùng khi cần gấp, chưa phải hoàn thành một phiên nào. Màn hình mở đầu nói rõ món quà này.
 
@@ -63,7 +63,7 @@ Cài lại hoàn toàn ứng dụng và xóa thư mục dữ liệu thì vẫn n
 
 Thêm `scripts/grant.cjs` để cộng credit vào dữ liệu thật khi thử nghiệm. Nó nằm ngoài danh sách `files` nên không đi vào bản đóng gói, và từ chối chạy khi ứng dụng đang mở để tránh bị ghi đè.
 
-## Sửa trong 0.5.1
+## Sửa trong 0.3.6
 
 **Dải quy đổi bị cắt mất chữ.** Cột trái là flex dọc; khi nội dung cao hơn cửa sổ — dễ xảy ra nhất lúc khung cảnh báo "chưa chặn được website nào" hiện ra — flex co tất cả các khối lại thay vì để pane cuộn. `.rule` có `overflow:hidden` (cần cho bo góc) nên bị co là mất chữ, không phải thu nhỏ. Đo được: khối bị ép còn `clientHeight` 0 trong khi nội dung cao 50 px.
 
@@ -79,7 +79,7 @@ Chuyển từ portable sang trình cài NSIS ở mức tài khoản người dù
 
 Tỉ lệ 5 phút = 1 credit; 1 credit = 1 phút. Hủy phiên, đóng ứng dụng, ngủ/khóa máy, đổi đồng hồ hoặc vượt ngưỡng không hoạt động đều mất toàn bộ credit của phiên. Chỉ một lượt mở tại một thời điểm, trừ credit ngay, kết thúc sớm không hoàn. Không tập trung khi đang có lượt mở. Dữ liệu local và mã hóa. Giao thức giữa ứng dụng và tiện ích giữ nguyên nên tiện ích không phải sửa và người dùng cũ không phải ghép nối lại.
 
-## Chế độ khóa — 0.5.1
+## Chế độ khóa — 0.4.0
 
 Tính năng Pro đầu tiên, và cũng là bản vá cho lỗ hổng lớn nhất của sản phẩm: trước đây tắt ứng dụng bằng Task Manager là hết chặn.
 
@@ -96,7 +96,7 @@ Bật từ ⚙ với các mốc 30 phút / 1 giờ / 2 giờ / 4 giờ, trần 1
 
 Vẫn còn hai đường thoát, và tài liệu phải nói thẳng: **gỡ tiện ích trong `chrome://extensions`**, và **vặn đồng hồ hệ thống về sau**. Hạn khóa là mốc thời gian thực nên đổi đồng hồ sẽ kết thúc sớm. Chống lại chuyện đó cần đếm theo thời gian đã trôi, mà như vậy thì đóng ứng dụng lại thành ra kéo dài khóa — bẫy người dùng theo cách tệ hơn. Đây là đánh đổi có chủ ý.
 
-## Chặn ứng dụng Windows — 0.5.1
+## Chặn ứng dụng Windows — 0.5.0
 
 Giai đoạn A trong [APP_BLOCKING.md](APP_BLOCKING.md), đúng như đã đề xuất: **không giết tiến trình nào.**
 
@@ -108,7 +108,7 @@ Khi ứng dụng bị chặn lên tiền cảnh, một `BrowserWindow` toàn mà
 
 Giới hạn phải nói thẳng: đổi tên file `.exe` là qua mặt được; game chạy toàn màn hình độc quyền có thể không bị lớp phủ che; và tắt ứng dụng vẫn gỡ được phần chặn ứng dụng — khác với chặn website, vốn do tiện ích giữ nên sống sót khi ứng dụng tắt.
 
-## Lịch sử — 0.5.1
+## Lịch sử — 0.5.0
 
 Dữ liệu lên v7. Trường `today` cũ chỉ đếm số phút hôm nay; nay là `history`, mỗi ngày một dòng gồm số phút, số phiên hoàn tất, số phiên dở và credit nhận được. Đây là nguồn duy nhất cho cả bộ đếm hôm nay lẫn biểu đồ nên hai con số không thể lệch nhau. Engine lưu 180 ngày, bậc license quyết định xem được bao nhiêu.
 
@@ -121,6 +121,16 @@ Dữ liệu không mất gì: ứng dụng ném lỗi *trước* khi ghi, đúng
 Nay `migrate()` nhận cả dải `>=3 && <VERSION` thay vì liệt kê từng số, vì từ v3 trở đi mọi bản đều cùng một hình dạng và chỉ khác ở việc thiếu vài trường mới — thứ mà phần backfill phía dưới vốn đã xử lý. Bản mới hơn `VERSION` vẫn bị từ chối, vì hạ cấp là chuyện khác hẳn.
 
 Bài kiểm mới đi qua **tất cả** các phiên bản đã phát hành từ 1 đến `VERSION-1`, nên lần bump tới không thể tái diễn lỗi này. Đã xác nhận bài kiểm thật sự bắt lỗi: bỏ bản sửa ra thì nó đỏ.
+
+## Sửa trong 0.5.2 — ba luồng người dùng đang hỏng
+
+**Đổi credit từ lớp phủ không bao giờ chạy.** `verify()` chỉ nhận sự kiện đến từ cửa sổ chính, mà lớp phủ là một `BrowserWindow` khác, nên mọi lần bấm nút mở đều trả về "Không được phép". Nay lớp phủ được cấp đúng một quyền: `redeem` cho **đúng mục đang bị che**, chỉ khi lớp phủ đang hiện. Mọi thứ khác — đổi cài đặt, mở website khác, lấy mã ghép nối — vẫn bị từ chối, và có kiểm thử cho từng trường hợp.
+
+**Hủy hộp chọn ứng dụng làm hỏng mọi hộp xác nhận sau đó.** Hộp chọn ẩn nút *Xác nhận* đi và chỉ khôi phục ở nhánh chọn thành công; hủy giữa chừng là nút biến mất vĩnh viễn, khiến không dừng được phiên, không xóa được website, không bật được khóa. Nay `ask()` luôn khôi phục nút. Thêm một số hiệu hộp thoại để danh sách ứng dụng trả về muộn không ghi đè lên hộp xác nhận đang mở.
+
+**Đóng cửa sổ chính không thoát được ứng dụng.** `window-all-closed` chỉ bắn khi mọi cửa sổ bị hủy, nhưng lớp phủ chỉ được `hide()`. Ai từng mở một ứng dụng bị chặn thì sau đó bấm X là ứng dụng chạy ngầm mãi, không cửa sổ nào để bấm. Nay `win.on('closed')` gọi thẳng `app.quit()` — đặt ở `closed` chứ không phải `close` để lựa chọn *Tiếp tục tập trung* vẫn được tôn trọng.
+
+Ba lỗi này chung một gốc: lớp phủ được thêm vào như một cửa sổ thứ hai mà những giả định "chỉ có một cửa sổ" ở quanh nó không được xem lại.
 
 ## Bán hàng
 

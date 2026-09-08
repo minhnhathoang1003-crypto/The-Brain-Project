@@ -9,7 +9,7 @@ app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
 let win,overlay,watcher,engine,server,wss,interval,bridgeError=null,quitting=false,blockedNow=null,dismissed='';
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
-app.on('second-instance',()=>{if(win){if(win.isMinimized())win.restore();win.show();win.focus();}});
+app.on('second-instance',()=>{if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}});
 app.whenReady().then(()=>{
   const dataFile=path.join(app.getPath('userData'),'brain-data.enc');
   const extensionFolder=app.isPackaged?path.join(app.getPath('userData'),'extension'):path.join(__dirname,'../extension');
@@ -40,13 +40,21 @@ app.whenReady().then(()=>{
   });
   server.on('error',e=>{bridgeError=`Cổng ${PORT}: ${e.code}. Tiện ích chưa kết nối được.`;broadcast();});
   server.listen(PORT,'127.0.0.1');
-  function verify(event){if(!win||event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)throw Error('Không được phép.');}
+  const fromWindow=(event,window)=>!!window&&!window.isDestroyed()&&event.sender===window.webContents&&event.senderFrame===window.webContents.mainFrame;
+  function verify(event){if(!fromWindow(event,win))throw Error('Không được phép.');}
   ipcMain.handle('state',e=>{verify(e);return snapshot();});
   ipcMain.handle('listApps',async e=>{verify(e);return listWindows();});
-  ipcMain.handle('action',(e,type,p)=>{verify(e);try{
+  ipcMain.handle('action',(e,type,p)=>{try{
+    // Lớp phủ chỉ được đổi credit cho đúng ứng dụng đang che, không có quyền của cửa sổ chính.
+    const fromOverlay=fromWindow(e,overlay);
+    if(fromOverlay){
+      if(type!=='redeem'||!overlay.isVisible()||!blockedNow||p?.id!==blockedNow.id)
+        throw Error('Không được phép.');
+    }else verify(e);
     if(type==='redeem'&&!extensionConnected()&&!String(p?.id||'').startsWith('app:'))
       throw Error('Kết nối tiện ích trình duyệt trước khi đổi credit.');
     engine.action(type,p);
+    if(fromOverlay)hideOverlay();
     if(type==='settings'&&p.theme!==undefined){nativeTheme.themeSource=engine.s.theme;if(win&&!win.isDestroyed())win.setBackgroundColor(windowBackground());}
     broadcast();return {ok:true,state:snapshot()};
   }catch(err){return {ok:false,error:err.message};}});
@@ -65,6 +73,8 @@ app.whenReady().then(()=>{
   win.loadFile(path.join(__dirname,'ui/index.html'));
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',e=>e.preventDefault());
   win.on('close',e=>{if(engine.s.session&&!quitting){const choice=dialog.showMessageBoxSync(win,{type:'question',buttons:['Tiếp tục tập trung','Đóng và hủy phiên'],defaultId:0,cancelId:0,message:'Đóng ứng dụng sẽ hủy phiên và không cộng credit.'});if(choice===0)e.preventDefault();else{engine.stop('Đóng ứng dụng');quitting=true;}}});
+  // Chỉ thoát sau khi cửa sổ chính thực sự đóng: lựa chọn tiếp tục tập trung vẫn được tôn trọng.
+  win.on('closed',()=>{win=null;app.quit();});
   powerMonitor.on('suspend',()=>{engine.stop('Máy chuyển sang chế độ ngủ');broadcast();});
   powerMonitor.on('lock-screen',()=>{engine.stop('Máy đã khóa màn hình');broadcast();});
   // ── Chặn ứng dụng Windows ──────────────────────────────────────────────────
@@ -73,7 +83,7 @@ app.whenReady().then(()=>{
   // để mở, hoặc chọn quay lại làm việc và cửa sổ kia bị thu nhỏ.
   function overlayState(target){
     return {target:target?{id:target.id,name:target.name}:null,credits:engine.s.credits,
-      packs:engine.snapshot().packs,lockUntil:engine.s.lockUntil||0};
+      packs:engine.snapshot().packs,lockUntil:engine.s.lockUntil||0,sessionActive:!!engine.s.session};
   }
   function showOverlay(target){
     if(!overlay||overlay.isDestroyed()){
@@ -93,7 +103,7 @@ app.whenReady().then(()=>{
   }
   function hideOverlay(){blockedNow=null;if(overlay&&!overlay.isDestroyed())overlay.hide();}
   ipcMain.on('overlay',(e,choice)=>{
-    if(!overlay||e.sender!==overlay.webContents)return;
+    if(!fromWindow(e,overlay)||choice!=='back'||!overlay.isVisible()||!blockedNow)return;
     const wasBlocked=blockedNow;
     if(choice==='back'&&wasBlocked)dismissed=wasBlocked.exe;
     hideOverlay();
@@ -118,8 +128,10 @@ app.whenReady().then(()=>{
     if(exe&&exe!==dismissed){
       const target=engine.blockedApp(exe);
       if(target&&(!blockedNow||blockedNow.id!==target.id))showOverlay(target);
-      else if(!target&&blockedNow)hideOverlay();
+      // Lớp phủ tự chiếm tiền cảnh; đừng coi cửa sổ Electron đó là lý do bỏ chặn.
+      else if(!target&&blockedNow&&!engine.blockedApp(blockedNow.exe))hideOverlay();
     }
+    if(blockedNow&&overlay&&!overlay.isDestroyed())overlay.webContents.send('overlay',overlayState(blockedNow));
   },1000);
 });
 app.on('window-all-closed',()=>app.quit());

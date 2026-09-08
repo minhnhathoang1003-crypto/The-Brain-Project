@@ -20,6 +20,7 @@ const overlayVisible = app => app.evaluate(({BrowserWindow})=>
   try{
     app=await electron.launch({args:[root],env});
     const page=await app.firstWindow();await page.locator('.gate').waitFor();
+    await app.evaluate(()=>global.__brainWatcher.stop());
 
     // Thêm một "game" vào danh sách chặn.
     const added=await page.evaluate(()=>window.brain.action('appAdd',{exe:'fakegame.exe',name:'Game Giả Lập'}));
@@ -40,9 +41,11 @@ const overlayVisible = app => app.evaluate(({BrowserWindow})=>
     // Đổi credit cho ứng dụng: không cần tiện ích trình duyệt, vì việc này không liên quan trình duyệt.
     await focus(app,'fakegame');
     assert.equal(await overlayVisible(app),true);
-    const paid=await page.evaluate(()=>window.brain.action('redeem',{id:'app:fakegame',minutes:5}));
-    assert.equal(paid.ok,true,`đổi credit cho ứng dụng không được đòi tiện ích: ${paid.error}`);
-    assert.equal(paid.state.credits,10,'trừ 5 trong 15 credit tặng ban đầu');
+    const overlay=app.windows().find(w=>w.url().includes('overlay.html'));
+    await overlay.getByRole('button',{name:'Đổi credit để mở'}).click();
+    await page.waitForFunction(()=>window.brain.get().then(s=>s.credits===10));
+    const paid=await page.evaluate(()=>window.brain.get());
+    assert.equal(paid.credits,10,'trừ 5 trong 15 credit tặng ban đầu, bằng nút trên lớp phủ');
     await focus(app,'fakegame');
     assert.equal(await overlayVisible(app),false,'đã trả credit thì được vào');
 

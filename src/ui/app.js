@@ -1,4 +1,4 @@
-let state=null,minutes=25,custom=false,lastSignature='',toastTimer;
+let state=null,minutes=25,custom=false,lastSignature='',toastTimer,dialogRevision=0;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>String(n).replace('.',',');
@@ -25,7 +25,7 @@ const hhmm=ms=>{const m=Math.ceil(Math.max(0,ms)/60000);return m>=60?`${Math.flo
 function toast(message){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').classList.add('visible');toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),4200);}
 async function act(type,p={}){try{const r=await window.brain.action(type,p);if(!r.ok){toast(r.error);return false;}state=r.state;render();return true;}catch{toast('Không thể thực hiện thao tác. Hãy thử lại.');return false;}}
 async function system(type){try{const r=await window.brain.system(type);if(r.message)toast(r.message);}catch(e){toast(e.message);}}
-function ask(title,text,callback){$('#confirm-title').textContent=title;$('#confirm-text').textContent=text;$('#confirm').showModal();$('#confirm-no').onclick=()=>$('#confirm').close();$('#confirm-yes').onclick=()=>{$('#confirm').close();callback();};}
+function ask(title,text,callback){dialogRevision++;$('#confirm-yes').style.display='';$('#confirm-title').textContent=title;$('#confirm-text').textContent=text;$('#confirm').showModal();$('#confirm-no').onclick=()=>$('#confirm').close();$('#confirm-yes').onclick=()=>{$('#confirm').close();callback();};}
 
 // Dải quy đổi: luật cốt lõi của sản phẩm, đặt ngay trên nút bắt đầu.
 function ruleStrip(m){
@@ -104,12 +104,20 @@ function gateView(){
   </section>`;
 }
 async function pickApp(){
+  const revision=++dialogRevision;
   $('#confirm-title').textContent='Chọn ứng dụng để chặn';
   $('#confirm-text').innerHTML='<span class="note">Đang đọc danh sách ứng dụng đang mở…</span>';
   $('#confirm').showModal();
   $('#confirm-no').onclick=()=>$('#confirm').close();
   $('#confirm-yes').style.display='none';
-  const running=await window.brain.listApps();
+  let running;
+  try{running=await window.brain.listApps();}
+  catch{
+    if(revision===dialogRevision&&$('#confirm').open)$('#confirm-text').textContent='Không đọc được danh sách ứng dụng. Hãy đóng bảng này rồi thử lại.';
+    return;
+  }
+  // Kết quả đọc cửa sổ có thể tới sau khi người dùng đã hủy hoặc mở một hộp xác nhận khác.
+  if(revision!==dialogRevision||!$('#confirm').open)return;
   const already=new Set(state.targets.filter(t=>t.exe).map(t=>t.exe));
   const open=running.filter(a=>!already.has(a.exe));
   $('#confirm-text').innerHTML=open.length

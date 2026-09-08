@@ -1,5 +1,11 @@
 # Có gì mới
 
+## 0.5.2
+
+- **Mở ứng dụng bằng credit ngay trên lớp phủ.** Nút mở hoạt động đúng, bấm lặp không trừ thêm credit; thiếu credit có thông báo tại chỗ. Lớp phủ không tự biến mất khi nhận focus và giữ nguyên thời lượng đang chọn.
+- **Hủy chọn ứng dụng không làm mất nút xác nhận.** Cả nút Quay lại và phím Escape đều dùng được; danh sách tải chậm không ghi đè hộp xác nhận tiếp theo.
+- **Đóng cửa sổ chính là thoát hẳn ứng dụng**, kể cả sau khi lớp phủ đã xuất hiện. Nếu đang tập trung, vẫn được chọn tiếp tục hoặc đóng và hủy phiên.
+
 ## 0.5.1
 
 - **Sửa lỗi không mở được ứng dụng sau khi cập nhật.** Bản 0.5.0 báo "Phiên bản dữ liệu không tương thích" với người dùng đến từ 0.3.5 – 0.4.0. Dữ liệu không hề bị mất; ứng dụng chỉ từ chối mở. Cài bản này là vào được như cũ, giữ nguyên credit và mã ghép nối.

@@ -1,4 +1,4 @@
-# The Brain Project — 0.5.1
+# The Brain Project — 0.5.2
 
 Một vòng lặp duy nhất: **tập trung để kiếm credit, đổi credit để mở website gây nghiện.**
 
@@ -6,7 +6,7 @@ Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồn
 
 ## Cài đặt
 
-Chạy `release/The-Brain-Project-Setup-0.5.1.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
+Chạy `release/The-Brain-Project-Setup-0.5.2.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
 
 Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu.
 
@@ -76,7 +76,7 @@ Không có xuất JSON, không đồng bộ, không cập nhật tự động.
 ## Kiểm thử
 
 ```bash
-npm.cmd test && npm.cmd run test:ui && npm.cmd run test:migrate && npm.cmd run test:appblock && npm.cmd run test:restart && npm.cmd run test:browser
+npm.cmd test && npm.cmd run test:ui && npm.cmd run test:migrate && npm.cmd run test:appblock && npm.cmd run test:flows && npm.cmd run test:restart && npm.cmd run test:browser
 ```
 
 `test` là engine + luật của tiện ích. `test:ui` chạy Electron thật, gồm một phiên 60 giây thật nên mất khoảng hai phút. `test:migrate` kiểm tra nâng cấp dữ liệu cũ và bố cục ở hai kích thước cửa sổ. `test:restart` kiểm tra việc mở lại ứng dụng không cần ghép nối lại. `test:appblock` kiểm chặn ứng dụng Windows. `test:browser` nạp tiện ích vào Chromium thật (không có thì dùng Edge với profile tạm). Sau `npm.cmd run build`, chạy thêm `node tests/packaged.cjs`.
