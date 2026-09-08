@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "The Brain Project · Focus Bridge",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Kết nối với The Brain Project trên Windows để chặn website và mở tạm bằng credit.",
   "minimum_chrome_version": "120",
   "permissions": ["declarativeNetRequest", "storage", "alarms", "tabs"],

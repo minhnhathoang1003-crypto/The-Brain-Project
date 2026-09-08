@@ -1,5 +1,5 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
-const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES}=require('../src/engine.cjs');
+const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES,VERSION}=require('../src/engine.cjs');
 const {PLANS,tier,limits}=require('../src/license.cjs');
 function harness(){let now=Date.now();const e=new Engine(initial(),()=>now);return {e,advance(ms,idle=0){now+=ms;e.tick(idle);},complete(minutes=25){e.action('start',{minutes});for(let i=0;i<minutes*60;i++){now+=1000;e.tick(0);}},at:()=>now};}
 
@@ -101,6 +101,25 @@ test('v1 migration refunds unusable unlocks once and keeps a live website unlock
   assert.equal(next.credits,17.5);
   assert.deepEqual(next.grant,{targetId:'youtube.com',domain:'youtube.com',until:250000,minutes:5});
   assert.equal(migrate(structuredClone(next),100001).credits,17.5);
+});
+test('every shipped data version can still be opened',()=>{
+  // Đã từng có lỗi thật: VERSION nhảy lên 7 mà migrate chỉ nhận v1–v4, nên mọi người dùng
+  // có dữ liệu v5 hoặc v6 bị chặn ngoài cửa. Bài này đi qua TẤT CẢ các bản đã phát hành.
+  for(let v=3;v<VERSION;v++){
+    const old={version:v,token:'f'.repeat(64),idleSeconds:600,credits:12.5,paired:true,
+      targets:[{id:'x.com',domain:'x.com'}],session:null,grant:null,lastSession:null,today:{day:'2026-09-08',minutes:33}};
+    const next=migrate(old,1000);
+    assert.equal(next.version,VERSION,`v${v} phải mở được`);
+    assert.equal(next.credits,12.5,`v${v} giữ nguyên số dư`);
+    assert.equal(next.token,old.token,`v${v} giữ nguyên mã ghép nối`);
+    assert.equal(next.history[0].minutes,33,`v${v} giữ số phút hôm nay`);
+    assert.deepEqual(migrate(next,1001),next,`v${v} nâng cấp lần hai không đổi gì`);
+  }
+  // v1 và v2 có hình dạng khác hẳn, đã có bài riêng; ở đây chỉ cần chúng không ném lỗi.
+  for(const v of [1,2]){
+    const legacy={version:v,token:'g'.repeat(64),settings:{idleSeconds:300},targets:[],grants:[],ledger:[],tasks:[],habits:[]};
+    assert.equal(migrate(legacy,1000).version,VERSION,`v${v} phải mở được`);
+  }
 });
 test('unsupported data versions fail closed without mutation',()=>{const state={version:99};assert.throws(()=>migrate(state));assert.equal(state.version,99);});
 test('locked mode closes every exit inside the app and cannot be shortened',()=>{

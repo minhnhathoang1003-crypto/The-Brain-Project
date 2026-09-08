@@ -1,8 +1,8 @@
-# Kiểm chứng bản 0.5.0
+# Kiểm chứng bản 0.5.1
 
 ## Đã chạy trên máy này
 
-- `npm.cmd test` — 33 kiểm thử engine và luật tiện ích. Ngoài các bài của 0.2.0: chủ đề có đúng ba giá trị, đổi được giữa phiên trong khi ngưỡng idle vẫn bị khóa; khung thời gian được sắp tăng dần, giữ được đúng một mốc, và từ chối mọi đầu vào hỏng (rỗng, 5 mốc, 0, 181, số lẻ, trùng, chuỗi, null) mà không đụng vào dữ liệu đang có; nâng cấp v3 → v5 và v4 → v5 chỉ thêm trường mới, giữ chủ đề đã chọn và **không** biến người chưa ghép nối thành đã ghép nối; `settings` rỗng bị từ chối.
+- `npm.cmd test` — 34 kiểm thử engine và luật tiện ích. Ngoài các bài của 0.2.0: chủ đề có đúng ba giá trị, đổi được giữa phiên trong khi ngưỡng idle vẫn bị khóa; khung thời gian được sắp tăng dần, giữ được đúng một mốc, và từ chối mọi đầu vào hỏng (rỗng, 5 mốc, 0, 181, số lẻ, trùng, chuỗi, null) mà không đụng vào dữ liệu đang có; nâng cấp v3 → v5 và v4 → v5 chỉ thêm trường mới, giữ chủ đề đã chọn và **không** biến người chưa ghép nối thành đã ghép nối; `settings` rỗng bị từ chối.
 
   Riêng chế độ khóa có ba bài: đóng mọi lối thoát trong engine và hết giờ thì tự mở; không bật được khóa khi đang có website mở, và khi khóa thì `rules()` phải trả `grants` rỗng kể cả lúc dữ liệu còn sót grant; bậc `free` bị từ chối với thông báo "thuộc bản Pro". Phía tiện ích có thêm một bài: đang khóa thì `usableGrants` rỗng và `rulesFor` chặn hết, hết hạn thì grant có hiệu lực trở lại mà không cần ứng dụng nói gì.
 - `npm.cmd run test:ui` — Electron thật, một lượt chạy liền mạch:
@@ -41,7 +41,7 @@
 
 - Thanh tiêu đề trong app hiện đúng file logo người dùng cung cấp, không còn khung viền bao quanh, ở cả chế độ sáng lẫn tối (chế độ tối đảo màu nên nền bo tròn chìm vào nền, chỉ còn nét bộ não trắng).
 - Trang chặn của tiện ích hiện logo mới.
-- Icon nhúng trong `The Brain Project.exe` và `The-Brain-Project-Setup-0.5.0.exe` đã được trích ra và xem — đúng logo bộ não.
+- Icon nhúng trong `The Brain Project.exe` và `The-Brain-Project-Setup-0.5.1.exe` đã được trích ra và xem — đúng logo bộ não.
 
 Chưa kiểm được bằng mắt: icon trên taskbar sau khi cài, và icon tiện ích trên thanh công cụ Chrome. Cả hai đều cần cài thật. Bản sửa `setAppUserModelId` là để Windows ghép cửa sổ với shortcut đã ghim; tôi đọc được id trong mã nguồn nhưng không kiểm chứng được hành vi taskbar nếu không cài.
 
@@ -54,13 +54,19 @@ Chưa kiểm được bằng mắt: icon trên taskbar sau khi cài, và icon ti
 
 Đo ba lần liên tiếp trên cùng máy, mỗi lần một thư mục dữ liệu mới.
 
+## Nâng cấp từ dữ liệu thật
+
+Bản sửa 0.5.1 đã được thử trên **chính file dữ liệu v5 thật của người dùng** (chép ra thư mục tạm, không đụng bản gốc): mở được, giữ nguyên 95,2 credit, giữ mã ghép nối, không bị đẩy về màn hình mở đầu, và có bản sao `brain-data.enc.backup` trước khi chuyển.
+
+Ghi chú rút ra từ lần gỡ lỗi này: `safeStorage` của Electron 44 trên Windows gói khóa mã hóa trong file `Local State` nằm cùng thư mục dữ liệu. Chép riêng `brain-data.enc` sang thư mục khác sẽ **không** giải mã được. Muốn sao lưu thì phải chép cả thư mục.
+
 ## Chưa kiểm chứng
 
 Chặn ứng dụng chưa được thử với **game thật chạy toàn màn hình độc quyền** — bài kiểm bơm sự kiện tiền cảnh chứ không mở game. Bộ theo dõi PowerShell đã chạy thật trên máy này và đọc đúng tên tiến trình lẫn tiêu đề tiếng Việt, nhưng chưa đo trên máy có chính sách PowerShell bị siết.
 
 Chế độ khóa **chưa được thử với tiện ích thật trong trình duyệt thật** — bài `test:ui` kiểm phía ứng dụng và nội dung gói tin gửi đi, `npm.cmd test` kiểm logic tiện ích trong sandbox, nhưng chưa có bài nào nạp tiện ích vào Edge rồi khóa và thử ngắt kết nối. Hai đường thoát đã biết cũng chưa đo: gỡ tiện ích khỏi trình duyệt, và vặn đồng hồ hệ thống.
 
-Số đo tốc độ lấy trên thư mục `release/win-unpacked` — đúng những file mà NSIS chép vào máy, nhưng **tôi chưa chạy trình cài đặt trên máy này** để tránh cài phần mềm mà bạn chưa yêu cầu. Hãy chạy `The-Brain-Project-Setup-0.5.0.exe` một lần để xác nhận luồng cài và shortcut.
+Số đo tốc độ lấy trên thư mục `release/win-unpacked` — đúng những file mà NSIS chép vào máy, nhưng **tôi chưa chạy trình cài đặt trên máy này** để tránh cài phần mềm mà bạn chưa yêu cầu. Hãy chạy `The-Brain-Project-Setup-0.5.1.exe` một lần để xác nhận luồng cài và shortcut.
 
 Bài kiểm thử không đóng ứng dụng, khóa hay ru ngủ máy thật; đầu vào idle được mô phỏng trong bài timer. Chromium kèm Playwright không chạy được trên máy này nên bài extension dùng Edge. Chế độ tối mới chỉ được kiểm bằng giá trị màu tính toán, chưa có ai xem bằng mắt trong phòng tối. Chưa có kiểm thử nhiều ngày và chưa có bằng chứng nào về hiệu quả thay đổi hành vi thực tế.
 

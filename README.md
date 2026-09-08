@@ -1,4 +1,4 @@
-# The Brain Project — 0.5.0
+# The Brain Project — 0.5.1
 
 Một vòng lặp duy nhất: **tập trung để kiếm credit, đổi credit để mở website gây nghiện.**
 
@@ -6,7 +6,7 @@ Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồn
 
 ## Cài đặt
 
-Chạy `release/The-Brain-Project-Setup-0.5.0.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
+Chạy `release/The-Brain-Project-Setup-0.5.1.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
 
 Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu.
 
@@ -68,6 +68,8 @@ Website bị chặn cả ngoài phiên tập trung. Hết thời gian mở, tab 
 Lưu trên máy, mã hóa bằng safeStorage theo tài khoản Windows. Ứng dụng chỉ giữ: mã ghép nối, số dư credit, số phút tập trung hôm nay, danh sách tên miền, chủ đề giao diện, khung thời gian, ngưỡng không hoạt động, phiên đang chạy và lượt mở đang chạy.
 
 Dữ liệu v1/v2/v3/v4 được nâng lên v5 khi mở bản này: giữ mã ghép nối (không phải ghép lại), số dư, ngưỡng không hoạt động, website đang bật và lượt mở còn hiệu lực; hoàn phần thời gian chưa dùng của những lượt mở không còn hỗ trợ đúng một lần. Task, thói quen, lịch sử phiên, sổ credit và câu hỏi nhìn lại **không** được chuyển sang. Trước khi chuyển, ứng dụng lưu bản sao mã hóa `brain-data.enc.backup`; nút xóa toàn bộ dữ liệu sẽ xóa cả bản sao này.
+
+Khóa mã hóa nằm trong file `Local State` cùng thư mục dữ liệu, nên muốn sao lưu thì phải chép **cả thư mục** `%APPDATA%	he-brain-project`, không chép riêng `brain-data.enc`.
 
 Không có xuất JSON, không đồng bộ, không cập nhật tự động.
 

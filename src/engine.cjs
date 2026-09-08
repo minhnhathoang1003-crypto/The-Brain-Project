@@ -36,8 +36,11 @@ function initial() {
 function migrate(state, now=Date.now()) {
   if(state.version===VERSION) return state;
   let next;
+  // Từ v3 trở đi mọi bản đều cùng một hình dạng, chỉ khác ở việc thiếu vài trường mới —
+  // nên nhận cả dải chứ không liệt kê từng số. Liệt kê từng số chính là lý do người dùng
+  // có dữ liệu v5 và v6 bị chặn ngoài cửa khi VERSION nhảy lên 7.
   if(state.version===1||state.version===2) next=fromLegacy(state,now);
-  else if(state.version===3||state.version===4) next=structuredClone(state);
+  else if(Number.isInteger(state.version)&&state.version>=3&&state.version<VERSION) next=structuredClone(state);
   else throw new Error('Phiên bản dữ liệu không tương thích');
   if(!THEMES.includes(next.theme)) next.theme='system';
   if(!validPresets(next.presets)) next.presets=[...DEFAULT_PRESETS];
