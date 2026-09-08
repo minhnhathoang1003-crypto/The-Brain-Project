@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "The Brain Project · Focus Bridge",
+  "version": "0.4.0",
+  "description": "Kết nối với The Brain Project trên Windows để chặn website và mở tạm bằng credit.",
+  "minimum_chrome_version": "120",
+  "permissions": ["declarativeNetRequest", "storage", "alarms", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "The Brain Project",
+    "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" }
+  },
+  "web_accessible_resources": [{ "resources": ["blocked.html", "blocked.css", "blocked.js", "icons/icon-128.png"], "matches": ["<all_urls>"] }]
+}

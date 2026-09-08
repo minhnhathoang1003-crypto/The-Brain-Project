@@ -1,0 +1,1 @@
+const host=new URLSearchParams(location.search).get('host');const valid=/^(?:[a-z0-9-]+\.)+[a-z]{2,63}$/.test(host||'');if(valid)document.getElementById('host').textContent=host;document.getElementById('retry').onclick=()=>{if(valid)location.href='https://'+host;};

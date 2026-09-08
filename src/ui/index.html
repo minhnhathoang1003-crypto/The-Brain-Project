@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>The Brain Project</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <img class="brand-mark" src="logo.png" alt="" width="20" height="20">
+      The Brain Project
+    </div>
+    <div class="bar-right"><span id="status" class="chip"></span><button id="open-setup" class="icon" aria-label="Cài đặt">⚙</button></div>
+  </header>
+  <main id="main"></main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="confirm">
+    <h2 id="confirm-title"></h2><p id="confirm-text"></p>
+    <div class="actions"><button id="confirm-no" class="ghost">Quay lại</button><button id="confirm-yes" class="primary">Xác nhận</button></div>
+  </dialog>
+  <dialog id="setup">
+    <h2>Cài đặt</h2><div id="setup-body"></div>
+    <div class="actions"><button id="setup-close" class="ghost">Đóng</button></div>
+  </dialog>
+  <script src="app.js"></script>
+</body></html>
