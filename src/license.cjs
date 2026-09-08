@@ -16,12 +16,12 @@ const PLANS = {
     historyDays: 7,
     customRatio: false,
     appBlocking: false,   // chặn ứng dụng & game Windows — chưa xây, xem docs/APP_BLOCKING.md
-    lockedMode: false,    // không tự gỡ được trong X giờ — chưa xây
+    lockedMode: false,    // khóa cứng không tự gỡ được
     sync: false,          // sao lưu và đồng bộ nhiều máy — chưa xây
   },
   pro: {
     maxTargets: 50,
-    historyDays: Infinity,
+    historyDays: 180,   // bằng đúng số ngày engine lưu trên đĩa
     customRatio: true,
     appBlocking: true,
     lockedMode: true,

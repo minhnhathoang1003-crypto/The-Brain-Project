@@ -98,7 +98,15 @@ main.stage{grid-template-columns:minmax(0,1fr)}
 .x:hover{color:var(--ink)}
 
 .note{font-size:11px;line-height:1.8;color:var(--muted);max-width:400px}
-.today{font-size:11.5px;color:var(--ink-2)}
+.today{font-size:11.5px;color:var(--ink-2);margin:0}
+.week{display:flex;flex-direction:column;gap:9px;align-items:center;width:100%;max-width:400px}
+.week-bars{display:flex;gap:5px;align-items:flex-end;justify-content:center;width:100%}
+.week-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.week-track{width:100%;height:34px;display:flex;align-items:flex-end;background:var(--shade);border-radius:3px;overflow:hidden}
+.week-track>i{display:block;width:100%;background:var(--line-2);border-radius:3px}
+.week-day.now .week-track>i{background:var(--ink)}
+.week-day>span{font-size:8.5px;letter-spacing:.1em;color:var(--muted)}
+.week-day.now>span{color:var(--ink)}
 .warn{border:1px solid var(--line-2);background:var(--raise);border-radius:8px;padding:12px 14px;font-size:11.5px;line-height:1.75;width:100%;max-width:400px;text-align:left;color:var(--ink-2)}
 
 .progress{height:2px;background:var(--line);width:100%;max-width:400px;overflow:hidden}

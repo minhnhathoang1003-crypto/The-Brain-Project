@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const {tier,limits} = require('./license.cjs');
 const RATIO = 5;                    // 5 phút tập trung = 1 credit
 const PACKS = [1, 5, 10, 15, 30];   // các gói phút có thể đổi
-const VERSION = 6;
+const VERSION = 7;
 const IDLE_CHOICES = [120, 300, 600, 900];
 const THEMES = ['system', 'light', 'dark'];
 const DEFAULT_PRESETS = [25, 50, 90];
@@ -13,12 +13,14 @@ const WELCOME_CREDITS = 15;
 const MAX_PRESETS = 4;
 const LOCK_PACKS = [30, 60, 120, 240];   // số phút khóa có thể chọn
 const MAX_LOCK_MINUTES = 720;            // trần 12 tiếng: khóa lỡ tay không được biến thành thảm họa
+const HISTORY_DAYS = 180;                // số ngày lưu trên đĩa; bậc license quyết định xem được bao nhiêu
 const DEFAULT_SITES = ['youtube.com', 'facebook.com', 'tiktok.com', 'instagram.com'];
 const DAY = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const round = n => Math.round(n*100)/100;
 const clean = (v,max=253) => String(v??'').trim().slice(0,max);
 function requireThat(ok,msg) { if(!ok) throw new Error(msg); }
 
+const blankDay = (day=DAY()) => ({day, minutes:0, completed:0, interrupted:0, earned:0});
 const validPresets = v => Array.isArray(v) && v.length>=1 && v.length<=MAX_PRESETS
   && v.every(n=>Number.isInteger(n)&&n>=1&&n<=180) && new Set(v).size===v.length;
 
@@ -26,7 +28,7 @@ function initial() {
   return { version:VERSION, token:crypto.randomBytes(32).toString('hex'), idleSeconds:300, theme:'system',
     presets:[...DEFAULT_PRESETS], credits:0, paired:false, lockUntil:null,
     targets: DEFAULT_SITES.map(domain=>({id:domain,domain})),
-    session:null, grant:null, lastSession:null, today:{day:DAY(),minutes:0} };
+    session:null, grant:null, lastSession:null, history:[blankDay()] };
 }
 
 function migrate(state, now=Date.now()) {
@@ -38,6 +40,12 @@ function migrate(state, now=Date.now()) {
   if(!THEMES.includes(next.theme)) next.theme='system';
   if(!validPresets(next.presets)) next.presets=[...DEFAULT_PRESETS];
   if(typeof next.lockUntil!=='number'||next.lockUntil<=now) next.lockUntil=null;
+  if(!Array.isArray(next.history)) {
+    // v6 trở về trước chỉ đếm số phút của hôm nay; giữ lại nó thành dòng đầu tiên của lịch sử.
+    const t=next.today;
+    next.history=[t&&typeof t.minutes==='number'?{...blankDay(t.day||DAY()),minutes:t.minutes}:blankDay()];
+  }
+  delete next.today;
   // Người dùng trước v4 đã ghép nối xong từ trước; đừng bắt họ đi qua màn hình mở đầu.
   next.paired=state.version<4?true:!!next.paired;
   next.version=VERSION;
@@ -68,14 +76,22 @@ class Engine {
   recover() { if(this.s.session) this.stop('Ứng dụng đã đóng hoặc khởi động lại'); this.lastTick=this.clock(); }
   stop(reason) {
     if(!this.s.session) return;
-    this.s.session=null; this.s.lastSession={status:'interrupted',reason,credits:0,at:this.clock()}; this.commit();
+    this.s.session=null; this.day().interrupted+=1;
+    this.s.lastSession={status:'interrupted',reason,credits:0,at:this.clock()}; this.commit();
+  }
+  // Mỗi ngày một dòng, mới nhất đứng đầu. Đây là nguồn duy nhất cho cả bộ đếm hôm nay
+  // lẫn biểu đồ tiến bộ, nên không có chuyện hai con số lệch nhau.
+  day() {
+    const day=DAY();
+    if(this.s.history[0]?.day!==day) this.s.history.unshift(blankDay(day));
+    if(this.s.history.length>HISTORY_DAYS) this.s.history.length=HISTORY_DAYS;
+    return this.s.history[0];
   }
   award(minutes) {
-    const day=DAY();
-    if(this.s.today.day!==day) this.s.today={day,minutes:0};
-    this.s.today.minutes+=minutes;
-    this.s.credits=round(this.s.credits+minutes/RATIO);
-    return round(minutes/RATIO);
+    const today=this.day(), earned=round(minutes/RATIO);
+    today.minutes+=minutes; today.completed+=1; today.earned=round(today.earned+earned);
+    this.s.credits=round(this.s.credits+earned);
+    return earned;
   }
   tick(idle=0) {
     const s=this.s, now=this.clock(), delta=now-this.lastTick; this.lastTick=now;
@@ -162,7 +178,9 @@ class Engine {
     const s=this.s;
     return { credits:s.credits, idleSeconds:s.idleSeconds, theme:s.theme, presets:[...s.presets], paired:!!s.paired, targets:structuredClone(s.targets),
       session:s.session?{...s.session}:null, grant:s.grant?{...s.grant}:null, lastSession:s.lastSession?{...s.lastSession}:null,
-      todayMinutes:s.today.day===DAY()?s.today.minutes:0, packs:PACKS, ratio:RATIO, maxPresets:MAX_PRESETS,
+      todayMinutes:s.history[0]?.day===DAY()?s.history[0].minutes:0,
+      history:s.history.slice(0,limits().historyDays).map(d=>({...d})), historyDays:limits().historyDays,
+      packs:PACKS, ratio:RATIO, maxPresets:MAX_PRESETS,
       tier:tier(), maxTargets:limits().maxTargets, lockedMode:limits().lockedMode,
       lockUntil:s.lockUntil&&s.lockUntil>this.clock()?s.lockUntil:null, lockPacks:LOCK_PACKS, now:this.clock() };
   }
@@ -174,4 +192,4 @@ class Engine {
       lockUntil, now };
   }
 }
-module.exports={Engine,initial,migrate,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES};
+module.exports={Engine,initial,migrate,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS};

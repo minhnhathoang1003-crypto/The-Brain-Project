@@ -4,7 +4,7 @@ const {PLANS,tier,limits}=require('../src/license.cjs');
 function harness(){let now=Date.now();const e=new Engine(initial(),()=>now);return {e,advance(ms,idle=0){now+=ms;e.tick(idle);},complete(minutes=25){e.action('start',{minutes});for(let i=0;i<minutes*60;i++){now+=1000;e.tick(0);}},at:()=>now};}
 
 test('credit only after full completion; never awarded twice',()=>{const h=harness();h.e.action('start',{minutes:1});for(let i=0;i<59;i++)h.advance(1000);assert.equal(h.e.s.credits,0);h.advance(1000);assert.equal(h.e.s.credits,.2);h.advance(1000);assert.equal(h.e.s.credits,.2);assert.equal(h.e.s.lastSession.status,'completed');});
-test('exact 5:1 ratio and today counter',()=>{const h=harness();h.complete();assert.equal(h.e.s.credits,5);assert.equal(h.e.snapshot().todayMinutes,25);assert.equal(h.e.s.today.day,DAY());});
+test('exact 5:1 ratio and today counter',()=>{const h=harness();h.complete();assert.equal(h.e.s.credits,5);assert.equal(h.e.snapshot().todayMinutes,25);assert.equal(h.e.s.history[0].day,DAY());});
 test('cancellation forfeits all partial credit',()=>{const h=harness();h.e.action('start',{minutes:1});h.advance(1000);h.e.action('cancel');assert.equal(h.e.s.credits,0);assert.equal(h.e.s.session,null);assert.equal(h.e.s.lastSession.status,'interrupted');assert.throws(()=>h.e.action('cancel'));});
 test('idle, suspend gap, clock rollback and restart forfeit credit',()=>{for(const which of ['idle','gap','rollback','restart']){const h=harness();h.e.action('start',{minutes:1});if(which==='idle')h.advance(1000,300);if(which==='gap')h.advance(11000);if(which==='rollback')h.advance(-1000);if(which==='restart')h.e.recover();assert.equal(h.e.s.session,null,which);assert.equal(h.e.s.credits,0,which);}});
 test('redeem debits once, blocks a second unlock and expires back to blocked',()=>{const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});assert.equal(h.e.s.credits,0);assert.equal(h.e.rules().grants.length,1);assert.throws(()=>h.e.action('redeem',{id:'facebook.com',minutes:1}));assert.throws(()=>h.e.action('start',{minutes:1}));h.advance(300000);assert.equal(h.e.s.grant,null);assert.equal(h.e.rules().grants.length,0);});
@@ -66,14 +66,14 @@ test('unknown or absent tier falls back to the paid tier, never locks anyone out
     delete process.env.BRAIN_TIER;assert.equal(tier(),'pro');
   } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
 });
-test('removed feature endpoints cannot mutate state',()=>{const h=harness();for(const type of ['taskAdd','habitToggle','reflect','skipBreak','sleep','usage'])assert.throws(()=>h.e.action(type,{title:'x',id:'study'}),type);assert.deepEqual(Object.keys(h.e.s).sort(),['credits','grant','idleSeconds','lastSession','lockUntil','paired','presets','session','targets','theme','today','token','version']);});
+test('removed feature endpoints cannot mutate state',()=>{const h=harness();for(const type of ['taskAdd','habitToggle','reflect','skipBreak','sleep','usage'])assert.throws(()=>h.e.action(type,{title:'x',id:'study'}),type);assert.deepEqual(Object.keys(h.e.s).sort(),['credits','grant','history','idleSeconds','lastSession','lockUntil','paired','presets','session','targets','theme','token','version']);});
 
 test('v2 migration keeps the pairing token, balance and enabled sites only',()=>{
   const old={version:2,token:'a'.repeat(64),settings:{idleSeconds:600},tasks:[{id:'t',title:'Bỏ',done:false}],habits:[{id:'h',days:['2026-09-07']}],
     targets:[{id:'youtube',domain:'youtube.com',type:'site',enabled:true},{id:'tiktok',domain:'tiktok.com',type:'site',enabled:false}],
     ledger:[{amount:10},{amount:-3}],sessions:[{id:'s'}],grants:[],reflections:[{id:'r'}],session:null};
   const next=migrate(old,1000);
-  assert.equal(next.version,6);assert.equal(next.lockUntil,null);assert.equal(next.token,old.token);assert.equal(next.idleSeconds,600);assert.equal(next.credits,7);
+  assert.equal(next.version,7);assert.equal(next.lockUntil,null);assert.equal(next.token,old.token);assert.equal(next.idleSeconds,600);assert.equal(next.credits,7);
   assert.equal(next.theme,'system');assert.deepEqual(next.presets,[25,50,90]);assert.equal(next.paired,true,'người dùng cũ không phải đi qua màn hình mở đầu');
   assert.deepEqual(next.targets,[{id:'youtube.com',domain:'youtube.com'}]);
   for(const gone of ['tasks','habits','ledger','sessions','reflections','settings'])assert(!(gone in next),gone);
@@ -81,14 +81,16 @@ test('v2 migration keeps the pairing token, balance and enabled sites only',()=>
 test('v3 migration only adds the new fields and keeps everything else',()=>{
   const old={version:3,token:'d'.repeat(64),idleSeconds:900,credits:8.5,targets:[{id:'x.com',domain:'x.com'}],session:null,grant:null,lastSession:null,today:{day:'2026-09-08',minutes:40}};
   const next=migrate(old,1000);
-  assert.equal(next.version,6);assert.equal(next.theme,'system');assert.deepEqual(next.presets,[25,50,90]);assert.equal(next.paired,true);
-  assert.equal(next.credits,8.5);assert.equal(next.idleSeconds,900);assert.deepEqual(next.today,old.today);
+  assert.equal(next.version,7);assert.equal(next.theme,'system');assert.deepEqual(next.presets,[25,50,90]);assert.equal(next.paired,true);
+  assert.equal(next.credits,8.5);assert.equal(next.idleSeconds,900);
+  assert.deepEqual(next.history,[{day:'2026-09-08',minutes:40,completed:0,interrupted:0,earned:0}],'số phút hôm nay cũ thành dòng đầu của lịch sử');
+  assert(!('today' in next),'trường today cũ được bỏ');
   assert.deepEqual(migrate(next,1001),next,'nâng cấp lần hai không đổi gì');
 });
 test('v4 migration adds presets and keeps an unpaired user unpaired',()=>{
   const old={version:4,token:'e'.repeat(64),idleSeconds:300,theme:'dark',credits:0,paired:false,targets:[],session:null,grant:null,lastSession:null,today:{day:'2026-09-08',minutes:0}};
   const next=migrate(old,1000);
-  assert.equal(next.version,6);assert.deepEqual(next.presets,[25,50,90]);
+  assert.equal(next.version,7);assert.deepEqual(next.presets,[25,50,90]);
   assert.equal(next.theme,'dark','giữ chủ đề đã chọn');
   assert.equal(next.paired,false,'người chưa ghép nối vẫn phải qua màn hình mở đầu');
 });
@@ -152,5 +154,37 @@ test('locked mode is a paid feature and the free tier is told so',()=>{
     assert.equal(free.e.s.lockUntil,null);
   } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
   assert.equal(harness().e.snapshot().lockedMode,true);
+});
+test('history records each day, survives a rollover and is capped by the licence tier',()=>{
+  const h=harness();
+  h.complete();                                  // 25 phút trọn vẹn
+  h.e.action('start',{minutes:5});h.advance(1000);h.e.action('cancel');
+  const today=h.e.s.history[0];
+  assert.equal(today.day,DAY());
+  assert.equal(today.minutes,25);
+  assert.equal(today.completed,1);
+  assert.equal(today.interrupted,1,'phiên bị hủy vẫn được ghi nhận');
+  assert.equal(today.earned,5);
+  assert.equal(h.e.snapshot().todayMinutes,25,'bộ đếm hôm nay và lịch sử là cùng một nguồn');
+
+  // Sang ngày mới: dòng cũ được giữ nguyên, dòng mới bắt đầu từ 0.
+  h.e.s.history[0].day='2020-01-01';
+  h.complete(1);
+  assert.equal(h.e.s.history.length,2);
+  assert.equal(h.e.s.history[0].day,DAY());
+  assert.equal(h.e.s.history[0].minutes,1);
+  assert.equal(h.e.s.history[1].minutes,25,'ngày hôm trước không bị đụng vào');
+  assert.equal(h.e.snapshot().todayMinutes,1);
+
+  const before=process.env.BRAIN_TIER;
+  try{
+    process.env.BRAIN_TIER='free';
+    const free=harness();
+    for(let i=0;i<20;i++) free.e.s.history.unshift({day:'2026-01-'+String(i+1).padStart(2,'0'),minutes:i,completed:1,interrupted:0,earned:0});
+    assert.equal(free.e.s.history.length,21,'trên đĩa vẫn giữ đủ');
+    assert.equal(free.e.snapshot().history.length,7,'bản Free chỉ xem được 7 ngày');
+    assert.equal(free.e.snapshot().historyDays,7);
+  } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
+  assert.equal(harness().e.snapshot().historyDays,180);
 });
 test('bridge payload keeps the wire shape the extension expects',()=>{const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});const r=h.e.rules();assert.deepEqual(Object.keys(r).sort(),['grants','lockUntil','now','targets']);assert.deepEqual(Object.keys(r.targets[0]).sort(),['domain','id']);assert.deepEqual(Object.keys(r.grants[0]).sort(),['targetId','until']);});

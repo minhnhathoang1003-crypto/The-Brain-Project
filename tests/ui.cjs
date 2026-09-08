@@ -89,6 +89,13 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
     await page.locator('main.split').waitFor({timeout:90000});
     const s=await page.evaluate(()=>window.brain.get());
     assert.equal(s.credits,15.2,JSON.stringify(s.lastSession));assert.equal(s.todayMinutes,1);
+    // Lịch sử: một phiên trọn vẹn và một phiên bị hủy đều được ghi vào đúng ngày hôm nay.
+    assert.equal(s.history[0].minutes,1);assert.equal(s.history[0].completed,1);
+    assert.equal(s.history[0].interrupted,1,'phiên bị hủy trước đó được ghi nhận');
+    assert.equal(s.history[0].earned,.2);
+    assert.equal(await page.locator('.week-day').count(),7,'dải bảy ngày luôn đủ bảy cột');
+    assert.equal(await page.locator('.week-day.now').count(),1);
+    assert.match(await page.locator('.today').innerText(),/Hôm nay 1 phút · 7 ngày qua 1 phút/);
     const poor=await page.evaluate(()=>window.brain.action('redeem',{id:'youtube.com',minutes:30}));
     assert.equal(poor.ok,false);assert.match(poor.error,/chưa đủ credit/);
 
@@ -128,7 +135,7 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
     await desktop.close();desktop=null;
     desktop=await electron.launch({args:[root],env});const reopened=await desktop.firstWindow();await reopened.locator('main.split').waitFor();
     const restored=await reopened.evaluate(()=>window.brain.get());
-    assert.equal(restored.credits,15.2);assert.equal(restored.targets.length,4);assert.equal(restored.todayMinutes,1);
+    assert.equal(restored.credits,15.2);assert.equal(restored.targets.length,4);assert.equal(restored.todayMinutes,1);assert.equal(restored.history[0].completed,1,'lịch sử sống sót qua khởi động lại');
     assert.equal(restored.theme,'light');assert.equal(restored.paired,true);assert.deepEqual(restored.presets,[15,25,90]);
     assert(restored.lockUntil>Date.now(),'chế độ khóa sống sót qua việc đóng và mở lại ứng dụng');
     assert.equal((await reopened.evaluate(()=>window.brain.action('redeem',{id:'youtube.com',minutes:5}))).ok,false,'mở lại ứng dụng không phải là cách thoát khóa');

@@ -7,6 +7,19 @@ const creditsFor=m=>num(Number((m/state.ratio).toFixed(2)));
 const earned=s=>num(Number((Math.min(s.elapsedMs,s.durationMs)/60000/state.ratio).toFixed(2)));
 const unlocked=()=>!!state.grant&&state.grant.until>state.now;
 const locked=()=>!!state.lockUntil&&state.lockUntil>state.now;
+// Bảy ngày gần nhất, cũ ở trái. Ngày không có dữ liệu vẫn phải hiện, nếu không
+// biểu đồ sẽ nói dối rằng tuần vừa rồi liền mạch.
+function lastDays(n){
+  const by=new Map(state.history.map(d=>[d.day,d]));
+  const out=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(state.now);d.setDate(d.getDate()-i);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    out.push({...(by.get(key)||{day:key,minutes:0,completed:0,interrupted:0,earned:0}),
+      label:['CN','T2','T3','T4','T5','T6','T7'][d.getDay()],today:i===0});
+  }
+  return out;
+}
 const hhmm=ms=>{const m=Math.ceil(Math.max(0,ms)/60000);return m>=60?`${Math.floor(m/60)} giờ ${m%60} phút`:`${m} phút`;};
 
 function toast(message){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').classList.add('visible');toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),4200);}
@@ -30,7 +43,13 @@ function readyView(){
     ${ruleStrip(minutes)}
     <button class="primary big" data-action="start">Bắt đầu tập trung<b id="start-label">${minutes} phút</b></button>
     <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>
-    <p class="today">Hôm nay bạn đã tập trung <b>${state.todayMinutes}</b> phút.</p>
+    <div class="week">
+      <div class="week-bars">${(()=>{const days=lastDays(7),peak=Math.max(25,...days.map(d=>d.minutes));
+        return days.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
+          <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/peak*100)):0}%"></i></div>
+          <span>${d.label}</span></div>`).join('');})()}</div>
+      <p class="today">Hôm nay <b>${state.todayMinutes}</b> phút · 7 ngày qua <b>${lastDays(7).reduce((n,d)=>n+d.minutes,0)}</b> phút</p>
+    </div>
   </section>
   <section class="pane right">
     <div class="sites-head"><span>Đang bị chặn</span><span>${locked()?'Đang khóa':'Đổi credit để mở tạm'}</span></div>
@@ -103,6 +122,11 @@ function setupView(){
   <div class="set-row"><div><b>Ngưỡng không hoạt động</b><p>Không chạm chuột hay bàn phím quá lâu sẽ hủy phiên. Cơ chế này chỉ giảm việc treo máy, không xác minh được bạn đang học.</p></div>
     <select id="idle" class="field mins" aria-label="Ngưỡng không hoạt động" ${state.session?'disabled':''}>${[120,300,600,900].map(n=>`<option value="${n}" ${state.idleSeconds===n?'selected':''}>${n/60} phút</option>`).join('')}</select></div>
   <div class="ratio"><div><span>Tập trung</span><span>Nhận được</span></div>${[25,50,90].map(m=>`<div><span>${m} phút</span><span>${creditsFor(m)} credit</span></div>`).join('')}</div>
+  <div class="set-row col"><div><b>Tiến bộ</b><p>Lưu ${state.historyDays} ngày gần nhất. Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
+    <div class="ratio">${(()=>{const rows=state.history.filter(d=>d.minutes||d.interrupted).slice(0,14);
+      return '<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
+        ? rows.map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===state.history[0]?.day&&d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
+        : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>');})()}</div></div>
   <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
 }
 
