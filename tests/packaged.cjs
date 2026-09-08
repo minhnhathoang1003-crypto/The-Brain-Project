@@ -6,7 +6,7 @@ const {_electron}=require('playwright');const fs=require('fs'),path=require('pat
   try{
     const page=await app.firstWindow();await page.locator('.gate').waitFor();
     const s=await page.evaluate(()=>window.brain.get());
-    assert.equal(s.credits,15,'bản cài mới được tặng credit khởi đầu');assert.equal(s.todayMinutes,0);assert.equal(s.session,null);assert.equal(s.grant,null);
+    assert.equal(s.credits,15,'bản cài mới được tặng credit khởi đầu');assert.equal(s.todayMinutes,0);assert.equal(s.session,null);assert.deepEqual(s.grants,[]);
     assert.equal(s.paired,false,'bản cài mới bắt đầu ở màn hình ghép nối');assert.equal(s.theme,'system');
     assert.deepEqual(s.presets,[25,50,90]);
     assert.deepEqual(s.targets.map(t=>t.domain),['youtube.com','facebook.com','tiktok.com','instagram.com']);

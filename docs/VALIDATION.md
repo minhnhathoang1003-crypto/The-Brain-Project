@@ -1,4 +1,4 @@
-# Kiểm chứng bản 0.5.3
+# Kiểm chứng bản 0.6.0
 
 ## Đã chạy trên máy này
 
@@ -41,7 +41,7 @@
 
 - Thanh tiêu đề trong app hiện đúng file logo người dùng cung cấp, không còn khung viền bao quanh, ở cả chế độ sáng lẫn tối (chế độ tối đảo màu nên nền bo tròn chìm vào nền, chỉ còn nét bộ não trắng).
 - Trang chặn của tiện ích hiện logo mới.
-- Icon nhúng trong `The Brain Project.exe` và `The-Brain-Project-Setup-0.5.3.exe` đã được trích ra và xem — đúng logo bộ não.
+- Icon nhúng trong `The Brain Project.exe` và `The-Brain-Project-Setup-0.6.0.exe` đã được trích ra và xem — đúng logo bộ não.
 
 Chưa kiểm được bằng mắt: icon trên taskbar sau khi cài, và icon tiện ích trên thanh công cụ Chrome. Cả hai đều cần cài thật. Bản sửa `setAppUserModelId` là để Windows ghép cửa sổ với shortcut đã ghim; tôi đọc được id trong mã nguồn nhưng không kiểm chứng được hành vi taskbar nếu không cài.
 
@@ -60,6 +60,7 @@ Chưa kiểm được bằng mắt: icon trên taskbar sau khi cài, và icon ti
 
 - **Đổi credit từ lớp phủ.** Bấm nút trên lớp phủ thật: chọn gói vượt số dư thì hiện lỗi *chưa đủ credit* và không trừ gì; bấm nhanh hai lần chỉ trừ một lần; đổi xong lớp phủ tự ẩn. Lớp phủ **không** mượn được quyền của cửa sổ chính — thử `settings`, thử đổi credit cho website khác, thử lấy mã ghép nối đều bị từ chối. Lớp phủ đứng yên qua nhiều nhịp theo dõi và không reset lựa chọn phút mỗi giây. Khi đang có phiên tập trung hoặc đang khóa thì nút mở bị tắt kèm lời giải thích đúng.
 - **Hủy hộp chọn ứng dụng.** Hủy bằng nút *Quay lại* và bằng phím Escape; sau đó mở một hộp xác nhận khác và khẳng định nút *Xác nhận* vẫn còn. Danh sách ứng dụng trả về **muộn** sau khi đã hủy cũng không được phép ghi đè lên hộp xác nhận đang mở. Trường hợp đọc danh sách lỗi thì hiện thông báo thay vì treo.
+- **Mở trình duyệt rồi mở tiếp website bên trong.** Bằng thao tác thật, có nối cầu tiện ích thật: mở "trình duyệt" 5 phút, khẳng định giao diện vẫn giữ hai cột, rồi mở tiếp `youtube.com` 10 phút ngay trên đó. Trừ đúng 5 + 10 credit, hai mục cùng nằm trong `grants`, tiện ích nhận đủ cả hai. Mở lại đúng mục đang mở bị từ chối. Kết thúc riêng từng mục và kết thúc tất cả đều chạy; còn mục mở thì chưa tập trung được; kết thúc sớm không hoàn credit. Đã thử ngược: dựng lại luật "chỉ mở một mục" thì bài này đỏ.
 - **Đóng ứng dụng bị chặn.** Bấm nút trên lớp phủ thật rồi khẳng định lệnh đóng nhắm đúng `fakegame` — chứ không phải cửa sổ tiền cảnh, vốn đang là lớp phủ. Hết ân hạn 3 giây mà ứng dụng vẫn chạy thì lớp phủ phải quay lại; không có giấy thông hành miễn phí. Bấm nút không tốn credit. `closeApp` cũng được thử với **tiến trình Notepad thật**: mở, gọi, và tiến trình biến mất; đồng thời từ chối tên tiến trình hệ thống và tên rác.
 - **Đóng ứng dụng sau khi lớp phủ từng xuất hiện.** Ba trạng thái: lớp phủ đã ẩn, lớp phủ đang hiện, và đang có phiên tập trung. Bài kiểm chờ **tiến trình thật thoát với mã 0**, rồi mở lại và khẳng định dữ liệu còn nguyên. Ở trạng thái thứ ba còn kiểm chọn *Tiếp tục tập trung* thì cửa sổ và phiên được giữ, hộp thoại chỉ hỏi đúng một lần.
 
@@ -77,7 +78,7 @@ Chặn ứng dụng chưa được thử với **game thật chạy toàn màn h
 
 Chế độ khóa **chưa được thử với tiện ích thật trong trình duyệt thật** — bài `test:ui` kiểm phía ứng dụng và nội dung gói tin gửi đi, `npm.cmd test` kiểm logic tiện ích trong sandbox, nhưng chưa có bài nào nạp tiện ích vào Edge rồi khóa và thử ngắt kết nối. Hai đường thoát đã biết cũng chưa đo: gỡ tiện ích khỏi trình duyệt, và vặn đồng hồ hệ thống.
 
-Số đo tốc độ lấy trên thư mục `release/win-unpacked` — đúng những file mà NSIS chép vào máy, nhưng **tôi chưa chạy trình cài đặt trên máy này** để tránh cài phần mềm mà bạn chưa yêu cầu. Hãy chạy `The-Brain-Project-Setup-0.5.3.exe` một lần để xác nhận luồng cài và shortcut.
+Số đo tốc độ lấy trên thư mục `release/win-unpacked` — đúng những file mà NSIS chép vào máy, nhưng **tôi chưa chạy trình cài đặt trên máy này** để tránh cài phần mềm mà bạn chưa yêu cầu. Hãy chạy `The-Brain-Project-Setup-0.6.0.exe` một lần để xác nhận luồng cài và shortcut.
 
 Bài kiểm thử không đóng ứng dụng, khóa hay ru ngủ máy thật; đầu vào idle được mô phỏng trong bài timer. Chromium kèm Playwright không chạy được trên máy này nên bài extension dùng Edge. Chế độ tối mới chỉ được kiểm bằng giá trị màu tính toán, chưa có ai xem bằng mắt trong phòng tối. Chưa có kiểm thử nhiều ngày và chưa có bằng chứng nào về hiệu quả thay đổi hành vi thực tế.
 

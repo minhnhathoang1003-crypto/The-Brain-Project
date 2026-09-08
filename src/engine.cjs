@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const {tier,limits} = require('./license.cjs');
 const RATIO = 5;                    // 5 phút tập trung = 1 credit
 const PACKS = [1, 5, 10, 15, 30];   // các gói phút có thể đổi
-const VERSION = 7;
+const VERSION = 8;
 const IDLE_CHOICES = [120, 300, 600, 900];
 const THEMES = ['system', 'light', 'dark'];
 const DEFAULT_PRESETS = [25, 50, 90];
@@ -30,7 +30,7 @@ function initial() {
   return { version:VERSION, token:crypto.randomBytes(32).toString('hex'), idleSeconds:300, theme:'system',
     presets:[...DEFAULT_PRESETS], credits:0, paired:false, lockUntil:null,
     targets: DEFAULT_SITES.map(domain=>({id:domain,domain})),
-    session:null, grant:null, lastSession:null, history:[blankDay()] };
+    session:null, grants:[], lastSession:null, history:[blankDay()] };
 }
 
 function migrate(state, now=Date.now()) {
@@ -45,6 +45,11 @@ function migrate(state, now=Date.now()) {
   if(!THEMES.includes(next.theme)) next.theme='system';
   if(!validPresets(next.presets)) next.presets=[...DEFAULT_PRESETS];
   if(typeof next.lockUntil!=='number'||next.lockUntil<=now) next.lockUntil=null;
+  if(!Array.isArray(next.grants)) {
+    // Trước v8 chỉ có một lượt mở tại một thời điểm; giữ lại nó thành phần tử duy nhất.
+    next.grants = next.grant && next.grant.until>now ? [next.grant] : [];
+  }
+  delete next.grant;
   if(!Array.isArray(next.history)) {
     // v6 trở về trước chỉ đếm số phút của hôm nay; giữ lại nó thành dòng đầu tiên của lịch sử.
     const t=next.today;
@@ -70,7 +75,7 @@ function fromLegacy(state, now) {
   const kept=live.find(g=>next.targets.some(t=>t.id===domainOf(g.targetId)));
   let credits=(state.ledger||[]).reduce((n,x)=>n+(Number(x.amount)||0),0);
   for(const g of live) if(g!==kept) credits+=Math.min(Number(g.minutes)||0,(g.until-now)/60000);
-  if(kept) next.grant={targetId:domainOf(kept.targetId),domain:domainOf(kept.targetId),until:kept.until,minutes:kept.minutes};
+  if(kept) next.grants=[{targetId:domainOf(kept.targetId),domain:domainOf(kept.targetId),until:kept.until,minutes:kept.minutes}];
   next.credits=Math.max(0,round(credits));
   return next;
 }
@@ -111,15 +116,17 @@ class Engine {
         }
       }
     }
-    if(s.grant&&s.grant.until<=now) { s.grant=null; this.commit(); }
+    if(s.grants.some(g=>g.until<=now)) { s.grants=s.grants.filter(g=>g.until>now); this.commit(); }
     if(s.lockUntil&&s.lockUntil<=now) { s.lockUntil=null; this.commit(); }
   }
   action(type,p={}) {
-    const s=this.s, now=this.clock(), unlocked=()=>!!s.grant&&s.grant.until>now, locked=()=>!!s.lockUntil&&s.lockUntil>now;
+    const s=this.s, now=this.clock(), locked=()=>!!s.lockUntil&&s.lockUntil>now;
+    const open=()=>s.grants.filter(g=>g.until>now);
+    const openFor=id=>open().find(g=>g.targetId===id);
     switch(type) {
       case 'start': {
         requireThat(!s.session,'Bạn đang có một phiên tập trung.');
-        requireThat(!unlocked(),'Hãy kết thúc thời gian giải trí trước khi tập trung.');
+        requireThat(!open().length,'Hãy kết thúc thời gian giải trí trước khi tập trung.');
         const minutes=Number(p.minutes);
         requireThat(Number.isInteger(minutes)&&minutes>=1&&minutes<=180,'Thời lượng phải từ 1 đến 180 phút.');
         s.session={startedAt:now,durationMs:minutes*60000,elapsedMs:0}; this.lastTick=now; break;
@@ -128,14 +135,22 @@ class Engine {
       case 'redeem': {
         requireThat(!locked(),'Đang trong chế độ khóa. Không đổi được credit cho tới khi hết giờ khóa.');
         requireThat(!s.session,'Không thể đổi credit trong phiên tập trung.');
-        requireThat(!unlocked(),'Chỉ mở một website tại một thời điểm.');
+        requireThat(!openFor(p.id),'Mục này đang mở rồi. Hãy đợi hết giờ hoặc kết thúc sớm.');
         const target=s.targets.find(t=>t.id===p.id); requireThat(target,'Không tìm thấy website trong danh sách.');
         const minutes=Number(p.minutes); requireThat(PACKS.includes(minutes),'Gói thời gian không hợp lệ.');
         requireThat(s.credits>=minutes,'Bạn chưa đủ credit. Hoàn thành một phiên tập trung để tích lũy.');
         s.credits=round(s.credits-minutes);
-        s.grant={targetId:target.id,domain:target.domain,until:now+minutes*60000,minutes}; break;
+        s.grants.push({targetId:target.id,domain:target.domain||null,name:target.name||target.domain,until:now+minutes*60000,minutes}); break;
       }
-      case 'endGrant': requireThat(unlocked(),'Không có website nào đang mở.'); s.grant=null; break;
+      case 'endGrant': {
+        const live=open();
+        requireThat(live.length,'Không có mục nào đang mở.');
+        if(p.id!==undefined){
+          requireThat(openFor(p.id),'Mục này không đang mở.');
+          s.grants=s.grants.filter(g=>g.targetId!==p.id);
+        } else s.grants=[];
+        break;
+      }
       case 'appAdd': {
         requireThat(limits().appBlocking,'Chặn ứng dụng thuộc bản Pro.');
         requireThat(!s.session,'Không đổi danh sách chặn giữa phiên.');
@@ -156,7 +171,7 @@ class Engine {
       case 'targetDelete':
         requireThat(!locked(),'Đang trong chế độ khóa. Không bỏ chặn được website nào cho tới khi hết giờ khóa.');
         requireThat(!s.session,'Không đổi danh sách chặn giữa phiên.');
-        requireThat(!unlocked()||s.grant.targetId!==p.id,'Hãy kết thúc thời gian đang mở trước.');
+        requireThat(!openFor(p.id),'Hãy kết thúc thời gian đang mở của mục này trước.');
         s.targets=s.targets.filter(t=>t.id!==p.id); break;
       case 'settings': {
         let changed=false;
@@ -179,7 +194,7 @@ class Engine {
       case 'lock': {
         requireThat(limits().lockedMode,'Chế độ khóa thuộc bản Pro.');
         requireThat(!locked(),'Đang trong chế độ khóa rồi.');
-        requireThat(!unlocked(),'Hãy để hết thời gian đang mở trước khi bật chế độ khóa.');
+        requireThat(!open().length,'Hãy để hết thời gian đang mở trước khi bật chế độ khóa.');
         const minutes=Number(p.minutes);
         requireThat(Number.isInteger(minutes)&&minutes>=1&&minutes<=MAX_LOCK_MINUTES,`Thời lượng khóa phải từ 1 đến ${MAX_LOCK_MINUTES} phút.`);
         s.lockUntil=now+minutes*60000; break;
@@ -191,7 +206,7 @@ class Engine {
   snapshot() {
     const s=this.s;
     return { credits:s.credits, idleSeconds:s.idleSeconds, theme:s.theme, presets:[...s.presets], paired:!!s.paired, targets:structuredClone(s.targets),
-      session:s.session?{...s.session}:null, grant:s.grant?{...s.grant}:null, lastSession:s.lastSession?{...s.lastSession}:null,
+      session:s.session?{...s.session}:null, grants:s.grants.filter(g=>g.until>this.clock()).map(g=>({...g})), lastSession:s.lastSession?{...s.lastSession}:null,
       todayMinutes:s.history[0]?.day===DAY()?s.history[0].minutes:0,
       history:s.history.slice(0,limits().historyDays).map(d=>({...d})), historyDays:limits().historyDays,
       packs:PACKS, ratio:RATIO, maxPresets:MAX_PRESETS,
@@ -205,14 +220,14 @@ class Engine {
     const target=this.s.targets.find(t=>isApp(t)&&t.exe===exe);
     if(!target) return null;
     const locked=!!this.s.lockUntil&&this.s.lockUntil>now;
-    const open=!locked&&this.s.grant&&this.s.grant.targetId===target.id&&this.s.grant.until>now;
+    const open=!locked&&this.s.grants.some(g=>g.targetId===target.id&&g.until>now);
     return open?null:target;
   }
   rules() {
     const now=this.clock();
     const lockUntil=this.s.lockUntil&&this.s.lockUntil>now?this.s.lockUntil:null;
     return { targets:this.s.targets.filter(isSite).map(t=>({id:t.id,domain:t.domain})),
-      grants:lockUntil?[]:this.s.grant&&this.s.grant.until>now?[{targetId:this.s.grant.targetId,until:this.s.grant.until}]:[],
+      grants:lockUntil?[]:this.s.grants.filter(g=>g.until>now).map(g=>({targetId:g.targetId,until:g.until})),
       lockUntil, now };
   }
 }

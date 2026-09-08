@@ -5,7 +5,8 @@ const num=n=>String(n).replace('.',',');
 const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;};
 const creditsFor=m=>num(Number((m/state.ratio).toFixed(2)));
 const earned=s=>num(Number((Math.min(s.elapsedMs,s.durationMs)/60000/state.ratio).toFixed(2)));
-const unlocked=()=>!!state.grant&&state.grant.until>state.now;
+const openGrants=()=>state.grants.filter(g=>g.until>state.now);
+const grantFor=id=>openGrants().find(g=>g.targetId===id);
 const locked=()=>!!state.lockUntil&&state.lockUntil>state.now;
 // Bảy ngày gần nhất, cũ ở trái. Ngày không có dữ liệu vẫn phải hiện, nếu không
 // biểu đồ sẽ nói dối rằng tuần vừa rồi liền mạch.
@@ -39,10 +40,17 @@ function readyView(){
   return `<section class="pane left">
     ${state.system.extensionConnected?'':`<div class="warn"><b>Chưa chặn được website nào.</b> Tiện ích trình duyệt chưa kết nối, nên danh sách bên cạnh chưa có hiệu lực.<br>Nếu bạn vừa mở lại ứng dụng thì chỉ cần đợi vài giây — tiện ích tự kết nối lại, <b>không phải ghép nối lại</b>. Mã ghép nối không đổi. <button class="link" id="warn-setup">Kiểm tra kết nối</button></div>`}
     <div class="stack"><div class="label">Số dư</div><div class="figure">${num(state.credits)}</div><div class="unit">credit</div></div>
+    ${openGrants().length?`
+    <div class="open-now">
+      <div class="label">Đang mở</div>
+      ${openGrants().map(g=>`<div class="open-row"><span class="domain">${esc(g.name||g.domain||g.targetId)}</span><b class="open-left" data-left="${esc(g.targetId)}">${mmss(g.until-state.now)}</b><button class="ghost small" data-action="endGrant" data-id="${esc(g.targetId)}">Kết thúc</button></div>`).join('')}
+      <button class="ghost big" data-action="endAll">Kết thúc tất cả</button>
+      <p class="note">Vẫn đổi được credit cho mục khác ở cột bên — ví dụ mở trình duyệt rồi mở tiếp website bên trong. Hết giờ là chặn lại. Không tập trung được khi còn mục đang mở.</p>
+    </div>`:`
     <div class="chips">${state.presets.map(m=>`<button class="chip-btn ${!custom&&minutes===m?'on':''}" data-preset="${m}">${m} phút</button>`).join('')}<button class="chip-btn ${custom?'on':''}" data-preset="custom">Khác</button>${custom?`<input id="custom" class="field narrow" type="number" min="1" max="180" value="${minutes}" aria-label="Số phút tập trung">`:''}</div>
     ${ruleStrip(minutes)}
     <button class="primary big" data-action="start">Bắt đầu tập trung<b id="start-label">${minutes} phút</b></button>
-    <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>
+    <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>`}
     <div class="week">
       <div class="week-bars">${(()=>{const days=lastDays(7),peak=Math.max(25,...days.map(d=>d.minutes));
         return days.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
@@ -62,8 +70,10 @@ function readyView(){
 function siteRow(t){
   const label=t.domain||t.name||t.exe;
   return `<div class="row"><span class="mark">${t.exe?'▣':esc(label[0].toUpperCase())}</span><span class="domain" title="${esc(t.exe?t.exe+'.exe':label)}">${esc(label)}</span>
-  <select class="field mins" id="m-${esc(t.id)}" aria-label="Số phút mở ${esc(t.domain||t.name)}">${state.packs.map(n=>`<option value="${n}" ${n===5?'selected':''}>${n} phút</option>`).join('')}</select>
-  <button class="ghost small" data-action="redeem" data-id="${esc(t.id)}" ${locked()?'disabled':''}>Mở</button>
+  ${grantFor(t.id)
+    ? `<b class="open-left" data-left="${esc(t.id)}">${mmss(grantFor(t.id).until-state.now)}</b><button class="ghost small" data-action="endGrant" data-id="${esc(t.id)}">Kết thúc</button>`
+    : `<select class="field mins" id="m-${esc(t.id)}" aria-label="Số phút mở ${esc(t.domain||t.name)}">${state.packs.map(n=>`<option value="${n}" ${n===5?'selected':''}>${n} phút</option>`).join('')}</select>
+  <button class="ghost small" data-action="redeem" data-id="${esc(t.id)}" ${locked()||state.session?'disabled':''}>Mở</button>`}
   ${locked()?'<span class="x locked-x" aria-hidden="true">·</span>':`<button class="x" data-action="targetDelete" data-id="${esc(t.id)}" aria-label="Bỏ chặn ${esc(t.domain||t.name)}">×</button>`}</div>`;
 }
 function focusView(){
@@ -77,14 +87,6 @@ function focusView(){
       <p class="earning-risk">Số này chỉ vào ví khi phiên kết thúc trọn vẹn. Dừng lúc này là mất cả <b id="earning-risk">${earned(s)}</b> credit.</p>
     </div>
     <button class="ghost big" data-action="cancel">Dừng phiên</button>
-  </section>`;
-}
-function grantView(){
-  const g=state.grant;
-  return `<section class="pane left">
-    <div class="stack"><div class="label">${esc(g.domain)} đang mở</div><div class="figure" id="timer">${mmss(g.until-state.now)}</div><div class="unit">còn lại · số dư ${num(state.credits)} credit</div></div>
-    <button class="ghost big" data-action="endGrant">Kết thúc sớm</button>
-    <p class="note">Hết giờ, website bị chặn lại và tab đang mở sẽ chuyển về trang chặn. Kết thúc sớm không hoàn credit.</p>
   </section>`;
 }
 // Lần chạy đầu: chưa ghép nối thì app chưa chặn được gì, nên không cho vào thẳng màn hình chính.
@@ -153,7 +155,7 @@ function setupView(){
   <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
 }
 
-const signature=s=>JSON.stringify({...s,now:0,session:s.session?{...s.session,elapsedMs:0}:null,grant:s.grant?{...s.grant,until:0}:null,lastSession:0});
+const signature=s=>JSON.stringify({...s,now:0,session:s.session?{...s.session,elapsedMs:0}:null,grants:s.grants.map(g=>({...g,until:0})),lastSession:0});
 function render(){
   if(!state)return;
   if(state.theme==='system')delete document.documentElement.dataset.theme;
@@ -163,8 +165,8 @@ function render(){
   $('#status').textContent=connected?`Đang chặn ${state.targets.length} website`:'Chưa chặn được website nào';
   $('#status').classList.toggle('on',connected);
   const gate=!state.paired;
-  $('#main').className=gate||state.session||unlocked()?'stage':'split';
-  $('#main').innerHTML=gate?gateView():state.session?focusView():unlocked()?grantView():readyView();
+  $('#main').className=gate||state.session?'stage':'split';
+  $('#main').innerHTML=gate?gateView():state.session?focusView():readyView();
   if($('#setup').open)$('#setup-body').innerHTML=setupView();
   lastSignature=signature(state);
   live();
@@ -177,7 +179,11 @@ function live(){
     const bar=$('#bar');if(bar)bar.style.width=Math.min(100,state.session.elapsedMs/state.session.durationMs*100)+'%';
     const now=earned(state.session);
     $('#earning').textContent=now;$('#earning-risk').textContent=now;
-  } else if(unlocked()&&timer) timer.textContent=mmss(state.grant.until-state.now);
+  }
+  for(const el of document.querySelectorAll('[data-left]')){
+    const g=grantFor(el.dataset.left);
+    if(g)el.textContent=mmss(g.until-state.now);
+  }
   const left=$('#lock-left');if(left&&locked())left.textContent=hhmm(state.lockUntil-state.now);
 }
 
@@ -208,7 +214,8 @@ document.addEventListener('click',async e=>{
   else if(a==='redeem'){const m=Number(document.getElementById('m-'+id).value);
     ask(`Mở ${id} trong ${m} phút?`,`${m} credit bị trừ ngay khi xác nhận và thời gian bắt đầu tính từ lúc đó, kể cả khi bạn chưa mở website. Kết thúc sớm không hoàn credit.`,
       async()=>{if(await act('redeem',{id,minutes:m}))toast('Đã mở. Bạn có thể truy cập ngay.');});}
-  else if(a==='endGrant')ask('Kết thúc sớm?','Website sẽ bị chặn lại ngay. Credit đã đổi không được hoàn lại.',()=>act('endGrant'));
+  else if(a==='endGrant')ask('Kết thúc sớm mục này?','Mục này bị chặn lại ngay. Credit đã đổi không được hoàn lại.',()=>act('endGrant',{id}));
+  else if(a==='endAll')ask('Kết thúc tất cả?','Mọi mục đang mở sẽ bị chặn lại ngay. Credit đã đổi không được hoàn lại.',()=>act('endGrant'));
   else if(a==='targetDelete')ask(`Bỏ chặn ${id}?`,'Website này sẽ không còn bị chặn và biến mất khỏi danh sách đổi credit.',()=>act('targetDelete',{id}));
 });
 document.addEventListener('submit',async e=>{

@@ -19,14 +19,14 @@ const {_electron}=require('playwright');const fs=require('node:fs'),path=require
     const encrypted=await app.evaluate(({safeStorage},state)=>Array.from(safeStorage.encryptString(JSON.stringify(state))),legacy);
     await app.close();app=null;fs.writeFileSync(path.join(dir,'brain-data.enc'),Buffer.from(encrypted));
 
-    app=await launch();page=await app.firstWindow();await page.locator('#timer').waitFor();
+    app=await launch();page=await app.firstWindow();await page.locator('.open-row').waitFor();
     const s=await page.evaluate(()=>window.brain.get());
     assert(s.credits>13.8&&s.credits<=14,`hoàn credit cho lượt mở ứng dụng không còn hỗ trợ: ${s.credits}`);
     assert.equal(s.idleSeconds,600);
     assert.equal(s.theme,'system');assert.deepEqual(s.presets,[25,50,90]);
     assert.equal(s.paired,true,'người dùng cũ không bị đẩy vào màn hình mở đầu');
     assert.equal(await page.locator('.gate').count(),0);
-    assert.equal(s.grant.domain,'youtube.com','lượt mở website còn hiệu lực được giữ');
+    assert.equal(s.grants.length,1);assert.equal(s.grants[0].domain,'youtube.com','lượt mở website còn hiệu lực được giữ');
     assert.equal(s.targets.length,9,'chỉ giữ website đang bật');
     assert(s.targets.every(t=>t.id===t.domain&&Object.keys(t).length===2));
     for(const gone of ['tasks','habits','ledger','sessions','reflections','sleep','usage','settings'])assert(!(gone in s),gone);
@@ -35,7 +35,7 @@ const {_electron}=require('playwright');const fs=require('node:fs'),path=require
     assert.equal((await page.evaluate(()=>window.brain.action('start',{minutes:5}))).ok,false,'không tập trung khi đang mở website');
 
     // Bố cục: hai cột khi rộng, một cột khi hẹp, không tràn ngang ở cả hai.
-    await page.evaluate(()=>window.brain.action('endGrant'));await page.locator('main.split').waitFor();
+    await page.evaluate(()=>window.brain.action('endGrant'));await page.waitForFunction(()=>document.querySelectorAll('.open-row').length===0);
     for(const [width,height,sideBySide] of [[1000,720,true],[1005,734,true],[900,600,true],[520,640,false]]){
       await app.evaluate(({BrowserWindow},size)=>BrowserWindow.getAllWindows()[0].setContentSize(size.w,size.h),{w:width,h:height});
       await page.waitForTimeout(350);
@@ -52,6 +52,6 @@ const {_electron}=require('playwright');const fs=require('node:fs'),path=require
       if(!sideBySide)await page.screenshot({path:path.join(shots,'narrow.png'),fullPage:true});
       if(width===1005)await page.screenshot({path:path.join(shots,'disconnected.png'),fullPage:true});
     }
-    console.log('PASS: nâng cấp v1 → v5, hoàn credit đúng một lần, giữ mã ghép nối và lượt mở đang chạy, bỏ qua màn hình mở đầu, hai cột co lại thành một cột.');
+    console.log('PASS: nâng cấp v1 → v8, hoàn credit đúng một lần, giữ mã ghép nối và lượt mở đang chạy, bỏ qua màn hình mở đầu, hai cột co lại thành một cột.');
   }finally{if(app)await app.close();console.log('Isolated test data: '+dir);}
 })().catch(e=>{console.error(e);process.exitCode=1;});

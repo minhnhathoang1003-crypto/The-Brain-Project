@@ -1,4 +1,4 @@
-# The Brain Project — 0.5.3
+# The Brain Project — 0.6.0
 
 Một vòng lặp duy nhất: **tập trung để kiếm credit, đổi credit để mở website gây nghiện.**
 
@@ -6,7 +6,7 @@ Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồn
 
 ## Cài đặt
 
-Chạy `release/The-Brain-Project-Setup-0.5.3.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
+Chạy `release/The-Brain-Project-Setup-0.6.0.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
 
 Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu.
 
@@ -22,7 +22,7 @@ Lần cài đầu tiên bạn được tặng **15 credit** để có sẵn th�
 
 Phiên không được tính nếu bạn dừng giữa chừng, đóng ứng dụng, để máy ngủ, khóa màn hình, đổi đồng hồ hệ thống hoặc không chạm chuột/bàn phím quá ngưỡng không hoạt động (mặc định 5 phút). Ngưỡng này chỉ phát hiện máy đứng yên; nó không chứng minh bạn đang học và không chống được mọi cách giả lập đầu vào.
 
-Chỉ mở được một website tại một thời điểm. Credit bị trừ ngay khi xác nhận, kể cả khi bạn chưa mở website; kết thúc sớm không hoàn credit. Không tập trung được trong lúc còn thời gian đang mở, và ngược lại. Credit không hết hạn theo ngày.
+Mở được nhiều mục cùng lúc — ví dụ mở trình duyệt rồi mở tiếp website bên trong — nhưng mỗi mục trả credit riêng, và không mở lại được mục đang mở. Credit bị trừ ngay khi xác nhận, kể cả khi bạn chưa mở website; kết thúc sớm không hoàn credit. Không tập trung được trong lúc còn thời gian đang mở, và ngược lại. Credit không hết hạn theo ngày.
 
 ## Chế độ khóa
 

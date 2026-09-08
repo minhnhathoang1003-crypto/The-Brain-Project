@@ -4,6 +4,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {_electron:electron}=require('playwright');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {WebSocket}=require('ws');
 const root=path.resolve(__dirname,'..');
 
 async function launch(dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-flows-'))){
@@ -23,7 +24,16 @@ async function launch(dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-flows-')))
     ipcMain.handle('listApps',()=>[{exe:'fakegame',name:'Game Kiểm Thử'}]);
   });
   await page.locator('main.split').waitFor();
-  return {app,page,dir,errors};
+  return {app,page,dir,errors,port:'47858'};
+}
+// Nối cầu như tiện ích thật: đổi credit cho website đòi tiện ích đang kết nối.
+async function connectBridge(app,dir,port){
+  const token=await app.evaluate(({safeStorage},bytes)=>JSON.parse(safeStorage.decryptString(Buffer.from(bytes))).token,
+    Array.from(fs.readFileSync(path.join(dir,'brain-data.enc'))));
+  const ws=new WebSocket(`ws://127.0.0.1:${port}/bridge`,{origin:'chrome-extension://'+'a'.repeat(32)});
+  await new Promise((res,rej)=>{ws.on('open',()=>ws.send(JSON.stringify({token})));ws.once('message',res);ws.on('error',rej);});
+  ws.on('message',()=>ws.send(JSON.stringify({applied:true})));ws.send(JSON.stringify({applied:true}));
+  return ws;
 }
 async function focus(app,exe){
   await app.evaluate((_,exe)=>{
@@ -85,9 +95,9 @@ test('lớp phủ: bấm mở, bấm lặp, lỗi thiếu credit, giới hạn q
     assert.equal(await visible(app),false);
     const repeat=await overlay.evaluate(()=>window.brain.action('redeem',{id:'app:fakegame',minutes:5}));
     assert.equal(repeat.ok,false);assert.equal((await page.evaluate(()=>window.brain.get())).credits,10);
-    await page.getByRole('button',{name:'Kết thúc sớm',exact:true}).click();
+    await page.getByRole('button',{name:'Kết thúc tất cả',exact:true}).click();
     await page.locator('#confirm-yes').click();
-    await page.locator('main.split').waitFor();
+    await page.waitForFunction(()=>document.querySelectorAll('.open-row').length===0);
     await showOverlay(app);
     await overlay.getByRole('button',{name:'Đóng ứng dụng, quay lại làm việc'}).click();
     assert.equal(await visible(app),false);
@@ -141,6 +151,55 @@ test('đóng ứng dụng: nhắm đúng tiến trình bị chặn, không cấp
     assert.equal((await page.evaluate(()=>window.brain.get())).credits,15,'đóng ứng dụng không tốn credit');
     assert.deepEqual(errors,[]);
   }finally{await app.close();}
+});
+
+test('mở trình duyệt rồi mở tiếp website bên trong, không bị kẹt ở màn đếm ngược', {timeout:40000},async()=>{
+  const {app,page,errors,dir,port}=await launch();
+  let ws;
+  try{
+    // Đổi credit cho website đòi tiện ích đang kết nối, nên phải nối cầu thật.
+    ws=await connectBridge(app,dir,port);
+    await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('Đang chặn'));
+    await app.evaluate(()=>{global.__brainEngine.s.credits=40;global.__brainEngine.commit();});
+    await addApp(page);
+    // Mở "trình duyệt" trước.
+    await page.locator('[id="m-app:fakegame"]').selectOption('5');
+    await page.locator('[data-action="redeem"][data-id="app:fakegame"]').click();
+    await page.locator('#confirm-yes').click();
+    await page.waitForFunction(()=>document.querySelectorAll('.open-row').length===1);
+    // Ngõ cụt cũ: cột phải biến mất và không đổi được gì nữa.
+    assert.equal(await page.locator('main.split').count(),1,'vẫn giữ hai cột khi đang có mục mở');
+    assert.equal(await page.getByRole('button',{name:'Kết thúc tất cả'}).isVisible(),true);
+    // Mở tiếp website bên trong — đây chính là thứ trước đây không làm được.
+    await page.locator('[id="m-youtube.com"]').selectOption('10');
+    await page.locator('[data-action="redeem"][data-id="youtube.com"]').click();
+    await page.locator('#confirm-yes').click();
+    await page.waitForFunction(()=>document.querySelectorAll('.open-row').length===2);
+    const s2=await page.evaluate(()=>window.brain.get());
+    assert.equal(s2.credits,25,'trừ đúng 5 + 10');
+    assert.deepEqual(s2.grants.map(g=>g.targetId).sort(),['app:fakegame','youtube.com']);
+    // Tiện ích nhận đủ cả hai lượt mở.
+    const wire=await app.evaluate(()=>global.__brainEngine.rules());
+    assert.deepEqual(wire.grants.map(g=>g.targetId).sort(),['app:fakegame','youtube.com']);
+    assert.equal(wire.targets.length,4,'danh sách website gửi đi vẫn đủ; tiện ích tự bỏ mục đang mở theo grants');
+    // Không mở lại được đúng mục đang mở.
+    const again=await page.evaluate(()=>window.brain.action('redeem',{id:'youtube.com',minutes:1}));
+    assert.equal(again.ok,false);assert.match(again.error,/đang mở rồi/);
+    // Kết thúc từng mục.
+    await page.locator('.open-row [data-action="endGrant"][data-id="youtube.com"]').click();
+    await page.locator('#confirm-yes').click();
+    await page.waitForFunction(()=>document.querySelectorAll('.open-row').length===1);
+    assert.equal((await page.evaluate(()=>window.brain.get())).grants[0].targetId,'app:fakegame');
+    // Còn mục mở thì chưa tập trung được; kết thúc tất cả xong là quay lại bình thường.
+    const blocked=await page.evaluate(()=>window.brain.action('start',{minutes:25}));
+    assert.equal(blocked.ok,false);assert.match(blocked.error,/kết thúc thời gian giải trí/);
+    await page.getByRole('button',{name:'Kết thúc tất cả'}).click();
+    await page.locator('#confirm-yes').click();
+    await page.waitForFunction(()=>document.querySelectorAll('.open-row').length===0);
+    await page.getByRole('button',{name:/Bắt đầu tập trung/}).waitFor();
+    assert.equal((await page.evaluate(()=>window.brain.get())).credits,25,'kết thúc sớm không hoàn credit');
+    assert.deepEqual(errors,[]);
+  }finally{if(ws)ws.close();await app.close();}
 });
 
 test('hủy chọn bằng Quay lại/Escape, kết quả tải muộn không phá hộp xác nhận', {timeout:30000},async()=>{

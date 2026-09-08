@@ -1,4 +1,4 @@
-# Phạm vi bản 0.5.3
+# Phạm vi bản 0.6.0
 
 Nguồn yêu cầu gốc `the_brain_project_questions.md` được giữ nguyên, không sửa.
 
@@ -144,6 +144,23 @@ Nay nút gửi **WM_CLOSE** tới tiến trình bị chặn theo **tên tiến t
 `dismissed` được thay bằng khoảng ân hạn **3 giây** — đủ để ứng dụng kịp thoát, và nếu sau đó nó vẫn còn (ví dụ đang hỏi lưu file) thì lớp phủ quay lại. Không còn giấy thông hành nào.
 
 Nút đổi tên thành **Đóng ứng dụng, quay lại làm việc** để nói đúng việc nó làm.
+
+## Bỏ luật một lượt mở — 0.6.0
+
+Người dùng báo một ngõ cụt thật: chặn cả Chrome (ứng dụng) lẫn YouTube (website), trả credit mở Chrome, rồi vào YouTube thì bị chặn tiếp — mà lúc đó **không đổi thêm được credit**, vì engine cấm mở mục thứ hai và giao diện đã chuyển sang màn hình đếm ngược không có danh sách chặn.
+
+Gốc rễ: luật "một lượt mở tại một thời điểm" được đặt ra khi sản phẩm chỉ chặn website. Khi thêm chặn ứng dụng, nó va vào một quan hệ mới — **trình duyệt là cái chứa những mục bị chặn khác**. Giữ luật đó tức là bắt người dùng trả tiền cho một thứ rồi không dùng được nó.
+
+Dữ liệu lên v8: `grant` đơn lẻ thành mảng `grants`. Luật mới:
+
+- Mở được nhiều mục cùng lúc, **mỗi mục vẫn trả credit riêng** — kinh tế của cơ chế không đổi, không ai được giảm giá.
+- Không mở lại đúng mục đang mở; phải đợi hết giờ hoặc kết thúc sớm.
+- Vẫn không tập trung được khi còn mục đang mở, và vẫn không bật được chế độ khóa.
+- `endGrant` nhận `id` để kết thúc riêng một mục; không có `id` thì kết thúc tất cả.
+
+Giao diện bỏ hẳn màn hình đếm ngược riêng. Khi có mục đang mở, cột trái liệt kê chúng kèm thời gian còn lại và nút kết thúc từng mục; cột phải vẫn là danh sách chặn dùng được bình thường. Hàng của mục đang mở hiện đồng hồ đếm ngược thay cho nút mở.
+
+Giao thức gửi tiện ích không đổi hình dạng: `grants` vốn đã là mảng từ đầu, nay chỉ là có nhiều phần tử hơn một.
 
 ## Bán hàng
 
