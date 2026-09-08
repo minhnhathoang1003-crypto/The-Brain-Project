@@ -1,5 +1,9 @@
 # Có gì mới
 
+## 0.5.3
+
+- **Nút trên lớp phủ nay thật sự đóng ứng dụng bị chặn.** Trước đây bấm "Quay lại làm việc" thì lớp phủ biến mất nhưng ứng dụng vẫn dùng được thoải mái. Nay ứng dụng được yêu cầu thoát như khi bạn bấm dấu X, và nếu nó không chịu thoát thì lớp phủ quay lại sau vài giây. Nút được đổi tên thành **Đóng ứng dụng, quay lại làm việc** cho đúng việc nó làm.
+
 ## 0.5.2
 
 - **Mở ứng dụng bằng credit ngay trên lớp phủ.** Nút mở hoạt động đúng, bấm lặp không trừ thêm credit; thiếu credit có thông báo tại chỗ. Lớp phủ không tự biến mất khi nhận focus và giữ nguyên thời lượng đang chọn.

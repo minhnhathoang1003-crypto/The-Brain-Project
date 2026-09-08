@@ -7,7 +7,7 @@ if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
 app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
-let win,overlay,watcher,engine,server,wss,interval,bridgeError=null,quitting=false,blockedNow=null,dismissed='';
+let win,overlay,watcher,engine,server,wss,interval,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
 app.on('second-instance',()=>{if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}});
 app.whenReady().then(()=>{
@@ -104,16 +104,17 @@ app.whenReady().then(()=>{
   function hideOverlay(){blockedNow=null;if(overlay&&!overlay.isDestroyed())overlay.hide();}
   ipcMain.on('overlay',(e,choice)=>{
     if(!fromWindow(e,overlay)||choice!=='back'||!overlay.isVisible()||!blockedNow)return;
-    const wasBlocked=blockedNow;
-    if(choice==='back'&&wasBlocked)dismissed=wasBlocked.exe;
+    const exe=blockedNow.exe;
     hideOverlay();
-    if(choice==='back')watcher?.minimizeForeground();
+    // Yêu cầu ứng dụng tự đóng, rồi cho nó vài giây để thoát. Nếu sau khoảng đó nó vẫn còn
+    // (ví dụ đang hỏi lưu file), lớp phủ quay lại — không có giấy thông hành miễn phí nào.
+    if(watcher?.closeApp(exe)) closing={exe,until:Date.now()+3000};
   });
   watcher=new ForegroundWatcher();
   watcher.on('unavailable',message=>{bridgeError=bridgeError||`Không bật được chặn ứng dụng: ${message}`;broadcast();});
+  const inGrace=exe=>closing.exe===exe&&closing.until>Date.now();
   watcher.on('change',({exe})=>{
-    if(exe!==dismissed)dismissed='';
-    const target=exe===dismissed?null:engine.blockedApp(exe);
+    const target=inGrace(exe)?null:engine.blockedApp(exe);
     if(target){if(!blockedNow||blockedNow.id!==target.id)showOverlay(target);}
     else if(blockedNow&&exe&&exe!=='the brain project'&&exe!=='electron')hideOverlay();
   });
@@ -125,7 +126,7 @@ app.whenReady().then(()=>{
     engine.tick(powerMonitor.getSystemIdleTime());broadcast();
     // Hết giờ mở hoặc vừa bật khóa: lớp phủ phải theo kịp mà không cần đổi cửa sổ.
     const exe=watcher?.current?.exe;
-    if(exe&&exe!==dismissed){
+    if(exe&&!inGrace(exe)){
       const target=engine.blockedApp(exe);
       if(target&&(!blockedNow||blockedNow.id!==target.id))showOverlay(target);
       // Lớp phủ tự chiếm tiền cảnh; đừng coi cửa sổ Electron đó là lý do bỏ chặn.

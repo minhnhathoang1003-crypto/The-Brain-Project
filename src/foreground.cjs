@@ -96,16 +96,20 @@ class ForegroundWatcher extends EventEmitter {
     this.child.on('error', e => { this.child=null; this.emit('unavailable', e.message); });
     this.child.on('close', () => { this.child=null; });
   }
-  // Thu nhỏ cửa sổ đang ở tiền cảnh. Dùng khi người dùng chọn quay lại làm việc, để lớp phủ
-  // không bật lên lại ngay lập tức vì ứng dụng bị chặn vẫn đang ở trước.
-  minimizeForeground() {
-    try { powershell([`$ErrorActionPreference='SilentlyContinue'
-Add-Type @"
-using System;using System.Runtime.InteropServices;
-public class BrainMin { [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
-  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h,int c); }
-"@
-[void][BrainMin]::ShowWindow([BrainMin]::GetForegroundWindow(),6)`]); } catch {}
+  // Đóng ứng dụng bị chặn bằng WM_CLOSE — đúng như người dùng bấm dấu X, nên ứng dụng
+  // vẫn được cơ hội lưu việc đang làm dở. KHÔNG dùng TerminateProcess: giết tiến trình
+  // là làm mất dữ liệu của người dùng, và đó cũng là chữ ký kinh điển của malware.
+  //
+  // Cố tình nhắm theo TÊN TIẾN TRÌNH chứ không phải cửa sổ tiền cảnh: lúc người dùng bấm nút,
+  // cửa sổ ở tiền cảnh chính là lớp phủ của chúng ta, không phải ứng dụng bị chặn.
+  closeApp(exe) {
+    const name=String(exe||'').toLowerCase();
+    if(!name||SYSTEM_APPS.has(name)||!/^[a-z0-9][a-z0-9 ._-]{0,79}$/.test(name)) return false;
+    try {
+      powershell([`$ErrorActionPreference='SilentlyContinue'
+Get-Process -Name '${name}' | ForEach-Object { [void]$_.CloseMainWindow() }`]);
+      return true;
+    } catch { return false; }
   }
   stop() { if(this.child){ this.child.kill(); this.child=null; } }
 }

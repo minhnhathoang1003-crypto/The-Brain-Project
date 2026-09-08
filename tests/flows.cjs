@@ -16,7 +16,8 @@ async function launch(dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-flows-')))
   await page.waitForFunction(()=>!!document.querySelector('.gate,main.split,#timer'));
   await app.evaluate(({ipcMain})=>{
     global.__brainWatcher.stop();
-    global.__brainWatcher.minimizeForeground=()=>{};
+    global.__closeCalls=[];
+    global.__brainWatcher.closeApp=exe=>{global.__closeCalls.push(exe);return true;};
     global.__brainEngine.s.paired=true;global.__brainEngine.commit();
     ipcMain.removeHandler('listApps');
     ipcMain.handle('listApps',()=>[{exe:'fakegame',name:'Game Kiểm Thử'}]);
@@ -88,12 +89,15 @@ test('lớp phủ: bấm mở, bấm lặp, lỗi thiếu credit, giới hạn q
     await page.locator('#confirm-yes').click();
     await page.locator('main.split').waitFor();
     await showOverlay(app);
-    await overlay.getByRole('button',{name:'Quay lại làm việc'}).click();
+    await overlay.getByRole('button',{name:'Đóng ứng dụng, quay lại làm việc'}).click();
     assert.equal(await visible(app),false);
+    // Sau khi yêu cầu đóng có 3 giây ân hạn để ứng dụng kịp thoát; chờ hết rồi mới đòi lớp phủ.
+    await page.waitForTimeout(3200);
     await page.getByRole('button',{name:/Bắt đầu tập trung/}).click();
     await focus(app,'notepad');await showOverlay(app);
     assert.equal(await overlay.locator('#redeem').isDisabled(),true);
-    await overlay.getByRole('button',{name:'Quay lại làm việc'}).click();
+    await overlay.getByRole('button',{name:'Đóng ứng dụng, quay lại làm việc'}).click();
+    await page.waitForTimeout(3200);
     await page.getByRole('button',{name:'Dừng phiên',exact:true}).click();await page.locator('#confirm-yes').click();
     await page.locator('#open-setup').click();
     await page.getByRole('button',{name:'30 phút',exact:true}).click();await page.locator('#confirm-yes').click();
@@ -102,6 +106,39 @@ test('lớp phủ: bấm mở, bấm lặp, lỗi thiếu credit, giới hạn q
     assert.equal(await overlay.locator('#redeem').isDisabled(),true);
     await overlay.getByText(/Đang trong chế độ khóa/).waitFor();
     assert.equal((await page.evaluate(()=>window.brain.get())).credits,10);
+    assert.deepEqual(errors,[]);
+  }finally{await app.close();}
+});
+
+test('đóng ứng dụng: nhắm đúng tiến trình bị chặn, không cấp giấy thông hành', {timeout:40000},async()=>{
+  const {app,page,errors}=await launch();
+  try{
+    await addApp(page);
+    const overlay=await showOverlay(app);
+    await overlay.getByRole('button',{name:'Đóng ứng dụng, quay lại làm việc'}).click();
+    await page.waitForFunction(()=>true);
+    // Phải yêu cầu đóng ĐÚNG ứng dụng bị chặn, không phải cửa sổ tiền cảnh (lúc đó là lớp phủ).
+    assert.deepEqual(await app.evaluate(()=>global.__closeCalls),['fakegame']);
+    assert.equal(await visible(app),false);
+
+    // Ứng dụng thật sự thoát: tiền cảnh chuyển sang thứ khác, không còn lớp phủ.
+    await focus(app,'notepad');
+    assert.equal(await visible(app),false);
+
+    // Nhưng nếu nó KHÔNG chịu thoát, lớp phủ phải quay lại sau khoảng ân hạn —
+    // đây chính là lỗi cũ: bấm xong là dùng ứng dụng thoải mái.
+    await focus(app,'fakegame');
+    await page.waitForTimeout(3500);
+    await app.evaluate(()=>{global.__brainWatcher.emit('change',global.__brainWatcher.current);});
+    await page.waitForFunction(()=>true);
+    assert.equal(await visible(app),true,'hết ân hạn mà ứng dụng vẫn chạy thì phải chặn lại');
+    assert.deepEqual(await app.evaluate(()=>global.__closeCalls),['fakegame'],'không tự đóng lại khi chưa bấm');
+
+    // Bấm lần nữa thì lại yêu cầu đóng lần nữa.
+    await overlay.getByRole('button',{name:'Đóng ứng dụng, quay lại làm việc'}).click();
+    await page.waitForFunction(()=>true);
+    assert.deepEqual(await app.evaluate(()=>global.__closeCalls),['fakegame','fakegame']);
+    assert.equal((await page.evaluate(()=>window.brain.get())).credits,15,'đóng ứng dụng không tốn credit');
     assert.deepEqual(errors,[]);
   }finally{await app.close();}
 });
@@ -143,7 +180,7 @@ for(const mode of ['hidden','visible','focus'])test(`đóng cửa sổ chính sa
   const first=await launch();let closed=false;
   try{
     await addApp(first.page);const overlay=await showOverlay(first.app);
-    if(mode!=='visible')await overlay.getByRole('button',{name:'Quay lại làm việc'}).click();
+    if(mode!=='visible')await overlay.getByRole('button',{name:'Đóng ứng dụng, quay lại làm việc'}).click();
     if(mode==='focus'){
       await first.page.getByRole('button',{name:/Bắt đầu tập trung/}).click();
       await first.app.evaluate(({dialog})=>{global.__closePrompts=0;dialog.showMessageBoxSync=()=>{global.__closePrompts++;return 0;};});

@@ -1,4 +1,4 @@
-# The Brain Project — 0.5.2
+# The Brain Project — 0.5.3
 
 Một vòng lặp duy nhất: **tập trung để kiếm credit, đổi credit để mở website gây nghiện.**
 
@@ -6,7 +6,7 @@ Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồn
 
 ## Cài đặt
 
-Chạy `release/The-Brain-Project-Setup-0.5.2.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
+Chạy `release/The-Brain-Project-Setup-0.5.3.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
 
 Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu.
 
@@ -32,7 +32,7 @@ Tiện ích tự giữ hạn khóa nên tắt ứng dụng hay khởi động l�
 
 ## Chặn ứng dụng Windows
 
-Nhấn **＋ Chặn một ứng dụng đang mở** ở cột phải và chọn từ danh sách ứng dụng đang chạy. Khi ứng dụng đó lên tiền cảnh, một lớp phủ che nó lại: đổi credit để mở, hoặc quay lại làm việc và cửa sổ kia bị thu nhỏ.
+Nhấn **＋ Chặn một ứng dụng đang mở** ở cột phải và chọn từ danh sách ứng dụng đang chạy. Khi ứng dụng đó lên tiền cảnh, một lớp phủ che nó lại: đổi credit để mở, hoặc **Đóng ứng dụng, quay lại làm việc** — ứng dụng sẽ được yêu cầu thoát như khi bạn bấm dấu X. Nếu nó không chịu thoát (ví dụ đang hỏi lưu file), lớp phủ quay lại sau vài giây.
 
 Không giết tiến trình nào — bạn không mất dữ liệu đang làm dở. Đổi lại, lớp phủ có thể không che được game chạy toàn màn hình độc quyền, và đổi tên file `.exe` là qua mặt được. Cần PowerShell; máy nào chặn PowerShell thì phần chặn ứng dụng đơn giản là không bật, còn chặn website vẫn chạy.
 

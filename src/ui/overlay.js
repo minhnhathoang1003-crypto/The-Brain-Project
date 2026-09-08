@@ -11,7 +11,7 @@ function render(state){
   $('#explain').textContent=locked
     ? 'Đang trong chế độ khóa. Không đổi được credit cho tới khi hết giờ khóa.'
     : state.sessionActive?'Hãy kết thúc phiên tập trung trước khi đổi credit.'
-    : error||'Bạn đã tự đặt ứng dụng này vào danh sách chặn. Credit bị trừ ngay khi bấm mở; kết thúc sớm không hoàn credit.';
+    : error||'Bạn đã tự đặt ứng dụng này vào danh sách chặn. Credit bị trừ ngay khi bấm mở; kết thúc sớm không hoàn credit. Chọn đóng ứng dụng thì nó sẽ được yêu cầu thoát như khi bạn bấm dấu X.';
   const nextPacksKey=JSON.stringify(state.packs);
   if(nextPacksKey!==packsKey){
     $('#minutes').innerHTML=state.packs.map(n=>`<option value="${n}" ${n===5?'selected':''}>${n} phút · ${n} credit</option>`).join('');

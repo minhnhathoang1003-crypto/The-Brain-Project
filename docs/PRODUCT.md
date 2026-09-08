@@ -1,4 +1,4 @@
-# Phạm vi bản 0.5.2
+# Phạm vi bản 0.5.3
 
 Nguồn yêu cầu gốc `the_brain_project_questions.md` được giữ nguyên, không sửa.
 
@@ -131,6 +131,19 @@ Bài kiểm mới đi qua **tất cả** các phiên bản đã phát hành từ
 **Đóng cửa sổ chính không thoát được ứng dụng.** `window-all-closed` chỉ bắn khi mọi cửa sổ bị hủy, nhưng lớp phủ chỉ được `hide()`. Ai từng mở một ứng dụng bị chặn thì sau đó bấm X là ứng dụng chạy ngầm mãi, không cửa sổ nào để bấm. Nay `win.on('closed')` gọi thẳng `app.quit()` — đặt ở `closed` chứ không phải `close` để lựa chọn *Tiếp tục tập trung* vẫn được tôn trọng.
 
 Ba lỗi này chung một gốc: lớp phủ được thêm vào như một cửa sổ thứ hai mà những giả định "chỉ có một cửa sổ" ở quanh nó không được xem lại.
+
+## Sửa trong 0.5.3 — nút trên lớp phủ không đóng được gì
+
+Người dùng báo: bấm "Quay lại làm việc" thì lớp phủ biến mất nhưng ứng dụng bị chặn vẫn dùng được bình thường. Hai lỗi chồng lên nhau:
+
+- `minimizeForeground()` thu nhỏ **cửa sổ đang ở tiền cảnh**. Nhưng đúng lúc người dùng bấm nút, cửa sổ ở tiền cảnh chính là **lớp phủ của chúng ta** — nên nó thu nhỏ chính nó, không đụng gì tới ứng dụng bị chặn.
+- Biến `dismissed` cấp **giấy thông hành vô thời hạn**: sau khi bấm, `blockedApp()` bị bỏ qua cho đúng ứng dụng đó cho tới khi tiền cảnh đổi sang thứ khác. Nó vốn được thêm để tránh vòng lặp lớp phủ, nhưng thực tế là mở cửa cho dùng miễn phí.
+
+Nay nút gửi **WM_CLOSE** tới tiến trình bị chặn theo **tên tiến trình**, không phải theo cửa sổ tiền cảnh — đúng như người dùng bấm dấu X, nên ứng dụng vẫn được cơ hội lưu việc dở. Vẫn **không** dùng `TerminateProcess`: giết tiến trình là làm mất dữ liệu người dùng, và đó cũng là chữ ký kinh điển của malware.
+
+`dismissed` được thay bằng khoảng ân hạn **3 giây** — đủ để ứng dụng kịp thoát, và nếu sau đó nó vẫn còn (ví dụ đang hỏi lưu file) thì lớp phủ quay lại. Không còn giấy thông hành nào.
+
+Nút đổi tên thành **Đóng ứng dụng, quay lại làm việc** để nói đúng việc nó làm.
 
 ## Bán hàng
 
