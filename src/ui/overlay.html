@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Đang bị chặn</title><link rel="stylesheet" href="style.css">
+</head>
+<body class="overlay-body">
+  <main class="overlay">
+    <img class="brand-mark big-mark" src="logo.png" alt="" width="44" height="44">
+    <p class="label">Đang bị chặn</p>
+    <h1 id="app-name">Ứng dụng này</h1>
+    <p class="note" id="explain">Bạn đã tự đặt ứng dụng này vào danh sách chặn.</p>
+    <div class="overlay-actions">
+      <select class="field mins" id="minutes" aria-label="Số phút muốn mở"></select>
+      <button class="primary" id="redeem">Đổi credit để mở</button>
+      <button class="ghost" id="back">Quay lại làm việc</button>
+    </div>
+    <p class="note" id="balance"></p>
+  </main>
+  <script src="overlay.js"></script>
+</body></html>

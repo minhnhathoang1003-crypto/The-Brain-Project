@@ -17,6 +17,8 @@ const HISTORY_DAYS = 180;                // số ngày lưu trên đĩa; bậc l
 const DEFAULT_SITES = ['youtube.com', 'facebook.com', 'tiktok.com', 'instagram.com'];
 const DAY = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const round = n => Math.round(n*100)/100;
+const isSite = t => !!t.domain;
+const isApp = t => !!t.exe;
 const clean = (v,max=253) => String(v??'').trim().slice(0,max);
 function requireThat(ok,msg) { if(!ok) throw new Error(msg); }
 
@@ -131,6 +133,15 @@ class Engine {
         s.grant={targetId:target.id,domain:target.domain,until:now+minutes*60000,minutes}; break;
       }
       case 'endGrant': requireThat(unlocked(),'Không có website nào đang mở.'); s.grant=null; break;
+      case 'appAdd': {
+        requireThat(limits().appBlocking,'Chặn ứng dụng thuộc bản Pro.');
+        requireThat(!s.session,'Không đổi danh sách chặn giữa phiên.');
+        const exe=clean(p.exe,200).toLowerCase().replace(/\.exe$/,'');
+        requireThat(/^[a-z0-9][a-z0-9 ._-]{0,79}$/.test(exe),'Không nhận ra ứng dụng này.');
+        requireThat(!s.targets.some(t=>t.exe===exe),'Ứng dụng này đã có trong danh sách.');
+        requireThat(s.targets.length<limits().maxTargets,`Bản ${tier()==='free'?'Free':'hiện tại'} chặn tối đa ${limits().maxTargets} mục.`);
+        s.targets.push({id:'app:'+exe,exe,name:clean(p.name,80)||exe}); break;
+      }
       case 'targetAdd': {
         requireThat(!s.session,'Không đổi danh sách chặn giữa phiên.');
         const domain=clean(p.domain).toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/$/,'');
@@ -181,13 +192,23 @@ class Engine {
       todayMinutes:s.history[0]?.day===DAY()?s.history[0].minutes:0,
       history:s.history.slice(0,limits().historyDays).map(d=>({...d})), historyDays:limits().historyDays,
       packs:PACKS, ratio:RATIO, maxPresets:MAX_PRESETS,
-      tier:tier(), maxTargets:limits().maxTargets, lockedMode:limits().lockedMode,
+      tier:tier(), maxTargets:limits().maxTargets, lockedMode:limits().lockedMode, appBlocking:limits().appBlocking,
       lockUntil:s.lockUntil&&s.lockUntil>this.clock()?s.lockUntil:null, lockPacks:LOCK_PACKS, now:this.clock() };
+  }
+  // main.cjs hỏi câu này mỗi khi cửa sổ tiền cảnh đổi.
+  blockedApp(exe) {
+    const now=this.clock();
+    if(!limits().appBlocking||!exe) return null;
+    const target=this.s.targets.find(t=>isApp(t)&&t.exe===exe);
+    if(!target) return null;
+    const locked=!!this.s.lockUntil&&this.s.lockUntil>now;
+    const open=!locked&&this.s.grant&&this.s.grant.targetId===target.id&&this.s.grant.until>now;
+    return open?null:target;
   }
   rules() {
     const now=this.clock();
     const lockUntil=this.s.lockUntil&&this.s.lockUntil>now?this.s.lockUntil:null;
-    return { targets:this.s.targets.map(t=>({id:t.id,domain:t.domain})),
+    return { targets:this.s.targets.filter(isSite).map(t=>({id:t.id,domain:t.domain})),
       grants:lockUntil?[]:this.s.grant&&this.s.grant.until>now?[{targetId:this.s.grant.targetId,until:this.s.grant.until}]:[],
       lockUntil, now };
   }

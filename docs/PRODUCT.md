@@ -1,4 +1,4 @@
-# Phạm vi bản 0.4.0
+# Phạm vi bản 0.5.0
 
 Nguồn yêu cầu gốc `the_brain_project_questions.md` được giữ nguyên, không sửa.
 
@@ -32,7 +32,7 @@ Vấn đề số 1 (§2.2), điểm khác biệt cốt lõi (§21) và MVP (§24
 
 `scripts/icon.cjs` — script sinh icon từ chữ `b°` — đã bị xóa vì nay nguồn logo là file `.ico` do người dùng cung cấp; chạy lại nó sẽ ghi đè mất logo thật. Thay bằng `scripts/ico.cjs` để đọc và tách các khung ảnh trong file `.ico`.
 
-## Sửa trong 0.4.0
+## Sửa trong 0.5.0
 
 **Icon trên taskbar không đổi theo.** `app.setAppUserModelId` bị thiếu. NSIS gắn id `com.humanos.brain` lên shortcut, nhưng app đang chạy không khai báo id nào, nên Windows coi cửa sổ là một chương trình lạ và không ghép nó với shortcut đã ghim — kết quả là taskbar giữ icon cũ. Đã khai báo id khớp với `appId`.
 
@@ -43,7 +43,7 @@ Vấn đề số 1 (§2.2), điểm khác biệt cốt lõi (§21) và MVP (§24
 
 `assets/icon.svg` đã xóa vì không còn chỗ nào dùng.
 
-## Sửa trong 0.4.0
+## Sửa trong 0.5.0
 
 **Mở lại ứng dụng tưởng như phải ghép nối lại.** Mã ghép nối vốn đã được giữ nguyên qua các lần khởi động lại — không có lỗi ở đó. Lỗi là ở độ trễ: báo thức của Chrome không xuống dưới 30 giây, nên sau khi ứng dụng khởi động lại, tiện ích mất tới **27 giây** mới kết nối lại. Suốt quãng đó thanh trên ghi "Chưa chặn được website nào" và lệnh đổi credit bị từ chối, khiến người dùng tưởng phải dán mã mới.
 
@@ -53,7 +53,7 @@ Tiện ích nay thử kết nối lại ngay trong lúc service worker còn th�
 
 Thêm `npm.cmd run test:restart` — chạy ứng dụng thật và tiện ích thật, ghép nối một lần, khởi động lại ứng dụng rồi đo độ trễ kết nối lại mà không đụng vào popup.
 
-## Thêm trong 0.4.0
+## Thêm trong 0.5.0
 
 **Tặng 15 credit cho lần chạy đầu tiên.** Người mới cài có sẵn 15 phút để dùng khi cần gấp, chưa phải hoàn thành một phiên nào. Màn hình mở đầu nói rõ món quà này.
 
@@ -63,7 +63,7 @@ Cài lại hoàn toàn ứng dụng và xóa thư mục dữ liệu thì vẫn n
 
 Thêm `scripts/grant.cjs` để cộng credit vào dữ liệu thật khi thử nghiệm. Nó nằm ngoài danh sách `files` nên không đi vào bản đóng gói, và từ chối chạy khi ứng dụng đang mở để tránh bị ghi đè.
 
-## Sửa trong 0.4.0
+## Sửa trong 0.5.0
 
 **Dải quy đổi bị cắt mất chữ.** Cột trái là flex dọc; khi nội dung cao hơn cửa sổ — dễ xảy ra nhất lúc khung cảnh báo "chưa chặn được website nào" hiện ra — flex co tất cả các khối lại thay vì để pane cuộn. `.rule` có `overflow:hidden` (cần cho bo góc) nên bị co là mất chữ, không phải thu nhỏ. Đo được: khối bị ép còn `clientHeight` 0 trong khi nội dung cao 50 px.
 
@@ -79,7 +79,7 @@ Chuyển từ portable sang trình cài NSIS ở mức tài khoản người dù
 
 Tỉ lệ 5 phút = 1 credit; 1 credit = 1 phút. Hủy phiên, đóng ứng dụng, ngủ/khóa máy, đổi đồng hồ hoặc vượt ngưỡng không hoạt động đều mất toàn bộ credit của phiên. Chỉ một lượt mở tại một thời điểm, trừ credit ngay, kết thúc sớm không hoàn. Không tập trung khi đang có lượt mở. Dữ liệu local và mã hóa. Giao thức giữa ứng dụng và tiện ích giữ nguyên nên tiện ích không phải sửa và người dùng cũ không phải ghép nối lại.
 
-## Chế độ khóa — 0.4.0
+## Chế độ khóa — 0.5.0
 
 Tính năng Pro đầu tiên, và cũng là bản vá cho lỗ hổng lớn nhất của sản phẩm: trước đây tắt ứng dụng bằng Task Manager là hết chặn.
 
@@ -95,6 +95,22 @@ Bật từ ⚙ với các mốc 30 phút / 1 giờ / 2 giờ / 4 giờ, trần 1
 **Răng thật nằm ở tiện ích, không nằm ở ứng dụng.** Tiện ích tự lưu `lockUntil` vào `chrome.storage.local` và tự bỏ qua mọi grant khi còn khóa. Nên tắt ứng dụng, ngắt kết nối, hay khởi động lại trình duyệt đều không mở khóa được — quyền chặn nằm ở nơi mà ứng dụng không cần có mặt.
 
 Vẫn còn hai đường thoát, và tài liệu phải nói thẳng: **gỡ tiện ích trong `chrome://extensions`**, và **vặn đồng hồ hệ thống về sau**. Hạn khóa là mốc thời gian thực nên đổi đồng hồ sẽ kết thúc sớm. Chống lại chuyện đó cần đếm theo thời gian đã trôi, mà như vậy thì đóng ứng dụng lại thành ra kéo dài khóa — bẫy người dùng theo cách tệ hơn. Đây là đánh đổi có chủ ý.
+
+## Chặn ứng dụng Windows — 0.5.0
+
+Giai đoạn A trong [APP_BLOCKING.md](APP_BLOCKING.md), đúng như đã đề xuất: **không giết tiến trình nào.**
+
+Bộ theo dõi cửa sổ tiền cảnh là một tiến trình PowerShell chạy nền khai báo ba hàm `user32`. Cố tình không dùng thư viện native — đổi lại là không có bước biên dịch, không lệ thuộc ABI của Electron, và không có file `.node` nào để phần mềm diệt virus phải soi. Máy nào chặn PowerShell thì phần này im lặng không bật, chặn website vẫn chạy.
+
+Mục ứng dụng có `exe` thay vì `domain`, nên `rules()` lọc ra và **tiện ích trình duyệt không bao giờ thấy chúng**. Đổi credit cho ứng dụng cũng không đòi tiện ích phải kết nối — việc này không liên quan gì tới trình duyệt.
+
+Khi ứng dụng bị chặn lên tiền cảnh, một `BrowserWindow` toàn màn hình luôn-trên-cùng phủ lên trên với đúng giao diện trang chặn website. Người dùng đổi credit để mở, hoặc chọn quay lại làm việc — khi đó cửa sổ kia bị thu nhỏ và ứng dụng đó được bỏ qua cho tới lần chuyển cửa sổ tiếp theo, để lớp phủ không bật lên lại ngay lập tức.
+
+Giới hạn phải nói thẳng: đổi tên file `.exe` là qua mặt được; game chạy toàn màn hình độc quyền có thể không bị lớp phủ che; và tắt ứng dụng vẫn gỡ được phần chặn ứng dụng — khác với chặn website, vốn do tiện ích giữ nên sống sót khi ứng dụng tắt.
+
+## Lịch sử — 0.5.0
+
+Dữ liệu lên v7. Trường `today` cũ chỉ đếm số phút hôm nay; nay là `history`, mỗi ngày một dòng gồm số phút, số phiên hoàn tất, số phiên dở và credit nhận được. Đây là nguồn duy nhất cho cả bộ đếm hôm nay lẫn biểu đồ nên hai con số không thể lệch nhau. Engine lưu 180 ngày, bậc license quyết định xem được bao nhiêu.
 
 ## Bán hàng
 

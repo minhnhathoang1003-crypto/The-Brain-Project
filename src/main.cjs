@@ -1,12 +1,13 @@
 const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard,nativeTheme}=require('electron');
 const fs=require('node:fs'); const path=require('node:path'); const http=require('node:http'); const crypto=require('node:crypto');
 const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,VERSION,WELCOME_CREDITS}=require('./engine.cjs');
+const {ForegroundWatcher,listWindows}=require('./foreground.cjs');
 if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR);
 // Windows ghép cửa sổ với shortcut đã ghim qua id này. Thiếu nó, taskbar coi app là một
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
 app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
-let win,engine,server,wss,interval,bridgeError=null,quitting=false;
+let win,overlay,watcher,engine,server,wss,interval,bridgeError=null,quitting=false,blockedNow=null,dismissed='';
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
 app.on('second-instance',()=>{if(win){if(win.isMinimized())win.restore();win.show();win.focus();}});
 app.whenReady().then(()=>{
@@ -41,8 +42,10 @@ app.whenReady().then(()=>{
   server.listen(PORT,'127.0.0.1');
   function verify(event){if(!win||event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)throw Error('Không được phép.');}
   ipcMain.handle('state',e=>{verify(e);return snapshot();});
+  ipcMain.handle('listApps',async e=>{verify(e);return listWindows();});
   ipcMain.handle('action',(e,type,p)=>{verify(e);try{
-    if(type==='redeem'&&!extensionConnected())throw Error('Kết nối tiện ích trình duyệt trước khi đổi credit.');
+    if(type==='redeem'&&!extensionConnected()&&!String(p?.id||'').startsWith('app:'))
+      throw Error('Kết nối tiện ích trình duyệt trước khi đổi credit.');
     engine.action(type,p);
     if(type==='settings'&&p.theme!==undefined){nativeTheme.themeSource=engine.s.theme;if(win&&!win.isDestroyed())win.setBackgroundColor(windowBackground());}
     broadcast();return {ok:true,state:snapshot()};
@@ -64,10 +67,61 @@ app.whenReady().then(()=>{
   win.on('close',e=>{if(engine.s.session&&!quitting){const choice=dialog.showMessageBoxSync(win,{type:'question',buttons:['Tiếp tục tập trung','Đóng và hủy phiên'],defaultId:0,cancelId:0,message:'Đóng ứng dụng sẽ hủy phiên và không cộng credit.'});if(choice===0)e.preventDefault();else{engine.stop('Đóng ứng dụng');quitting=true;}}});
   powerMonitor.on('suspend',()=>{engine.stop('Máy chuyển sang chế độ ngủ');broadcast();});
   powerMonitor.on('lock-screen',()=>{engine.stop('Máy đã khóa màn hình');broadcast();});
+  // ── Chặn ứng dụng Windows ──────────────────────────────────────────────────
+  // Không giết tiến trình nào. Khi ứng dụng bị chặn lên tiền cảnh thì phủ một cửa sổ
+  // luôn-trên-cùng lên trên nó, đúng giao diện trang chặn website. Người dùng đổi credit
+  // để mở, hoặc chọn quay lại làm việc và cửa sổ kia bị thu nhỏ.
+  function overlayState(target){
+    return {target:target?{id:target.id,name:target.name}:null,credits:engine.s.credits,
+      packs:engine.snapshot().packs,lockUntil:engine.s.lockUntil||0};
+  }
+  function showOverlay(target){
+    if(!overlay||overlay.isDestroyed()){
+      overlay=new BrowserWindow({show:false,frame:false,fullscreen:true,alwaysOnTop:true,skipTaskbar:true,
+        backgroundColor:windowBackground(),
+        webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+      overlay.loadFile(path.join(__dirname,'ui/overlay.html'));
+      overlay.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+      overlay.webContents.on('will-navigate',e=>e.preventDefault());
+      overlay.on('closed',()=>{overlay=null;});
+    }
+    blockedNow=target;
+    const send=()=>{if(overlay&&!overlay.isDestroyed())overlay.webContents.send('overlay',overlayState(target));};
+    if(overlay.webContents.isLoading())overlay.webContents.once('did-finish-load',send);else send();
+    overlay.setAlwaysOnTop(true,'screen-saver');
+    overlay.show();overlay.focus();
+  }
+  function hideOverlay(){blockedNow=null;if(overlay&&!overlay.isDestroyed())overlay.hide();}
+  ipcMain.on('overlay',(e,choice)=>{
+    if(!overlay||e.sender!==overlay.webContents)return;
+    const wasBlocked=blockedNow;
+    if(choice==='back'&&wasBlocked)dismissed=wasBlocked.exe;
+    hideOverlay();
+    if(choice==='back')watcher?.minimizeForeground();
+  });
+  watcher=new ForegroundWatcher();
+  watcher.on('unavailable',message=>{bridgeError=bridgeError||`Không bật được chặn ứng dụng: ${message}`;broadcast();});
+  watcher.on('change',({exe})=>{
+    if(exe!==dismissed)dismissed='';
+    const target=exe===dismissed?null:engine.blockedApp(exe);
+    if(target){if(!blockedNow||blockedNow.id!==target.id)showOverlay(target);}
+    else if(blockedNow&&exe&&exe!=='the brain project'&&exe!=='electron')hideOverlay();
+  });
+  watcher.start();
+  // Móc cho kiểm thử: cho phép bơm sự kiện cửa sổ tiền cảnh mà không cần mở game thật.
+  if(process.env.BRAIN_TEST_DIR){global.__brainWatcher=watcher;global.__brainEngine=engine;}
+
   interval=setInterval(()=>{
     engine.tick(powerMonitor.getSystemIdleTime());broadcast();
+    // Hết giờ mở hoặc vừa bật khóa: lớp phủ phải theo kịp mà không cần đổi cửa sổ.
+    const exe=watcher?.current?.exe;
+    if(exe&&exe!==dismissed){
+      const target=engine.blockedApp(exe);
+      if(target&&(!blockedNow||blockedNow.id!==target.id))showOverlay(target);
+      else if(!target&&blockedNow)hideOverlay();
+    }
   },1000);
 });
 app.on('window-all-closed',()=>app.quit());
-app.on('before-quit',()=>{quitting=true;clearInterval(interval);if(engine)engine.stop('Ứng dụng đã thoát');if(wss)for(const ws of wss.clients)ws.close();server?.close();});
+app.on('before-quit',()=>{quitting=true;clearInterval(interval);watcher?.stop();if(engine)engine.stop('Ứng dụng đã thoát');if(wss)for(const ws of wss.clients)ws.close();server?.close();});
 }

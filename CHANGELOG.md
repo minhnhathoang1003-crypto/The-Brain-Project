@@ -1,5 +1,10 @@
 # Có gì mới
 
+## 0.5.0
+
+- **Chặn ứng dụng và game Windows.** Chọn từ danh sách ứng dụng đang mở — thấy tên quen thuộc chứ không phải đi tìm file `.exe`. Khi ứng dụng bị chặn hiện lên, một lớp phủ che nó lại; đổi credit để mở, hoặc quay lại làm việc và cửa sổ đó bị thu nhỏ. Không giết tiến trình nào nên không mất dữ liệu đang làm dở.
+- **Lịch sử và tiến bộ.** Dải bảy ngày trên màn hình chính, bảng 14 ngày gần nhất trong Cài đặt. Mỗi ngày ghi số phút, số phiên hoàn tất, số phiên dở và credit nhận được.
+
 ## 0.4.0
 
 - **Chế độ khóa.** Khóa cứng 30 phút, 1 giờ, 2 giờ hoặc 4 giờ. Không hủy, không rút ngắn. Trong lúc khóa: không đổi credit, không bỏ chặn website, không xóa dữ liệu, không ngắt tiện ích. Vẫn tập trung và tích credit bình thường. Tiện ích tự giữ hạn khóa nên tắt ứng dụng không mở khóa được.

@@ -1,4 +1,4 @@
-# The Brain Project — 0.4.0
+# The Brain Project — 0.5.0
 
 Một vòng lặp duy nhất: **tập trung để kiếm credit, đổi credit để mở website gây nghiện.**
 
@@ -6,7 +6,7 @@ Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồn
 
 ## Cài đặt
 
-Chạy `release/The-Brain-Project-Setup-0.4.0.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
+Chạy `release/The-Brain-Project-Setup-0.5.0.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
 
 Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu.
 
@@ -29,6 +29,16 @@ Chỉ mở được một website tại một thời điểm. Credit bị trừ 
 Trong ⚙ có thể khóa cứng 30 phút, 1 giờ, 2 giờ hoặc 4 giờ. **Không hủy được, không rút ngắn được.** Trong lúc khóa: không đổi credit, không bỏ chặn website, không xóa dữ liệu, không ngắt tiện ích. Vẫn tập trung và tích credit bình thường.
 
 Tiện ích tự giữ hạn khóa nên tắt ứng dụng hay khởi động lại trình duyệt đều không mở khóa được. Hai thứ vẫn phá được khóa: gỡ tiện ích khỏi trình duyệt, và vặn đồng hồ hệ thống về sau.
+
+## Chặn ứng dụng Windows
+
+Nhấn **＋ Chặn một ứng dụng đang mở** ở cột phải và chọn từ danh sách ứng dụng đang chạy. Khi ứng dụng đó lên tiền cảnh, một lớp phủ che nó lại: đổi credit để mở, hoặc quay lại làm việc và cửa sổ kia bị thu nhỏ.
+
+Không giết tiến trình nào — bạn không mất dữ liệu đang làm dở. Đổi lại, lớp phủ có thể không che được game chạy toàn màn hình độc quyền, và đổi tên file `.exe` là qua mặt được. Cần PowerShell; máy nào chặn PowerShell thì phần chặn ứng dụng đơn giản là không bật, còn chặn website vẫn chạy.
+
+## Tiến bộ
+
+Dải bảy ngày trên màn hình chính và bảng 14 ngày gần nhất trong ⚙. Chỉ đếm phiên hoàn tất trọn vẹn. Ứng dụng lưu 180 ngày.
 
 ## Danh sách chặn
 
@@ -64,7 +74,7 @@ Không có xuất JSON, không đồng bộ, không cập nhật tự động.
 ## Kiểm thử
 
 ```bash
-npm.cmd test && npm.cmd run test:ui && npm.cmd run test:migrate && npm.cmd run test:restart && npm.cmd run test:browser
+npm.cmd test && npm.cmd run test:ui && npm.cmd run test:migrate && npm.cmd run test:appblock && npm.cmd run test:restart && npm.cmd run test:browser
 ```
 
-`test` là engine + luật của tiện ích. `test:ui` chạy Electron thật, gồm một phiên 60 giây thật nên mất khoảng hai phút. `test:migrate` kiểm tra nâng cấp dữ liệu cũ và bố cục ở hai kích thước cửa sổ. `test:restart` kiểm tra việc mở lại ứng dụng không cần ghép nối lại. `test:browser` nạp tiện ích vào Chromium thật (không có thì dùng Edge với profile tạm). Sau `npm.cmd run build`, chạy thêm `node tests/packaged.cjs`.
+`test` là engine + luật của tiện ích. `test:ui` chạy Electron thật, gồm một phiên 60 giây thật nên mất khoảng hai phút. `test:migrate` kiểm tra nâng cấp dữ liệu cũ và bố cục ở hai kích thước cửa sổ. `test:restart` kiểm tra việc mở lại ứng dụng không cần ghép nối lại. `test:appblock` kiểm chặn ứng dụng Windows. `test:browser` nạp tiện ích vào Chromium thật (không có thì dùng Edge với profile tạm). Sau `npm.cmd run build`, chạy thêm `node tests/packaged.cjs`.

@@ -56,13 +56,15 @@ function readyView(){
     ${locked()?`<div class="warn locked-note"><b>Chế độ khóa · còn <span id="lock-left">${hhmm(state.lockUntil-state.now)}</span></b><br>Không đổi được credit và không bỏ chặn được website nào cho tới khi hết giờ. Tắt ứng dụng cũng không mở khóa — tiện ích tự giữ hạn khóa. Credit bạn kiếm trong lúc này vẫn được cộng.</div>`:''}
     ${state.targets.map(siteRow).join('')||'<div class="empty">Danh sách trống. Thêm một tên miền để bắt đầu.</div>'}
     <form class="add" data-form="targetAdd"><input class="field" name="domain" maxlength="253" placeholder="thêm tên miền, ví dụ reddit.com" aria-label="Tên miền cần chặn" required><button class="ghost">Thêm</button></form>
+    ${state.appBlocking&&!locked()?'<button class="link add-app" id="add-app">＋ Chặn một ứng dụng đang mở</button>':''}
   </section>`;
 }
 function siteRow(t){
-  return `<div class="row"><span class="mark">${esc(t.domain[0].toUpperCase())}</span><span class="domain">${esc(t.domain)}</span>
-  <select class="field mins" id="m-${esc(t.id)}" aria-label="Số phút mở ${esc(t.domain)}">${state.packs.map(n=>`<option value="${n}" ${n===5?'selected':''}>${n} phút</option>`).join('')}</select>
+  const label=t.domain||t.name||t.exe;
+  return `<div class="row"><span class="mark">${t.exe?'▣':esc(label[0].toUpperCase())}</span><span class="domain" title="${esc(t.exe?t.exe+'.exe':label)}">${esc(label)}</span>
+  <select class="field mins" id="m-${esc(t.id)}" aria-label="Số phút mở ${esc(t.domain||t.name)}">${state.packs.map(n=>`<option value="${n}" ${n===5?'selected':''}>${n} phút</option>`).join('')}</select>
   <button class="ghost small" data-action="redeem" data-id="${esc(t.id)}" ${locked()?'disabled':''}>Mở</button>
-  ${locked()?'<span class="x locked-x" aria-hidden="true">·</span>':`<button class="x" data-action="targetDelete" data-id="${esc(t.id)}" aria-label="Bỏ chặn ${esc(t.domain)}">×</button>`}</div>`;
+  ${locked()?'<span class="x locked-x" aria-hidden="true">·</span>':`<button class="x" data-action="targetDelete" data-id="${esc(t.id)}" aria-label="Bỏ chặn ${esc(t.domain||t.name)}">×</button>`}</div>`;
 }
 function focusView(){
   const s=state.session,goal=creditsFor(s.durationMs/60000);
@@ -100,6 +102,19 @@ function gateView(){
     <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>
     <div class="waiting"><i></i> Đang chờ tiện ích kết nối… Màn hình này tự chuyển tiếp khi xong.</div>
   </section>`;
+}
+async function pickApp(){
+  $('#confirm-title').textContent='Chọn ứng dụng để chặn';
+  $('#confirm-text').innerHTML='<span class="note">Đang đọc danh sách ứng dụng đang mở…</span>';
+  $('#confirm').showModal();
+  $('#confirm-no').onclick=()=>$('#confirm').close();
+  $('#confirm-yes').style.display='none';
+  const running=await window.brain.listApps();
+  const already=new Set(state.targets.filter(t=>t.exe).map(t=>t.exe));
+  const open=running.filter(a=>!already.has(a.exe));
+  $('#confirm-text').innerHTML=open.length
+    ? `<div class="app-pick">${open.map(a=>`<button class="ghost app-option" data-exe="${esc(a.exe)}" data-name="${esc(a.name)}"><b>${esc(a.name)}</b><small>${esc(a.exe)}.exe</small></button>`).join('')}</div>`
+    : '<span class="note">Không thấy ứng dụng nào đang mở, hoặc mọi ứng dụng đang mở đều đã bị chặn. Mở ứng dụng bạn muốn chặn rồi thử lại.</span>';
 }
 function setupView(){
   const connected=state.system.extensionConnected;
@@ -162,6 +177,12 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='open-setup'||b.id==='warn-setup'){$('#setup-body').innerHTML=setupView();$('#setup').showModal();return;}
   if(b.id==='setup-close'){$('#setup').close();return;}
+  if(b.id==='add-app'){pickApp();return;}
+  if(b.dataset.exe){
+    $('#confirm').close();$('#confirm-yes').style.display='';
+    if(await act('appAdd',{exe:b.dataset.exe,name:b.dataset.name}))toast(`Đã chặn ${b.dataset.name}.`);
+    return;
+  }
   if(b.dataset.theme){act('settings',{theme:b.dataset.theme});return;}
   if(b.dataset.lock){
     const m=Number(b.dataset.lock);

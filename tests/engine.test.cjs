@@ -187,4 +187,45 @@ test('history records each day, survives a rollover and is capped by the licence
   } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
   assert.equal(harness().e.snapshot().historyDays,180);
 });
+test('app targets block by executable and never reach the browser extension',()=>{
+  const h=harness();
+  h.e.action('appAdd',{exe:'LeagueClient.exe',name:'Liên Minh Huyền Thoại'});
+  const app=h.e.s.targets.at(-1);
+  assert.deepEqual(app,{id:'app:leagueclient',exe:'leagueclient',name:'Liên Minh Huyền Thoại'},'bỏ đuôi .exe và hạ chữ thường');
+  assert.equal(h.e.rules().targets.length,4,'tiện ích chỉ nhận website, không nhận ứng dụng');
+  assert(!h.e.rules().targets.some(t=>t.id.startsWith('app:')));
+
+  assert.equal(h.e.blockedApp('leagueclient').id,'app:leagueclient');
+  assert.equal(h.e.blockedApp('chrome'),null,'ứng dụng ngoài danh sách không bị chặn');
+  assert.equal(h.e.blockedApp(''),null);
+
+  // Đổi credit mở được ứng dụng, hết giờ thì chặn lại.
+  h.complete();
+  h.e.action('redeem',{id:'app:leagueclient',minutes:5});
+  assert.equal(h.e.blockedApp('leagueclient'),null,'đang mở thì không chặn');
+  h.advance(300000);
+  assert.equal(h.e.blockedApp('leagueclient').id,'app:leagueclient','hết giờ là chặn lại');
+
+  // Chế độ khóa thắng mọi lượt mở.
+  h.complete();h.e.action('lock',{minutes:30});
+  h.e.s.grant={targetId:'app:leagueclient',domain:null,until:h.at()+300000,minutes:5};
+  assert.equal(h.e.blockedApp('leagueclient').id,'app:leagueclient','đang khóa thì lượt mở vô hiệu');
+
+  for(const exe of ['','   ','.exe','có dấu','a/b','x'.repeat(90)])
+    assert.throws(()=>h.e.action('appAdd',{exe}),JSON.stringify(exe));
+  assert.throws(()=>h.e.action('appAdd',{exe:'leagueclient'}),/đã có trong danh sách/);
+});
+test('app blocking is a paid feature and is inert on the free tier',()=>{
+  const before=process.env.BRAIN_TIER;
+  try{
+    process.env.BRAIN_TIER='free';
+    const free=harness();
+    assert.equal(free.e.snapshot().appBlocking,false);
+    assert.throws(()=>free.e.action('appAdd',{exe:'leagueclient'}),/bản Pro/);
+    // Kể cả khi dữ liệu đã có sẵn mục ứng dụng, bậc Free không chặn ứng dụng nào.
+    free.e.s.targets.push({id:'app:leagueclient',exe:'leagueclient',name:'LMHT'});
+    assert.equal(free.e.blockedApp('leagueclient'),null);
+  } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
+  assert.equal(harness().e.snapshot().appBlocking,true);
+});
 test('bridge payload keeps the wire shape the extension expects',()=>{const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});const r=h.e.rules();assert.deepEqual(Object.keys(r).sort(),['grants','lockUntil','now','targets']);assert.deepEqual(Object.keys(r.targets[0]).sort(),['domain','id']);assert.deepEqual(Object.keys(r.grants[0]).sort(),['targetId','until']);});
