@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Brain Project — Tập trung để kiếm credit</title>
+<meta name="description" content="Ứng dụng Windows chặn website, ứng dụng và game gây nghiện. Muốn mở lại thì phải tập trung để kiếm credit. 5 phút tập trung = 1 credit = 1 phút giải trí.">
+<link rel="icon" href="images/icon.png" type="image/png">
+
+<meta property="og:title" content="The Brain Project — Tập trung để kiếm credit">
+<meta property="og:description" content="YouTube, TikTok, Facebook và game trên máy bạn đều bị chặn — cho tới khi bạn tự kiếm được thời gian mở chúng.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="images/main.png">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#loop">Bỏ qua tới nội dung</a>
+
+<header class="topbar">
+  <a class="brand" href="#top">
+    <img src="images/logo.png" alt="" class="brand-mark" width="28" height="28">
+    <span>The Brain Project</span>
+  </a>
+  <nav class="topnav">
+    <a href="#loop">Vòng lặp</a>
+    <a href="#blocks">Chặn gì</a>
+    <a href="#limits">Giới hạn</a>
+    <a href="#install">Cài đặt</a>
+  </nav>
+  <div class="theme" role="group" aria-label="Giao diện">
+    <button type="button" data-theme-set="system" aria-pressed="true" title="Theo hệ thống">Hệ thống</button>
+    <button type="button" data-theme-set="light" aria-pressed="false" title="Sáng">Sáng</button>
+    <button type="button" data-theme-set="dark" aria-pressed="false" title="Tối">Tối</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ── HERO ───────────────────────────────────────────── -->
+  <section class="hero">
+    <p class="eyebrow">Phiên bản <span data-bind="version">0.6.0</span> · Windows 10 / 11 · Miễn phí</p>
+    <h1>
+      Tập trung để kiếm credit.<br>
+      Đổi credit để mở thứ gây nghiện.
+    </h1>
+    <p class="lede">
+      YouTube, TikTok, Facebook — và cả ứng dụng, game đang chạy trên máy bạn — đều bị chặn.
+      Muốn mở lại thì phải tự kiếm thời gian: <strong>5 phút tập trung đổi được 1 phút giải trí.</strong>
+      Không có nút tắt, không có cách xin thêm.
+    </p>
+
+    <div class="cta">
+      <a class="btn btn-primary" id="download-btn" href="#install">
+        <span id="download-label">Tải về cho Windows</span>
+      </a>
+      <a class="btn btn-ghost" href="#loop">Xem cách hoạt động</a>
+    </div>
+    <p class="cta-meta" id="download-meta">
+      Chưa mở link tải trực tiếp — hiện chạy được từ mã nguồn, xem
+      <a href="#install">hướng dẫn cài đặt</a>.
+    </p>
+
+    <figure class="shot shot-hero">
+      <img src="images/main.png" alt="Màn hình chính của The Brain Project: bên trái là số dư credit và nút bắt đầu tập trung, bên phải là danh sách website đang bị chặn." width="1233" height="854" fetchpriority="high">
+    </figure>
+  </section>
+
+  <!-- ── VÒNG LẶP ───────────────────────────────────────── -->
+  <section id="loop" class="section">
+    <p class="kicker">Vòng lặp</p>
+    <h2>Một tỉ lệ duy nhất, không thương lượng</h2>
+    <p class="section-lede">
+      Không có danh sách việc cần làm, không có streak, không có huy hiệu. Chỉ một phép đổi:
+      thời gian tập trung thành thời gian giải trí.
+    </p>
+
+    <div class="calc">
+      <div class="calc-tabs" role="group" aria-label="Chọn thời lượng phiên">
+        <button type="button" data-min="25" class="is-on" aria-pressed="true">25 phút</button>
+        <button type="button" data-min="50" aria-pressed="false">50 phút</button>
+        <button type="button" data-min="90" aria-pressed="false">90 phút</button>
+        <button type="button" data-min="180" aria-pressed="false">180 phút</button>
+      </div>
+
+      <div class="rule" aria-live="polite">
+        <div class="rule-cell">
+          <span class="rule-label">Tập trung</span>
+          <span class="rule-value" id="r-focus">25 phút</span>
+        </div>
+        <span class="rule-arrow" aria-hidden="true">→</span>
+        <div class="rule-cell">
+          <span class="rule-label">Nhận được</span>
+          <span class="rule-value" id="r-credit">5 credit</span>
+        </div>
+        <span class="rule-arrow" aria-hidden="true">→</span>
+        <div class="rule-cell is-out">
+          <span class="rule-label">Đổi ra</span>
+          <span class="rule-value" id="r-out">5 phút</span>
+        </div>
+      </div>
+
+      <p class="calc-note">
+        Đây chính là dải hiển thị nằm ngay trên nút bắt đầu trong ứng dụng — bạn biết trước mình sẽ nhận gì
+        trước khi bấm.
+      </p>
+    </div>
+
+    <div class="steps">
+      <article>
+        <span class="step-num">01</span>
+        <h3>Bắt đầu một phiên</h3>
+        <p>Chọn 25, 50, 90 phút hoặc nhập số phút tùy ý từ 1 đến 180. Trong lúc chạy, số credit tích lũy nhích lên từng giây trước mắt bạn.</p>
+      </article>
+      <article>
+        <span class="step-num">02</span>
+        <h3>Kết thúc trọn vẹn</h3>
+        <p>Credit chỉ vào ví khi phiên đi hết. Dừng giữa chừng, đóng ứng dụng, để máy ngủ, vặn đồng hồ hệ thống hay rời máy quá 5 phút — mất toàn bộ credit của phiên đó.</p>
+      </article>
+      <article>
+        <span class="step-num">03</span>
+        <h3>Đổi lấy thời gian mở</h3>
+        <p>1 credit đổi được 1 phút. Credit bị trừ ngay khi xác nhận, kết thúc sớm không hoàn lại. Không tập trung được trong lúc còn thời gian đang mở, và ngược lại.</p>
+      </article>
+    </div>
+
+    <p class="gift">
+      Lần cài đầu tiên được tặng sẵn <strong>15 credit</strong>, để bạn có 15 phút dùng ngay khi cần gấp.
+      Xóa toàn bộ dữ liệu thì số dư về 0 — không nhận lại quà.
+    </p>
+  </section>
+
+  <!-- ── ẢNH CHỤP ───────────────────────────────────────── -->
+  <section id="screens" class="section section-flush">
+    <p class="kicker">Giao diện</p>
+    <h2>Đơn sắc. Chỉ đen, trắng và xám.</h2>
+    <p class="section-lede">
+      Không màu sắc, không thẻ nổi, không biểu tượng thừa. Phân cấp bằng nét mảnh và khoảng trống.
+      Trong lúc chạy phiên, cả màn hình chỉ còn một thứ để nhìn.
+    </p>
+
+    <div class="gallery">
+      <div class="gallery-tabs" role="tablist" aria-label="Ảnh chụp màn hình">
+        <button type="button" role="tab" aria-selected="true" data-shot="main">Màn hình chính</button>
+        <button type="button" role="tab" aria-selected="false" data-shot="blocked">Trang chặn</button>
+        <button type="button" role="tab" aria-selected="false" data-shot="locked">Chế độ khóa</button>
+        <button type="button" role="tab" aria-selected="false" data-shot="dark">Chế độ tối</button>
+        <button type="button" role="tab" aria-selected="false" data-shot="narrow">Cửa sổ hẹp</button>
+      </div>
+
+      <figure class="shot">
+        <img id="gallery-img" src="images/main.png"
+             alt="Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.">
+        <figcaption id="gallery-cap">Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ── CHẶN GÌ ────────────────────────────────────────── -->
+  <section id="blocks" class="section">
+    <p class="kicker">Nó chặn được gì</p>
+    <h2>Website, ứng dụng, và cả chính bạn</h2>
+
+    <div class="grid">
+      <article class="card">
+        <h3>Website</h3>
+        <p>
+          Chặn qua tiện ích Chrome hoặc Edge, nên nó vẫn chặn kể cả khi ứng dụng đã tắt.
+          Chặn cả tên miền con. Hết thời gian mở, tab đang xem cũng bị chuyển về trang chặn.
+        </p>
+        <p class="card-meta">Mặc định: youtube.com, facebook.com, tiktok.com, instagram.com</p>
+      </article>
+
+      <article class="card">
+        <h3>Ứng dụng và game Windows</h3>
+        <p>
+          Chọn từ danh sách ứng dụng đang mở — thấy tên quen thuộc chứ không phải đi tìm file <code>.exe</code>.
+          Khi nó lên tiền cảnh, một lớp phủ che nó lại.
+        </p>
+        <p class="card-meta">Không giết tiến trình nào, nên bạn không mất dữ liệu đang làm dở.</p>
+      </article>
+
+      <article class="card">
+        <h3>Chế độ khóa</h3>
+        <p>
+          Khóa cứng 30 phút, 1, 2 hoặc 4 tiếng. <strong>Không hủy được, không rút ngắn được.</strong>
+          Trong lúc khóa: không đổi credit, không bỏ chặn, không xóa dữ liệu, không ngắt tiện ích.
+        </p>
+        <p class="card-meta">Vẫn tập trung và tích credit bình thường — khóa là ranh giới, không phải hình phạt.</p>
+      </article>
+
+      <article class="card">
+        <h3>Tiến bộ</h3>
+        <p>
+          Dải bảy ngày trên màn hình chính, bảng 14 ngày trong Cài đặt: số phút, số phiên hoàn tất,
+          số phiên dở và credit nhận được mỗi ngày.
+        </p>
+        <p class="card-meta">Chỉ đếm phiên hoàn tất trọn vẹn. Lưu 180 ngày.</p>
+      </article>
+
+      <article class="card">
+        <h3>Dữ liệu nằm trên máy bạn</h3>
+        <p>
+          Không tài khoản, không máy chủ. Toàn bộ dữ liệu được mã hóa bằng safeStorage theo tài khoản Windows.
+          Tiện ích đọc URL tab để áp dụng luật nhưng không gửi lịch sử duyệt web về ứng dụng.
+        </p>
+        <p class="card-meta">Không đồng bộ, không xuất JSON, không cập nhật tự động.</p>
+      </article>
+
+      <article class="card">
+        <h3>Khởi động trong 0,3 giây</h3>
+        <p>
+          Bản cài đặt NSIS ở mức tài khoản người dùng, không cần quyền quản trị.
+          Đo trên máy thật: cửa sổ hiện ra sau 266–304&nbsp;ms, màn hình sẵn sàng sau 349–379&nbsp;ms.
+        </p>
+        <p class="card-meta">Bản portable trước đây mất 22 giây mỗi lần mở.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ── GIỚI HẠN ───────────────────────────────────────── -->
+  <section id="limits" class="section section-invert">
+    <p class="kicker">Trung thực</p>
+    <h2>Những gì nó không làm được</h2>
+    <p class="section-lede">
+      Phần mềm chặn nào cũng có đường vòng. Đây là tất cả những đường vòng mà tôi biết trong sản phẩm này —
+      liệt kê ra trước khi bạn tự phát hiện.
+    </p>
+
+    <ul class="limits">
+      <li><strong>Đổi tên file <code>.exe</code> là qua mặt được</strong> phần chặn ứng dụng.</li>
+      <li><strong>Game chạy toàn màn hình độc quyền</strong> có thể không bị lớp phủ che.</li>
+      <li><strong>Gỡ tiện ích khỏi trình duyệt</strong> sẽ phá được cả chế độ khóa. Đây là lỗ hổng lớn nhất còn lại.</li>
+      <li><strong>Vặn đồng hồ hệ thống về sau</strong> sẽ kết thúc khóa sớm. Đây là đánh đổi có chủ ý: đếm theo thời gian đã trôi sẽ biến việc đóng ứng dụng thành ra kéo dài khóa, tệ hơn nhiều.</li>
+      <li><strong>Ngưỡng không hoạt động chỉ phát hiện máy đứng yên.</strong> Nó không chứng minh bạn đang học, và không chống được mọi cách giả lập chuột phím.</li>
+      <li><strong>Tắt ứng dụng vẫn gỡ được phần chặn ứng dụng Windows</strong> — khác với chặn website, vốn do tiện ích giữ nên sống sót khi ứng dụng tắt.</li>
+      <li><strong>Chỉ có Windows.</strong> Chưa có macOS, chưa chặn được trên điện thoại, chưa tách riêng Shorts trong YouTube.</li>
+      <li><strong>Binary chưa ký số</strong>, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu. Bạn có thể tự đối chiếu mã băm SHA-256 ở cuối trang.</li>
+      <li><strong>Cần PowerShell</strong> cho phần chặn ứng dụng. Máy nào chặn PowerShell thì phần đó im lặng không bật, chặn website vẫn chạy.</li>
+    </ul>
+  </section>
+
+  <!-- ── CÀI ĐẶT ────────────────────────────────────────── -->
+  <section id="install" class="section">
+    <p class="kicker">Cài đặt</p>
+    <h2>Bốn bước, làm một lần duy nhất</h2>
+    <p class="section-lede">
+      Việc chặn website do tiện ích trình duyệt thực hiện, nên lần chạy đầu ứng dụng sẽ dừng ở màn hình hướng dẫn
+      cho tới khi ghép nối xong — vì chưa ghép nối thì credit không có tác dụng gì.
+    </p>
+
+    <ol class="install">
+      <li>
+        <h3>Chạy file cài đặt</h3>
+        <p>
+          Cài ở mức tài khoản người dùng nên không cần quyền quản trị. SmartScreen sẽ hiện cảnh báo vì file chưa ký số —
+          chọn <em>Thông tin khác → Vẫn chạy</em>.
+        </p>
+      </li>
+      <li>
+        <h3>Nhấn “Mở thư mục tiện ích”</h3>
+        <p>Ứng dụng tự mở đúng thư mục cần dùng ở bước sau.</p>
+      </li>
+      <li>
+        <h3>Nạp tiện ích vào trình duyệt</h3>
+        <p>
+          Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>) →
+          bật <em>Developer mode</em> → <em>Load unpacked</em> → chọn thư mục vừa mở.
+        </p>
+      </li>
+      <li>
+        <h3>Dán mã ghép nối</h3>
+        <p>
+          Nhấn <em>Sao chép mã ghép nối</em> trong ứng dụng, dán vào popup tiện ích rồi kết nối.
+          Xong bước này màn hình tự chuyển sang giao diện chính.
+        </p>
+      </li>
+    </ol>
+
+    <p class="install-note">
+      Chỉ phải làm một lần. Mã ghép nối được giữ lại, nên các lần mở ứng dụng sau tiện ích tự kết nối lại
+      sau khoảng hai giây — <strong>không phải ghép nối lại</strong>.
+    </p>
+
+    <div class="source">
+      <h3>Chạy từ mã nguồn</h3>
+      <pre><code>npm.cmd ci
+npm.cmd start</code></pre>
+      <p>Cần Node.js. Ứng dụng dùng Electron 44.</p>
+    </div>
+  </section>
+
+  <!-- ── GIÁ ────────────────────────────────────────────── -->
+  <section id="price" class="section">
+    <p class="kicker">Giá</p>
+    <h2>Hiện miễn phí toàn bộ</h2>
+    <p class="section-lede">
+      Hôm nay không tính năng nào bị khóa và không ai bị giới hạn gì. Về sau sẽ có bản Pro,
+      nhưng <strong>vòng lặp cốt lõi — tập trung, kiếm credit, mở khóa — sẽ miễn phí vĩnh viễn.</strong>
+      Nó là thứ khiến người ta kể cho bạn bè; đưa nó vào sau tường phí là tự cắt kênh lan truyền duy nhất.
+    </p>
+  </section>
+
+  <!-- ── EMAIL ──────────────────────────────────────────── -->
+  <section id="waitlist" class="section section-invert" hidden>
+    <div class="wl">
+      <h2>Nhận tin khi có bản mới</h2>
+      <p class="section-lede">
+        Không có cập nhật tự động, nên cách duy nhất để biết bản mới ra là để lại email.
+        Chỉ dùng để báo bản phát hành. Không quảng cáo, không chia sẻ cho ai.
+      </p>
+      <form id="wl-form" novalidate>
+        <label class="sr-only" for="wl-email">Địa chỉ email</label>
+        <input id="wl-email" name="email" type="email" required autocomplete="email" placeholder="ban@vidu.com" spellcheck="false">
+        <button type="submit" class="btn btn-primary">Đăng ký</button>
+      </form>
+      <p id="wl-msg" class="wl-msg" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="foot-main">
+    <img src="images/logo.png" alt="" class="brand-mark" width="24" height="24">
+    <div>
+      <p class="foot-name">The Brain Project <span data-bind="version">0.6.0</span></p>
+      <p class="foot-sub">Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.</p>
+    </div>
+  </div>
+  <dl class="foot-meta">
+    <div><dt>Nền tảng</dt><dd>Windows 10 / 11 · x64</dd></div>
+    <div><dt>Dung lượng</dt><dd data-bind="fileSize">107 MB</dd></div>
+    <div><dt>SHA-256 của file cài đặt</dt><dd><code data-bind="sha256">—</code></dd></div>
+  </dl>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
