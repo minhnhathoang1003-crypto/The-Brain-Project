@@ -117,6 +117,11 @@
       alt: 'Bảng cài đặt đang ở chế độ khóa, còn 30 phút, kèm bảng đối chiếu 25 phút đổi 5 credit.',
       cap: 'Chế độ khóa: không hủy, không rút ngắn — kể cả bằng cách xóa dữ liệu. Tiện ích tự giữ hạn khóa nên tắt ứng dụng cũng vô ích.'
     },
+    settings: {
+      src: 'images/settings.webp', w: 1233, h: 854,
+      alt: 'Bảng cài đặt: mục bộ chặn website với bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và hàng khung thời gian 15 / 25 / 90 phút.',
+      cap: 'Toàn bộ cài đặt nằm trong một bảng: bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và các mốc thời gian bạn tự đặt. Tiêu đề và hàng nút đứng yên, chỉ phần giữa cuộn.'
+    },
     dark: {
       src: 'images/dark.webp', w: 1233, h: 854,
       alt: 'Ứng dụng ở chế độ tối với bảng cài đặt đang mở.',
