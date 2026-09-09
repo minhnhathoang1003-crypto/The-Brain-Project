@@ -92,3 +92,15 @@ càng phải nói ngay từ dòng đầu rằng tiện ích cần ứng dụng W
 
 Chưa có ảnh popup của tiện ích: popup cần bối cảnh extension thật mới chạy được, và nó là một khung hẹp
 nên đặt vào khung 1280×800 sẽ thừa rất nhiều nền trắng.
+
+## Gói nộp
+
+`store-assets/focus-bridge-0.6.0.zip` — 11 file, `manifest.json` nằm ở gốc.
+
+Đừng dùng `Compress-Archive` của PowerShell 5.1 để đóng gói lại: nó ghi đường dẫn bằng dấu gạch ngược
+(`icons\icon-128.png`), trong khi chuẩn ZIP đòi gạch xuôi, nên Chrome có thể không tìm thấy icon. Gói này
+được dựng bằng `ZipFileExtensions::CreateEntryFromFile` với tên mục tự đặt, đã kiểm lại không còn dấu
+gạch ngược nào.
+
+Mỗi lần lên phiên bản mới, nhớ tăng `version` trong `extension/manifest.json` trước khi đóng gói — store
+từ chối bản upload trùng số phiên bản.
