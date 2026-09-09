@@ -216,7 +216,10 @@ h1 {
   overflow: hidden;
   background: var(--surface);
 }
-.shot img { filter: var(--shot-shade); width: 100%; }
+/* height:auto là bắt buộc, không phải cho đẹp: thiếu nó thì trình duyệt bỏ qua
+   tỉ lệ suy ra từ thuộc tính width/height, và khung ảnh giữ nguyên tỉ lệ của ảnh
+   cũ cho tới khi ảnh mới tải xong — đúng lúc bố cục bị xô. */
+.shot img { filter: var(--shot-shade); width: 100%; height: auto; }
 .shot-hero { margin-top: clamp(56px, 8vw, 96px); }
 
 .shot figcaption {

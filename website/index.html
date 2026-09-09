@@ -14,6 +14,8 @@
 <meta property="og:description" content="YouTube, TikTok, Facebook và game trên máy bạn đều bị chặn — cho tới khi bạn tự kiếm được thời gian mở chúng.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://the-brain-project.vercel.app/">
+<!-- Ảnh trên trang là WebP, riêng og:image giữ PNG: một số trình thu thập
+     mạng xã hội vẫn chưa dựng được thẻ xem trước từ WebP. -->
 <meta property="og:image" content="https://the-brain-project.vercel.app/images/main.png">
 <meta property="og:image:width" content="1233">
 <meta property="og:image:height" content="854">
@@ -34,7 +36,7 @@
 
 <header class="topbar">
   <a class="brand" href="#top">
-    <img src="images/logo.png" alt="" class="brand-mark" width="28" height="28">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="28" height="28">
     <span>The Brain Project</span>
   </a>
   <nav class="topnav">
@@ -77,7 +79,7 @@
     </p>
 
     <figure class="shot shot-hero">
-      <img src="images/main.png" alt="Màn hình chính của The Brain Project: bên trái là số dư credit và nút bắt đầu tập trung, bên phải là danh sách website đang bị chặn." width="1233" height="854" fetchpriority="high">
+      <img src="images/main.webp" alt="Màn hình chính của The Brain Project: bên trái là số dư credit và nút bắt đầu tập trung, bên phải là danh sách website đang bị chặn." width="1233" height="854" fetchpriority="high" decoding="async">
     </figure>
   </section>
 
@@ -164,7 +166,8 @@
       </div>
 
       <figure class="shot">
-        <img id="gallery-img" src="images/main.png"
+        <img id="gallery-img" src="images/main.webp" width="1233" height="854"
+             loading="lazy" decoding="async"
              alt="Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.">
         <figcaption id="gallery-cap">Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.</figcaption>
       </figure>
@@ -338,7 +341,7 @@ npm.cmd start</code></pre>
 
 <footer class="footer">
   <div class="foot-main">
-    <img src="images/logo.png" alt="" class="brand-mark" width="24" height="24">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="24" height="24">
     <div>
       <p class="foot-name">The Brain Project <span data-bind="version">0.6.0</span></p>
       <p class="foot-sub">Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.</p>

@@ -98,29 +98,32 @@
 
   /* ── Bộ ảnh chụp màn hình ── */
 
+  // w/h đi kèm từng ảnh vì các ảnh chụp không cùng tỉ lệ. Thiếu chúng thì
+  // đổi tab làm khung ảnh co giãn đột ngột, đẩy phần dưới trang nhảy lên
+  // xuống — đúng thứ mà Cumulative Layout Shift trừ điểm.
   var SHOTS = {
     main: {
-      src: 'images/main.png',
+      src: 'images/main.webp', w: 1233, h: 854,
       alt: 'Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.',
       cap: 'Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.'
     },
     blocked: {
-      src: 'images/browser-blocked.png',
+      src: 'images/browser-blocked.webp', w: 1280, h: 720,
       alt: 'Trang chặn hiện trong trình duyệt với dòng chữ "Một khoảng dừng. Một lựa chọn tốt hơn."',
       cap: 'Trang chặn của tiện ích. Nó nói cho bạn biết cái giá — 5 phút tập trung đổi 1 phút — thay vì chỉ báo lỗi.'
     },
     locked: {
-      src: 'images/locked.png',
+      src: 'images/locked.webp', w: 1233, h: 854,
       alt: 'Bảng cài đặt đang ở chế độ khóa, còn 30 phút, kèm bảng đối chiếu 25 phút đổi 5 credit.',
       cap: 'Chế độ khóa: không hủy, không rút ngắn — kể cả bằng cách xóa dữ liệu. Tiện ích tự giữ hạn khóa nên tắt ứng dụng cũng vô ích.'
     },
     dark: {
-      src: 'images/dark.png',
+      src: 'images/dark.webp', w: 1233, h: 854,
       alt: 'Ứng dụng ở chế độ tối với bảng cài đặt đang mở.',
       cap: 'Ba lựa chọn giao diện: theo hệ thống, sáng, tối. Mặc định đi theo cài đặt của Windows.'
     },
     narrow: {
-      src: 'images/narrow.png',
+      src: 'images/narrow.webp', w: 650, h: 800,
       alt: 'Ứng dụng ở cửa sổ hẹp, hai cột xếp chồng thành một cột.',
       cap: 'Dưới 860 px, hai cột xếp chồng lại. Không khối nào bị cắt mất chữ — có bài kiểm thử riêng cho việc này.'
     }
@@ -134,14 +137,22 @@
       if (!s) return;
       $$('.gallery-tabs button').forEach(function (o) { o.setAttribute('aria-selected', 'false'); });
       b.setAttribute('aria-selected', 'true');
+      // Đặt aspect-ratio inline chứ không chỉ width/height: khi đổi src,
+      // Chromium giữ ảnh cũ trên màn hình cho tới khi ảnh mới giải mã xong,
+      // và tỉ lệ nội tại của ảnh cũ thắng thuộc tính. aspect-ratio thì thắng
+      // cả hai, nên khung đổi kích thước ngay lúc bấm thay vì giật về sau.
+      gImg.style.aspectRatio = s.w + ' / ' + s.h;
+      gImg.width = s.w;
+      gImg.height = s.h;
       gImg.src = s.src;
       gImg.alt = s.alt;
       gCap.textContent = s.cap;
     });
   });
 
-  // Nạp trước để đổi tab không bị chớp.
-  Object.keys(SHOTS).forEach(function (k) { new Image().src = SHOTS[k].src; });
+  // Không nạp trước cả bộ ảnh nữa: bốn ảnh chưa ai bấm tới từng giành
+  // băng thông với ảnh hero ngay lúc vào trang, làm LCP xấu đi để đổi lấy
+  // một cú chớp mà phần lớn khách không bao giờ gặp.
 
   /* ── Đăng ký email ── */
 
