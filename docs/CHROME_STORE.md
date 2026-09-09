@@ -51,7 +51,7 @@ chính sách và phần justification phải nói đúng như vậy.
 | Mục | Yêu cầu | Đã có |
 |---|---|---|
 | Icon | 128×128 PNG | `extension/icons/icon-128.png` |
-| Ảnh chụp | ít nhất 1, cỡ **1280×800** hoặc 640×400 | chưa — ảnh hiện có là 1233×854 và 1280×803, đều không khớp |
+| Ảnh chụp | 1–5 ảnh, cỡ **1280×800** hoặc 640×400, PNG 24-bit không alpha | năm ảnh trong `store-assets/`, xem mục cuối trang |
 | Small promo tile | 440×280 | chưa, không bắt buộc |
 | Mô tả chi tiết | tối đa 16.000 ký tự | lấy từ README |
 | Danh mục | Productivity | |
