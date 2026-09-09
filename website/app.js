@@ -117,6 +117,11 @@
       alt: 'Trang chặn hiện trong trình duyệt với dòng chữ "Một khoảng dừng. Một lựa chọn tốt hơn."',
       cap: 'Trang chặn của tiện ích. Nó nói cho bạn biết cái giá — 5 phút tập trung đổi 1 phút — thay vì chỉ báo lỗi.'
     },
+    overlay: {
+      src: 'images/overlay.webp', w: 1280, h: 803,
+      alt: 'Lớp phủ chặn ứng dụng che kín màn hình: chữ "Đang bị chặn", tên ứng dụng, ô chọn 5 phút · 5 credit, nút Đổi credit để mở và nút Đóng ứng dụng, quay lại làm việc.',
+      cap: 'Khi ứng dụng bị chặn lên tiền cảnh, lớp phủ này che kín nó — không tiến trình nào bị giết, nên bạn không mất dữ liệu đang làm dở. Hai lựa chọn: trả credit để mở, hoặc đóng ứng dụng đó và quay lại làm việc.'
+    },
     locked: {
       src: 'images/locked.webp', w: 1233, h: 854,
       alt: 'Bảng cài đặt đang ở chế độ khóa, còn 30 phút, kèm bảng đối chiếu 25 phút đổi 5 credit.',
