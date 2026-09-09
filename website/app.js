@@ -117,6 +117,11 @@
       alt: 'Bảng cài đặt đang ở chế độ khóa, còn 30 phút, kèm bảng đối chiếu 25 phút đổi 5 credit.',
       cap: 'Chế độ khóa: không hủy, không rút ngắn — kể cả bằng cách xóa dữ liệu. Tiện ích tự giữ hạn khóa nên tắt ứng dụng cũng vô ích.'
     },
+    gate: {
+      src: 'images/gate.webp', w: 1233, h: 854,
+      alt: 'Màn hình mở đầu với tiêu đề "Còn một bước nữa: bật bộ chặn", khung tặng 15 credit, bốn bước ghép nối và dòng chờ tiện ích kết nối.',
+      cap: 'Lần chạy đầu tiên dừng ở đây, chưa vào được màn hình chính — vì chưa ghép nối thì credit không có tác dụng gì. Chỉ chặn ở lần đầu; về sau rớt kết nối thì app chỉ cảnh báo chứ không nhốt bạn khỏi credit đã kiếm.'
+    },
     settings: {
       src: 'images/settings.webp', w: 1233, h: 854,
       alt: 'Bảng cài đặt: mục bộ chặn website với bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và hàng khung thời gian 15 / 25 / 90 phút.',
