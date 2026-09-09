@@ -151,11 +151,20 @@
     wl.hidden = false;
 
     var form = $('#wl-form'), input = $('#wl-email'), msg = $('#wl-msg');
+    var trap = $('#wl-trap');
     var sending = false;
+
+    // Không có JS thì khối này vốn đã ẩn, nhưng cứ gắn action để form
+    // vẫn gửi được nếu fetch bị chặn.
+    form.action = CFG.formEndpoint;
+    form.method = 'POST';
 
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
       if (sending) return;
+
+      // Bẫy bot: người thật không bao giờ điền ô này vì nó không hiện ra.
+      if (trap && trap.value) { form.hidden = true; msg.textContent = 'Xong.'; return; }
 
       var email = input.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
@@ -172,12 +181,24 @@
       fetch(CFG.formEndpoint, {
         method: 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, nguon: 'trang-gioi-thieu' })
+        body: JSON.stringify({
+          email: email,
+          nguon: 'trang-gioi-thieu',
+          _subject: 'Đăng ký nhận tin — The Brain Project'
+        })
       }).then(function (res) {
-        if (!res.ok) throw new Error(String(res.status));
-        form.hidden = true;
-        msg.textContent = 'Xong. Sẽ báo bạn khi có bản mới — chỉ khi có bản mới.';
-      }).catch(function () {
+        if (res.ok) {
+          form.hidden = true;
+          msg.textContent = 'Xong. Sẽ báo bạn khi có bản mới — chỉ khi có bản mới.';
+          return;
+        }
+        // Formspree trả chi tiết lỗi trong body. Người dùng không cần đọc
+        // tiếng Anh của họ, nhưng tôi cần nó khi đi tìm nguyên nhân.
+        return res.json().catch(function () { return null; }).then(function (body) {
+          throw new Error(res.status + ' ' + JSON.stringify(body));
+        });
+      }).catch(function (err) {
+        console.error('[waitlist]', err);
         msg.textContent = 'Gửi không thành công. Thử lại sau ít phút giúp tôi.';
         msg.classList.add('is-err');
       }).then(function () {

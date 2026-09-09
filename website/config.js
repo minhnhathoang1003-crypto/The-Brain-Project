@@ -12,7 +12,7 @@ window.SITE_CONFIG = {
   // Để trống thì cả khối đăng ký email được ẩn đi.
   // Formspree cho miễn phí 50 lượt gửi/tháng: https://formspree.io
   // Link có dạng: https://formspree.io/f/xxxxxxxx
-  formEndpoint: '',
+  formEndpoint: 'https://formspree.io/f/mljeokde',
 
   version: '0.6.0',
   fileSize: '107 MB',

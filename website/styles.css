@@ -400,11 +400,16 @@ h1 {
 #wl-form input {
   flex: 1 1 240px; min-width: 0;
   padding: 14px 16px; border-radius: var(--radius);
-  border: 1px solid var(--inverse-line);
+  /* --inverse-line quá mờ để làm viền ô nhập (1,15:1) — WCAG 1.4.11 đòi 3:1.
+     #8c8c8c là mức xám đạt cả hai chiều: 3,11:1 trên nền sáng của khối đảo màu,
+     5,85:1 trên nền tối. Một giá trị cố định thay vì token vì nó không đổi theo chủ đề. */
+  border: 1px solid #8c8c8c;
   background: transparent; color: var(--inverse-fg);
   font: inherit; font-size: 15px;
 }
 #wl-form input::placeholder { color: var(--inverse-muted); }
+/* Bẫy bot: ẩn khỏi mắt người và khỏi trình đọc màn hình, nhưng bot vẫn điền. */
+#wl-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 #wl-form input:focus-visible { outline-color: var(--inverse-fg); }
 #wl-form .btn-primary { background: var(--inverse-fg); color: var(--inverse-bg); }
 
