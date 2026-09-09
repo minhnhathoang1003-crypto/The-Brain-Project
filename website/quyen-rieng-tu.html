@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quyền riêng tư — The Brain Project</title>
+<meta name="description" content="The Brain Project và tiện ích Focus Bridge không thu thập, không gửi đi và không bán dữ liệu nào. Mọi thứ nằm trên máy bạn.">
+<link rel="icon" href="images/icon.png" type="image/png">
+<link rel="canonical" href="https://the-brain-project.vercel.app/quyen-rieng-tu">
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="28" height="28">
+    <span>The Brain Project</span>
+  </a>
+  <nav class="topnav">
+    <a href="/">Trang chủ</a>
+    <a href="/#install">Cài đặt</a>
+  </nav>
+  <div class="theme" role="group" aria-label="Giao diện">
+    <button type="button" data-theme-set="system" aria-pressed="true" title="Theo hệ thống">Hệ thống</button>
+    <button type="button" data-theme-set="light" aria-pressed="false" title="Sáng">Sáng</button>
+    <button type="button" data-theme-set="dark" aria-pressed="false" title="Tối">Tối</button>
+  </div>
+</header>
+
+<main class="doc">
+
+  <p class="kicker">Chính sách quyền riêng tư</p>
+  <h1 class="doc-title">Không có gì rời khỏi máy bạn</h1>
+  <p class="doc-meta">Áp dụng cho ứng dụng <strong>The Brain Project</strong> (Windows) và tiện ích trình duyệt
+    <strong>The Brain Project · Focus Bridge</strong> (Chrome, Edge). Cập nhật lần cuối: 9 tháng 9, 2026.</p>
+
+  <p class="doc-lede">
+    Không có máy chủ. Không có tài khoản. Không có quảng cáo, không có bộ theo dõi, không có bên thứ ba nào
+    nhận dữ liệu. Chúng tôi không thu thập, không lưu trữ trên mạng, không bán và không chia sẻ bất kỳ dữ liệu
+    nào của bạn — vì không có chỗ nào để gửi tới.
+  </p>
+
+  <h2>Tiện ích đọc những gì</h2>
+  <p>
+    Để biết tab bạn đang mở có nằm trong danh sách chặn hay không, tiện ích phải đọc <strong>địa chỉ (URL) của
+    các tab đang mở</strong>. Việc đọc diễn ra hoàn toàn trong bộ nhớ của trình duyệt: so tên miền với danh sách
+    bạn đã đặt, rồi bỏ đi.
+  </p>
+  <ul class="doc-list">
+    <li>URL <strong>không được lưu lại</strong> ở bất kỳ đâu.</li>
+    <li>URL <strong>không được gửi</strong> tới ứng dụng trên máy, và càng không gửi ra Internet.</li>
+    <li>Không có lịch sử duyệt web nào được ghi lại.</li>
+  </ul>
+
+  <h2>Vì sao cần quyền truy cập mọi trang</h2>
+  <p>
+    Danh sách chặn do chính bạn đặt và có thể là bất kỳ tên miền nào, nên tiện ích không thể biết trước phải
+    xin quyền cho những trang nào. Đó là lý do nó khai báo <code>host_permissions: &lt;all_urls&gt;</code>.
+    Quyền này chỉ được dùng để đối chiếu tên miền và chuyển hướng những trang bạn đã tự đưa vào danh sách chặn.
+  </p>
+
+  <h2>Tiện ích lưu gì trên máy bạn</h2>
+  <p>Tất cả nằm trong <code>chrome.storage.local</code> — bộ nhớ cục bộ của trình duyệt trên chính máy đó,
+    không đồng bộ lên tài khoản Google:</p>
+  <dl class="doc-table">
+    <div><dt><code>token</code></dt><dd>Mã ghép nối với ứng dụng trên máy. Sinh ngẫu nhiên, không liên quan gì tới danh tính của bạn.</dd></div>
+    <div><dt><code>targets</code></dt><dd>Danh sách tên miền bạn chọn chặn.</dd></div>
+    <div><dt><code>lockUntil</code></dt><dd>Thời điểm kết thúc chế độ khóa, nếu bạn đang bật.</dd></div>
+    <div><dt><code>connected</code>, <code>updatedAt</code>, <code>error</code></dt><dd>Trạng thái kết nối, để popup hiển thị cho bạn biết bộ chặn còn chạy hay không.</dd></div>
+  </dl>
+
+  <h2>Tiện ích gửi gì, và gửi cho ai</h2>
+  <p>
+    Tiện ích mở đúng <strong>một</strong> kết nối: tới <code>ws://127.0.0.1:47831</code> — tức là ứng dụng
+    The Brain Project đang chạy trên chính máy của bạn. <code>127.0.0.1</code> là địa chỉ nội bộ; dữ liệu
+    không đi qua mạng và không thể ra khỏi máy.
+  </p>
+  <p>Qua kết nối đó chỉ có ba loại tin được gửi đi:</p>
+  <ul class="doc-list">
+    <li><strong>Mã ghép nối</strong>, để ứng dụng biết đây đúng là tiện ích của bạn.</li>
+    <li><strong>Tín hiệu ping</strong> mỗi 10 giây, để hai bên biết còn kết nối.</li>
+    <li><strong>Một cờ đúng/sai</strong> báo rằng luật chặn đã được áp dụng.</li>
+  </ul>
+  <p class="doc-note">
+    Không có URL, không có tên miền bạn đang xem, không có lịch sử, không có nội dung trang nào nằm trong
+    những tin này.
+  </p>
+
+  <h2>Ứng dụng trên Windows lưu gì</h2>
+  <p>
+    Toàn bộ dữ liệu nằm trong thư mục dữ liệu của ứng dụng trên máy bạn, được mã hóa bằng
+    <code>safeStorage</code> của hệ điều hành theo tài khoản Windows. Ứng dụng chỉ giữ: mã ghép nối, số dư
+    credit, lịch sử số phút theo ngày, danh sách tên miền và ứng dụng bị chặn, chủ đề giao diện, khung thời
+    gian, ngưỡng không hoạt động, phiên đang chạy và lượt mở đang chạy.
+  </p>
+  <p>Không có đồng bộ, không có sao lưu lên mạng, không có cập nhật tự động.</p>
+
+  <h2>Xóa dữ liệu</h2>
+  <ul class="doc-list">
+    <li>Trong popup tiện ích, bấm <strong>ngắt kết nối</strong> để xóa mã ghép nối và danh sách chặn khỏi trình duyệt.</li>
+    <li>Gỡ tiện ích khỏi trình duyệt sẽ xóa sạch mọi thứ nó đã lưu.</li>
+    <li>Trong ứng dụng, nút <strong>Xóa toàn bộ dữ liệu</strong> đưa mọi thứ về trạng thái ban đầu, kể cả bản sao lưu mã hóa.</li>
+  </ul>
+  <p class="doc-note">
+    Cả hai việc trên đều bị chặn trong lúc <strong>chế độ khóa</strong> còn hiệu lực — đó là điều bạn đã chủ
+    động chọn khi bật khóa.
+  </p>
+
+  <h2>Về chính trang web này</h2>
+  <p>
+    Trang giới thiệu bạn đang đọc dùng <strong>Vercel Web Analytics</strong> để đếm lượt truy cập. Nó không
+    dùng cookie và không theo dấu bạn sang trang khác. Nếu bạn để lại email trong ô đăng ký, email đó được
+    <strong>Formspree</strong> chuyển tới hộp thư của tác giả, và chỉ dùng để báo khi có phiên bản mới.
+    Cả hai thứ này nằm ở website và <strong>không liên quan gì tới ứng dụng hay tiện ích</strong>.
+  </p>
+
+  <h2>Thay đổi chính sách</h2>
+  <p>
+    Nếu có thay đổi, ngày cập nhật ở đầu trang sẽ đổi theo. Toàn bộ mã nguồn của ứng dụng và tiện ích đều công
+    khai, nên bạn không cần tin lời tôi — đọc thẳng code là kiểm chứng được mọi điều viết ở trên.
+  </p>
+
+  <h2>Liên hệ</h2>
+  <p id="contact">
+    Có câu hỏi hoặc phát hiện điều gì không khớp với chính sách này, hãy mở một issue trên kho mã nguồn.
+  </p>
+
+  <hr class="doc-rule">
+
+  <!-- Bản tiếng Anh: người duyệt của Chrome Web Store cần đọc được. -->
+  <section lang="en" class="doc-en">
+    <p class="kicker">Privacy policy — English</p>
+    <h2 class="doc-title-en">Nothing leaves your machine</h2>
+    <p class="doc-meta">
+      Applies to <strong>The Brain Project</strong> (Windows app) and <strong>The Brain Project · Focus Bridge</strong>
+      (Chrome / Edge extension). Last updated: 9 September 2026.
+    </p>
+
+    <p>
+      There is no server, no account, no advertising, no tracker and no third party receiving data. We do not
+      collect, transmit, sell or share any of your data, because there is nowhere for it to go.
+    </p>
+
+    <h3>What the extension reads</h3>
+    <p>
+      To decide whether an open tab is on your block list, the extension reads the <strong>URLs of open
+      tabs</strong>. This happens entirely in browser memory: the hostname is compared against the list you
+      configured, then discarded. URLs are <strong>never stored</strong>, <strong>never sent</strong> to the
+      desktop app, and never sent to the internet. No browsing history is recorded.
+    </p>
+
+    <h3>Why it requests access to all sites</h3>
+    <p>
+      Your block list is user-defined and can contain any domain, so the extension cannot know in advance which
+      hosts to request. That is why it declares <code>host_permissions: &lt;all_urls&gt;</code>. The permission
+      is used only to match hostnames and to redirect the sites you yourself added to the block list.
+    </p>
+
+    <h3>What it stores locally</h3>
+    <p>
+      In <code>chrome.storage.local</code> only, on that machine, never synced to a Google account: the pairing
+      <code>token</code> (a random value unrelated to your identity), <code>targets</code> (your blocked
+      domains), <code>lockUntil</code> (lock mode expiry), and connection status fields
+      (<code>connected</code>, <code>updatedAt</code>, <code>error</code>) used to show whether blocking is active.
+    </p>
+
+    <h3>What it transmits, and to whom</h3>
+    <p>
+      The extension opens exactly one connection, to <code>ws://127.0.0.1:47831</code> — the companion desktop
+      app running on your own computer. <code>127.0.0.1</code> is a loopback address; the data never traverses
+      a network and cannot leave the machine. Only three kinds of message are sent over it: the pairing token,
+      a keep-alive ping every 10 seconds, and a boolean flag confirming the blocking rules were applied.
+      <strong>No URLs, no hostnames, no history and no page content are included.</strong>
+    </p>
+
+    <h3>Deleting your data</h3>
+    <p>
+      Use <strong>disconnect</strong> in the extension popup to erase the pairing token and block list from the
+      browser, or simply uninstall the extension, which removes everything it stored. In the desktop app,
+      <strong>Delete all data</strong> resets it to its initial state, including the encrypted backup. Both are
+      blocked while <strong>lock mode</strong> is active — which is precisely what you opted into by enabling it.
+    </p>
+
+    <h3>About this website</h3>
+    <p>
+      This marketing site uses <strong>Vercel Web Analytics</strong> for page-view counts; it sets no cookies
+      and does not track you across sites. If you submit the email form, <strong>Formspree</strong> delivers
+      that address to the author's inbox and it is used only to announce new releases. Neither is part of the
+      app or the extension.
+    </p>
+
+    <h3>Contact</h3>
+    <p id="contact-en">Please open an issue on the source repository.</p>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="foot-main">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="24" height="24">
+    <div>
+      <p class="foot-name">The Brain Project</p>
+      <p class="foot-sub">Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.</p>
+      <p class="foot-links"><a href="/">← Về trang chủ</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="privacy.js"></script>
+</body>
+</html>
