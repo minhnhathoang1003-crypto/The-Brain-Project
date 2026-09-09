@@ -58,6 +58,14 @@
     label.textContent = 'Xem hướng dẫn cài đặt';
   }
 
+  /* ── Link mã nguồn ── */
+
+  if (CFG.repoUrl) {
+    var repo = $('#repo-link');
+    repo.href = CFG.repoUrl;
+    repo.hidden = false;
+  }
+
   /* ── Dải quy đổi: 5 phút tập trung = 1 credit, 1 credit = 1 phút ── */
 
   var rFocus = $('#r-focus'), rCredit = $('#r-credit'), rOut = $('#r-out');
