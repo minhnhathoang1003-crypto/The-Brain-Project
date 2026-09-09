@@ -70,3 +70,25 @@ Chỉ khi tiện ích đã lên store thật:
 3. Giữ lại đường load unpacked ở đâu đó cho người dùng Edge hoặc người không vào được store.
 
 Làm sớm hơn là tự phá luồng cài đặt đang chạy được, trong lúc chưa chắc có được duyệt hay không.
+
+## Ảnh chụp đã dựng sẵn
+
+Nằm trong `store-assets/`, đúng **1280×800, PNG 24-bit không kênh alpha** — canvas luôn xuất RGBA
+32-bit nên phải tự đóng gói lại PNG color type 2, không thì bị chặn ngay ở bước upload.
+
+| File | Nội dung |
+|---|---|
+| `1-trang-chan.png` | Trang chặn của chính tiện ích. Để đầu tiên vì đây là thứ duy nhất trong bộ thuộc về tiện ích. |
+| `2-man-hinh-chinh.png` | Ứng dụng desktop: số dư credit và danh sách chặn |
+| `3-dang-tap-trung.png` | Phiên đang chạy, credit tích lũy theo thời gian thực |
+| `4-ghep-noi.png` | Màn hình mở đầu với bốn bước ghép nối |
+| `5-cai-dat.png` | Bảng cài đặt |
+
+Không ảnh nào bị cắt cúp: ảnh gốc được thu vừa khung rồi đặt giữa nền trắng, nên không có nội dung nào
+bị che đi để trông gọn hơn thực tế.
+
+Bốn trên năm ảnh là ứng dụng desktop, đúng bản chất của một tiện ích đi kèm — nhưng vì vậy phần mô tả
+càng phải nói ngay từ dòng đầu rằng tiện ích cần ứng dụng Windows mới hoạt động.
+
+Chưa có ảnh popup của tiện ích: popup cần bối cảnh extension thật mới chạy được, và nó là một khung hẹp
+nên đặt vào khung 1280×800 sẽ thừa rất nhiều nền trắng.
