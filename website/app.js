@@ -107,6 +107,11 @@
       alt: 'Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.',
       cap: 'Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.'
     },
+    focus: {
+      src: 'images/focus.webp', w: 1233, h: 854,
+      alt: 'Phiên tập trung đang chạy: đồng hồ đếm ngược 22:56 còn lại, ô "đang tích lũy" ghi 0,42 trên 5 credit, và nút Dừng phiên.',
+      cap: 'Trong lúc chạy phiên, hai cột biến mất — cả màn hình chỉ còn một thứ để nhìn. Số credit nhích lên từng giây, và ngay dưới là dòng nhắc bạn sẽ mất đúng chừng đó nếu dừng: cùng một con số, dùng cho cả động lực lẫn răn đe.'
+    },
     blocked: {
       src: 'images/browser-blocked.webp', w: 1280, h: 720,
       alt: 'Trang chặn hiện trong trình duyệt với dòng chữ "Một khoảng dừng. Một lựa chọn tốt hơn."',
