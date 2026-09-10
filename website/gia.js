@@ -40,19 +40,30 @@
     if (v !== undefined && v !== null && v !== '') el.textContent = v;
   });
 
-  /* ── Chưa mở bán hay đã mở bán ──
-     Chỉ coi là đã mở bán khi có ĐỦ cả giá lẫn link thanh toán. Thiếu một trong hai
-     thì trang sẽ hoặc hứa giá mà không cho mua, hoặc có nút mua mà không nói giá —
-     cả hai đều tệ hơn là nói thẳng rằng chưa bán. */
+  /* ── Ba trạng thái ──
+     Chỉ có nút mua khi có ĐỦ cả giá lẫn link thanh toán: nút mua mà không nói giá,
+     hoặc giá mà bấm vào không mua được, đều tệ hơn là nói thẳng chưa bán.
+     Có giá nhưng chưa có link thì vẫn nói giá — giấu con số đã chốt là phí. */
 
-  var banned = !!(CFG.price && CFG.checkoutUrl);
+  var coGia = !!CFG.price, coCheckout = !!CFG.checkoutUrl;
 
-  if (banned) {
+  if (coGia) {
     $('#selling').hidden = false;
     $('#price-amount').textContent = CFG.price;
     $('#price-note').textContent = CFG.priceNote || '';
+
     var buy = $('#buy');
-    buy.href = CFG.checkoutUrl;
+    if (coCheckout) {
+      buy.href = CFG.checkoutUrl;
+    } else {
+      // Chưa bán được: đổi nút mua thành lối vào danh sách chờ, đừng để nút chết.
+      buy.href = '/#waitlist';
+      buy.textContent = 'Báo tôi khi mở bán';
+      buy.classList.remove('btn-primary');
+      buy.classList.add('btn-ghost');
+      $('#soon').hidden = false;
+      $('#payment-note').hidden = true;
+    }
   } else {
     $('#not-selling').hidden = false;
   }

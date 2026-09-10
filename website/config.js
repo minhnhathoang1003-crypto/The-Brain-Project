@@ -22,11 +22,13 @@ window.SITE_CONFIG = {
   repoUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project',
 
   // ── Bán hàng ──────────────────────────────────────────────────────────────
-  // Để trống `price` thì trang /gia hiện trạng thái "chưa mở bán": vẫn có bảng
-  // so sánh và chính sách hoàn tiền, nhưng không có nút mua và không hứa giá nào.
-  // Điền vào chỉ khi đã thật sự mở bán — và nhớ bật SELLING trong src/license.cjs,
-  // nếu không thì trang web đòi tiền trong khi ứng dụng vẫn cho không tất cả.
-  price: '',                 // ví dụ: '390.000₫' hoặc '19 USD'
+  // Trang /gia có ba trạng thái, tự chọn theo hai trường dưới:
+  //   không price, không checkoutUrl → "chưa mở bán", không nói giá nào
+  //   có price, chưa có checkoutUrl  → hiện giá kèm "sắp mở bán", chưa có nút mua
+  //   có cả hai                      → hiện nút mua thật
+  // Chỉ điền checkoutUrl khi đã thật sự bán được — và nhớ bật SELLING trong
+  // src/license.cjs, nếu không thì web đòi tiền trong khi ứng dụng vẫn cho không.
+  price: '390.000₫',         // để trống thì trang không nói giá nào
   priceNote: 'Trả một lần, dùng vĩnh viễn. Không thuê bao.',
   checkoutUrl: '',           // link Lemon Squeezy; trống thì nút mua bị ẩn
   refundDays: 30             // số ngày hoàn tiền vô điều kiện

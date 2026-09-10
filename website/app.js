@@ -58,6 +58,14 @@
     label.textContent = 'Xem hướng dẫn cài đặt';
   }
 
+  /* ── Dòng giá trên trang chủ ──
+     Chỉ hiện khi config có giá, để trang không bao giờ nói một câu trống. */
+
+  if (CFG.price) {
+    var homePrice = $('#home-price');
+    if (homePrice) homePrice.hidden = false;
+  }
+
   /* ── Link mã nguồn ── */
 
   if (CFG.repoUrl) {
