@@ -31,7 +31,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script>/* Sơn chủ đề trước khi vẽ, tránh loé sai màu khi người dùng đã tự chọn. */
 try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -64,7 +64,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
     <p class="eyebrow">Phiên bản <span data-bind="version">0.7.0</span> · Windows 10 / 11 · Miễn phí</p>
     <h1>
       Tập trung để kiếm credit.<br>
-      Đổi credit để mở thứ gây nghiện.
+      <span class="dim">Đổi credit để mở thứ gây nghiện.</span>
     </h1>
     <p class="lede">
       YouTube, TikTok, Facebook — và cả ứng dụng, game đang chạy trên máy bạn — đều bị chặn.
@@ -91,7 +91,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <!-- ── VÒNG LẶP ───────────────────────────────────────── -->
   <section id="loop" class="section">
     <p class="kicker">Vòng lặp</p>
-    <h2>Một tỉ lệ duy nhất, không thương lượng</h2>
+    <h2>Một tỉ lệ duy nhất. <span class="dim">Không thương lượng.</span></h2>
     <p class="section-lede">
       Không có danh sách việc cần làm, không có streak, không có huy hiệu. Chỉ một phép đổi:
       thời gian tập trung thành thời gian giải trí.
@@ -155,7 +155,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <!-- ── ẢNH CHỤP ───────────────────────────────────────── -->
   <section id="screens" class="section section-flush">
     <p class="kicker">Giao diện</p>
-    <h2>Đơn sắc. Chỉ đen, trắng và xám.</h2>
+    <h2>Đơn sắc. <span class="dim">Chỉ đen, trắng và xám.</span></h2>
     <p class="section-lede">
       Không màu sắc, không thẻ nổi, không biểu tượng thừa. Phân cấp bằng nét mảnh và khoảng trống.
       Trong lúc chạy phiên, cả màn hình chỉ còn một thứ để nhìn.
@@ -186,7 +186,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <!-- ── CHẶN GÌ ────────────────────────────────────────── -->
   <section id="blocks" class="section">
     <p class="kicker">Nó chặn được gì</p>
-    <h2>Website, ứng dụng, và cả chính bạn</h2>
+    <h2>Website, ứng dụng, <span class="dim">và cả chính bạn.</span></h2>
 
     <div class="grid">
       <article class="card">
@@ -248,7 +248,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <!-- ── GIỚI HẠN ───────────────────────────────────────── -->
   <section id="limits" class="section section-invert">
     <p class="kicker">Trung thực</p>
-    <h2>Những gì nó không làm được</h2>
+    <h2>Những gì nó <span class="dim">không làm được.</span></h2>
     <p class="section-lede">
       Phần mềm chặn nào cũng có đường vòng. Đây là tất cả những đường vòng mà tôi biết trong sản phẩm này —
       liệt kê ra trước khi bạn tự phát hiện.
@@ -270,7 +270,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <!-- ── CÀI ĐẶT ────────────────────────────────────────── -->
   <section id="install" class="section">
     <p class="kicker">Cài đặt</p>
-    <h2>Bốn bước, làm một lần duy nhất</h2>
+    <h2>Bốn bước. <span class="dim">Làm một lần duy nhất.</span></h2>
     <p class="section-lede">
       Việc chặn website do tiện ích trình duyệt thực hiện, nên lần chạy đầu ứng dụng sẽ dừng ở màn hình hướng dẫn
       cho tới khi ghép nối xong — vì chưa ghép nối thì credit không có tác dụng gì.
@@ -320,7 +320,7 @@ npm.cmd start</code></pre>
   <!-- ── GIÁ ────────────────────────────────────────────── -->
   <section id="price" class="section">
     <p class="kicker">Giá</p>
-    <h2>Hiện miễn phí toàn bộ</h2>
+    <h2>Hiện miễn phí <span class="dim">toàn bộ.</span></h2>
     <p class="section-lede">
       Hôm nay không tính năng nào bị khóa và không ai bị giới hạn gì. Về sau sẽ có bản Pro trả một lần,
       nhưng <strong>vòng lặp cốt lõi — tập trung, kiếm credit, mở khóa — sẽ miễn phí vĩnh viễn.</strong>
@@ -338,7 +338,7 @@ npm.cmd start</code></pre>
   <!-- ── EMAIL ──────────────────────────────────────────── -->
   <section id="waitlist" class="section section-invert" hidden>
     <div class="wl">
-      <h2>Nhận tin khi có bản mới</h2>
+      <h2>Nhận tin <span class="dim">khi có bản mới.</span></h2>
       <p class="section-lede">
         Không có cập nhật tự động, nên cách duy nhất để biết bản mới ra là để lại email.
         Chỉ dùng để báo bản phát hành. Không quảng cáo, không chia sẻ cho ai.
