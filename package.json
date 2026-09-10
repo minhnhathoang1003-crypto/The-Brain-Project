@@ -1,6 +1,6 @@
 {
   "name": "the-brain-project",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "The Brain Project — một màn hình: tập trung để kiếm credit, đổi credit để mở website gây nghiện.",
   "main": "src/main.cjs",
   "author": "The Brain Project",
@@ -14,6 +14,7 @@
     "test:restart": "node tests/restart.cjs",
     "test:appblock": "node tests/appblock.cjs",
     "test:flows": "node --test tests/flows.cjs",
+    "test:site": "node tests/site-theme.cjs",
     "build": "electron-builder --win nsis --x64",
     "pack": "electron-builder --win --dir --x64"
   },

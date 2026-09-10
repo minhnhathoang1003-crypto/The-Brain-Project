@@ -115,19 +115,36 @@ a { color: inherit; }
 .topnav a:hover { color: var(--fg); }
 @media (max-width: 860px) { .topnav { display: none; } }
 
-.theme {
-  display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+/* Công tắc sáng/tối, dáng iOS: rãnh bo tròn hết cỡ, núm trượt ngang.
+   Chỉ hai trạng thái. Chưa ai gạt thì trang đi theo hệ thống và công tắc
+   phản ánh đúng thứ đang hiển thị; gạt một lần là lựa chọn đó được nhớ. */
+.theme-switch {
+  appearance: none; border: 0; background: none; padding: 4px; cursor: pointer;
+  display: inline-flex; align-items: center; border-radius: 999px;
 }
-.theme button {
-  appearance: none; border: 0; background: transparent; color: var(--muted);
-  font: inherit; font-size: 13px; padding: 6px 11px; cursor: pointer;
-  border-right: 1px solid var(--line);
-  transition: background .16s var(--ease), color .16s var(--ease);
+.theme-track {
+  position: relative; display: block; width: 46px; height: 27px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+  transition: background .22s var(--ease), border-color .22s var(--ease);
 }
-.theme button:last-child { border-right: 0; }
-.theme button:hover { color: var(--fg); }
-.theme button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-@media (max-width: 560px) { .theme button { padding: 6px 9px; font-size: 12px; } }
+.theme-knob {
+  position: absolute; top: 2px; left: 2px; width: 21px; height: 21px;
+  border-radius: 50%; background: var(--fg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+  transition: transform .22s var(--ease), background .22s var(--ease);
+}
+.theme-switch[aria-checked="true"] .theme-track { background: var(--fg); border-color: var(--fg); }
+.theme-switch[aria-checked="true"] .theme-knob { transform: translateX(19px); background: var(--bg); }
+.theme-switch:hover .theme-track { border-color: var(--muted); }
+.theme-switch:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+@media (max-width: 560px) {
+  .theme-track { width: 42px; height: 25px; }
+  .theme-knob { width: 19px; height: 19px; }
+  .theme-switch[aria-checked="true"] .theme-knob { transform: translateX(17px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-track, .theme-knob { transition: none; }
+}
 
 /* ── Khung chung ────────────────────────────────────────── */
 

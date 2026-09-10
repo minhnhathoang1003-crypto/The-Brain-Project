@@ -1,34 +1,11 @@
-/* Trang quyền riêng tư: chỉ cần nút chủ đề và hai link liên hệ.
+/* Trang quyền riêng tư: chỉ cần hai link liên hệ. Công tắc chủ đề nằm ở theme.js.
    Cố ý không nạp app.js — trang này không có bộ ảnh, dải quy đổi hay form. */
 
 (function () {
   'use strict';
 
   var CFG = window.SITE_CONFIG || {};
-  var root = document.documentElement;
-  var STORE = 'brain-site-theme';
-
   function all(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
-
-  function applyTheme(v) {
-    if (v === 'light' || v === 'dark') root.setAttribute('data-theme', v);
-    else root.removeAttribute('data-theme');
-    all('[data-theme-set]').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.dataset.themeSet === v));
-    });
-  }
-
-  var saved = 'system';
-  try { saved = localStorage.getItem(STORE) || 'system'; } catch (e) { /* chế độ riêng tư */ }
-  applyTheme(saved);
-
-  all('[data-theme-set]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var v = b.dataset.themeSet;
-      applyTheme(v);
-      try { localStorage.setItem(STORE, v); } catch (e) { /* bỏ qua */ }
-    });
-  });
 
   // Link liên hệ lấy từ repoUrl, để không phải sửa hai chỗ khi đổi kho mã nguồn.
   // Không có repoUrl thì giữ nguyên câu chữ sẵn có trong HTML.

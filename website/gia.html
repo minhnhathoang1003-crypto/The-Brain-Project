@@ -19,6 +19,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script>/* Sơn chủ đề trước khi vẽ, tránh loé sai màu khi người dùng đã tự chọn. */
+try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 </head>
 <body>
 
@@ -32,11 +34,9 @@
     <a href="/#install">Cài đặt</a>
     <a href="/quyen-rieng-tu">Quyền riêng tư</a>
   </nav>
-  <div class="theme" role="group" aria-label="Giao diện">
-    <button type="button" data-theme-set="system" aria-pressed="true" title="Theo hệ thống">Hệ thống</button>
-    <button type="button" data-theme-set="light" aria-pressed="false" title="Sáng">Sáng</button>
-    <button type="button" data-theme-set="dark" aria-pressed="false" title="Tối">Tối</button>
-  </div>
+  <button type="button" class="theme-switch" data-theme-switch role="switch" aria-checked="false" aria-label="Chế độ tối">
+    <span class="theme-track"><span class="theme-knob"></span></span>
+  </button>
 </header>
 
 <main class="doc">
@@ -184,6 +184,7 @@
 </footer>
 
 <script src="config.js"></script>
+<script src="theme.js"></script>
 <script src="gia.js"></script>
 <!-- Vercel Web Analytics + Speed Insights, giống trang chủ. Thiếu ở đây thì lượt
      xem trang này không được đếm. Chỉ tồn tại trên Vercel; chạy ở máy thì 404, vô hại. -->

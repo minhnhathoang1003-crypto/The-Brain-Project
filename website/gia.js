@@ -8,31 +8,6 @@
   var $ = function (s) { return document.querySelector(s); };
   function all(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
 
-  /* ── Chủ đề ── */
-
-  var STORE = 'brain-site-theme';
-  var root = document.documentElement;
-
-  function applyTheme(v) {
-    if (v === 'light' || v === 'dark') root.setAttribute('data-theme', v);
-    else root.removeAttribute('data-theme');
-    all('[data-theme-set]').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.dataset.themeSet === v));
-    });
-  }
-
-  var saved = 'system';
-  try { saved = localStorage.getItem(STORE) || 'system'; } catch (e) { /* chế độ riêng tư */ }
-  applyTheme(saved);
-
-  all('[data-theme-set]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var v = b.dataset.themeSet;
-      applyTheme(v);
-      try { localStorage.setItem(STORE, v); } catch (e) { /* bỏ qua */ }
-    });
-  });
-
   /* ── Giá trị từ config ── */
 
   all('[data-bind]').forEach(function (el) {

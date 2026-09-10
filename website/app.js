@@ -8,31 +8,6 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  /* ── Chủ đề: hệ thống / sáng / tối, giống ba lựa chọn trong ứng dụng ── */
-
-  var STORE = 'brain-site-theme';
-  var root = document.documentElement;
-
-  function applyTheme(v) {
-    if (v === 'light' || v === 'dark') root.setAttribute('data-theme', v);
-    else root.removeAttribute('data-theme');
-    $$('[data-theme-set]').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.dataset.themeSet === v));
-    });
-  }
-
-  var saved = 'system';
-  try { saved = localStorage.getItem(STORE) || 'system'; } catch (e) { /* chế độ riêng tư */ }
-  applyTheme(saved);
-
-  $$('[data-theme-set]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var v = b.dataset.themeSet;
-      applyTheme(v);
-      try { localStorage.setItem(STORE, v); } catch (e) { /* bỏ qua */ }
-    });
-  });
-
   /* ── Điền các giá trị từ config ── */
 
   $$('[data-bind]').forEach(function (el) {
