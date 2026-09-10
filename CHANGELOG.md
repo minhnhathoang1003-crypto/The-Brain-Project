@@ -1,5 +1,12 @@
 # Có gì mới
 
+## 0.7.0
+
+- **Ứng dụng tự báo khi có bản mới.** Từ bản này trở đi, không phải tự vào website xem có gì mới nữa — ứng dụng tự kiểm tra và hiện trong ⚙. Bản mới **không tự tải về**: bạn bấm mới tải, để không tốn dung lượng mạng ngoài ý muốn.
+- **Không bao giờ cài đè giữa chừng.** Cài bản mới phải đóng ứng dụng, nên nó từ chối cài trong hai trường hợp: đang chạy phiên tập trung (đóng giữa phiên là mất hết credit đang tích lũy) và đang trong chế độ khóa (lúc ứng dụng tắt, phần chặn ứng dụng Windows sẽ ngừng hoạt động). Cũng không tự cài lén lúc bạn thoát ứng dụng.
+- **Xem ranh giới Free/Pro ngay trong ⚙.** Có bảng so sánh và ô nhập mã bản quyền. Hiện **chưa bán và chưa ai bị giới hạn gì** — mọi tính năng vẫn mở cho tất cả mọi người.
+- Mã bản quyền được lưu ở file riêng, nên **nút "Xóa toàn bộ dữ liệu" không làm mất bản quyền** bạn đã mua.
+
 ## 0.6.0
 
 - **Mở được nhiều mục cùng lúc.** Trước đây chỉ mở được một thứ tại một thời điểm, nên chặn cả trình duyệt lẫn YouTube là rơi vào ngõ cụt: trả credit mở trình duyệt xong thì không mở nổi YouTube bên trong, mà màn hình đếm ngược cũng không cho đổi thêm. Nay mở trình duyệt rồi mở tiếp website bên trong bình thường, mỗi mục vẫn trả credit riêng.
