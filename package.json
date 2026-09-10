@@ -18,6 +18,7 @@
     "pack": "electron-builder --win --dir --x64"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "ws": "8.21.3"
   },
   "devDependencies": {
@@ -41,6 +42,13 @@
       {
         "from": "extension",
         "to": "extension"
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "minhnhathoang1003-crypto",
+        "repo": "The-Brain-Project"
       }
     ],
     "win": {

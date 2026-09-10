@@ -145,6 +145,38 @@ function plansView(){
     <p class="small-note">Tụt xuống Free không bao giờ làm mất credit đã kiếm, và không bao giờ bỏ chặn thứ gì đang chặn — chỉ là không thêm được mục mới quá hạn mức.</p></div>`;
 }
 
+function updateView(){
+  const u=state.system.update;
+  const ban=v=>v?`bản ${esc(v)}`:'bản mới';
+  // Chưa đóng gói thì không có gì để cập nhật — nói thẳng thay vì hiện nút chết.
+  if(!u||!u.supported)
+    return `<div class="set-row"><div><b>Cập nhật</b><p>Bản đang chạy từ mã nguồn nên không tự cập nhật. Bản đã cài đặt sẽ tự kiểm tra bản mới.</p></div>
+      <span class="chip">Không áp dụng</span></div>`;
+
+  const body={
+    idle:      ()=>[`Đang dùng bản mới nhất.`,`<button class="ghost small" data-system="updateCheck">Kiểm tra lại</button>`],
+    checking:  ()=>[`Đang kiểm tra…`,''],
+    available: ()=>[`Có ${ban(u.version)}. Tải về rồi cài khi bạn sẵn sàng — không tự tải để khỏi tốn dung lượng mạng của bạn.`,
+                    `<button class="primary small" data-system="updateDownload">Tải bản mới</button>`],
+    downloading:()=>[`Đang tải ${ban(u.version)}… ${u.percent}%`,''],
+    ready:     ()=>[`${ban(u.version)} đã tải xong. Cài đặt sẽ đóng ứng dụng rồi mở lại.`,
+                    `<button class="primary small" data-system="updateInstall">Cài và khởi động lại</button>`],
+    error:     ()=>[`Không kiểm tra được bản mới: ${esc(u.error||'lỗi không rõ')}`,
+                    `<button class="ghost small" data-system="updateCheck">Thử lại</button>`],
+  }[u.status]||(()=>['','']);
+
+  const [text,button]=body();
+  const chan=state.session
+    ? 'Đang chạy phiên tập trung nên chưa cài được — đóng ứng dụng giữa phiên là mất credit đang tích lũy.'
+    : locked()
+      ? 'Đang trong chế độ khóa nên chưa cài được: lúc ứng dụng tắt để cài, phần chặn ứng dụng Windows sẽ ngừng hoạt động.'
+      : '';
+  const nen=u.status==='ready'&&chan;
+
+  return `<div class="set-row"><div><b>Cập nhật</b><p>${text}${nen?`<br><b>${chan}</b>`:''}</p></div>
+    ${nen?'':button}</div>`;
+}
+
 function licenseView(){
   const l=state.license;
   return `<div class="set-row col"><div><b>Bản quyền</b>
@@ -185,6 +217,7 @@ function setupView(){
         : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>');})()}</div></div>
   ${licenseView()}
   ${plansView()}
+  ${updateView()}
   <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
 }
 

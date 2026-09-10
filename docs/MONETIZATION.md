@@ -99,8 +99,9 @@ Hai thứ không chặn đơn hàng đầu tiên nhưng ảnh hưởng thẳng t
 - **Ký số.** `package.json` đang để `signExecutable: false`. Tải miễn phí mà gặp cảnh báo SmartScreen thì chỉ
   khó chịu; trả tiền xong mới gặp "Windows protected your PC" là mất niềm tin. Chứng chỉ OV khoảng 200–400
   USD/năm và vẫn cần thời gian tích lũy uy tín; EV có uy tín ngay nhưng đắt hơn và cần khóa cứng.
-- **Tự cập nhật.** Chưa có `electron-updater` ở đâu trong dự án. Người trả tiền mong bản sửa lỗi tự tới; hiện
-  cách duy nhất để họ biết có bản mới là danh sách email trên website.
+- ~~**Tự cập nhật.**~~ **Xong.** `electron-updater` + GitHub Releases, xem `src/updater.cjs`. Có hiệu lực từ
+  bản phát hành kế tiếp: người đang dùng 0.6.0 vẫn phải tải tay một lần cuối, vì bản họ đang cầm chưa có bộ
+  cập nhật. Đó chính là lý do làm sớm — nhóm mắc kẹt đó hiện gần như bằng không.
 
 §19.3 trong bộ câu hỏi ghi: *"giai đoạn đầu thứ tôi cần là lôi cuốn người dùng thay vì tiền."* Thứ tự trên
 vẫn tôn trọng điều đó. Bốn tính năng Pro nay đã có thật, nhưng `tier()` vẫn trả `'pro'` cho tất cả mọi người

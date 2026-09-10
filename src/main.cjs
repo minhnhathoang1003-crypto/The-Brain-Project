@@ -3,12 +3,13 @@ const fs=require('node:fs'); const path=require('node:path'); const http=require
 const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,VERSION,WELCOME_CREDITS}=require('./engine.cjs');
 const {ForegroundWatcher,listWindows}=require('./foreground.cjs');
 const license=require('./license.cjs');
+const {createUpdater}=require('./updater.cjs');
 if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR);
 // Windows ghép cửa sổ với shortcut đã ghim qua id này. Thiếu nó, taskbar coi app là một
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
 app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
-let win,overlay,watcher,engine,server,wss,interval,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
+let win,overlay,watcher,engine,server,wss,interval,updater=null,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
 app.on('second-instance',()=>{if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}});
 app.whenReady().then(()=>{
@@ -39,9 +40,23 @@ app.whenReady().then(()=>{
   // Bản quyền đọc không được thì bỏ qua và chạy tiếp — quy tắc 3: không bao giờ chặn app mở lên.
   try{ if(fs.existsSync(licenseFile)) license.load(JSON.parse(safeStorage.decryptString(fs.readFileSync(licenseFile)))); }
   catch{ license.load(null); }
+  // Hai luật chặn cài đặt, quyết ở đây vì chỉ chỗ này nhìn thấy state của engine.
+  function whyCannotInstall(){
+    if(engine.s.session)
+      return 'Đang chạy phiên tập trung. Cài bản mới phải đóng ứng dụng, và đóng giữa phiên là mất toàn bộ credit đang tích lũy.';
+    if(engine.s.lockUntil&&engine.s.lockUntil>Date.now())
+      return 'Đang trong chế độ khóa. Trong lúc ứng dụng tắt để cài, phần chặn ứng dụng Windows sẽ ngừng hoạt động — chặn website thì vẫn còn vì tiện ích tự giữ.';
+    return null;
+  }
+  try{
+    const {autoUpdater}=require('electron-updater');
+    updater=createUpdater({app,autoUpdater,onChange:()=>broadcast(),canInstall:whyCannotInstall});
+    updater.start();
+  }catch(e){ updater=null; }  // hỏng cập nhật không bao giờ được làm app không mở lên
+
   const windowBackground=()=>nativeTheme.shouldUseDarkColors?'#0b0b0b':'#ffffff';
   const extensionConnected=()=>!!wss&&[...wss.clients].some(ws=>ws.authed&&ws.readyState===WebSocket.OPEN&&Date.now()-(ws.appliedAt||0)<5000);
-  const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion()}});
+  const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion(),update:updater?updater.snapshot():null}});
   const broadcast=()=>{if(win&&!win.isDestroyed())win.webContents.send('state',snapshot());if(wss)for(const ws of wss.clients)if(ws.authed&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify(engine.rules()));};
   server=http.createServer((req,res)=>{res.writeHead(404);res.end();});
   wss=new WebSocketServer({noServer:true,maxPayload:4096});
@@ -82,6 +97,9 @@ app.whenReady().then(()=>{
       return {ok:true,message:result.message};
     }
     if(type==='licenseRemove'){saveLicense(null);broadcast();return {ok:true,message:'Đã gỡ mã bản quyền khỏi máy này.'};}
+    if(type==='updateCheck'){if(!updater)throw Error('Không dùng được bộ cập nhật.');updater.check();return {ok:true,message:'Đang kiểm tra bản mới…'};}
+    if(type==='updateDownload'){if(!updater)throw Error('Không dùng được bộ cập nhật.');const r=updater.download();if(!r.ok)throw Error(r.error);return {ok:true,message:'Đang tải bản mới…'};}
+    if(type==='updateInstall'){if(!updater)throw Error('Không dùng được bộ cập nhật.');const r=updater.install();if(!r.ok)throw Error(r.error);return {ok:true,message:'Đang đóng ứng dụng để cài…'};}
     if(type==='copyPairing'){clipboard.writeText(engine.s.token);return {ok:true,message:'Đã sao chép mã ghép nối.'};}
     if(type==='extensionFolder'){await shell.openPath(extensionFolder);return {ok:true};}
     if(type==='reset'){
