@@ -15,6 +15,7 @@
     "test:appblock": "node tests/appblock.cjs",
     "test:flows": "node --test tests/flows.cjs",
     "test:site": "node tests/site-theme.cjs",
+    "test:site:mobile": "node tests/site-mobile.cjs",
     "build": "electron-builder --win nsis --x64",
     "pack": "electron-builder --win --dir --x64"
   },
