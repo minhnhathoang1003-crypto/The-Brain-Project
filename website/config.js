@@ -19,5 +19,15 @@ window.SITE_CONFIG = {
   sha256: '20E49EC407C7A59BB012061BA6A657C7F180B10F57DDE819EE4F26D2BE6CFE35',
 
   // Link tới mã nguồn. Để trống thì các link "mã nguồn" bị ẩn.
-  repoUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project'
+  repoUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project',
+
+  // ── Bán hàng ──────────────────────────────────────────────────────────────
+  // Để trống `price` thì trang /gia hiện trạng thái "chưa mở bán": vẫn có bảng
+  // so sánh và chính sách hoàn tiền, nhưng không có nút mua và không hứa giá nào.
+  // Điền vào chỉ khi đã thật sự mở bán — và nhớ bật SELLING trong src/license.cjs,
+  // nếu không thì trang web đòi tiền trong khi ứng dụng vẫn cho không tất cả.
+  price: '',                 // ví dụ: '390.000₫' hoặc '19 USD'
+  priceNote: 'Trả một lần, dùng vĩnh viễn. Không thuê bao.',
+  checkoutUrl: '',           // link Lemon Squeezy; trống thì nút mua bị ẩn
+  refundDays: 30             // số ngày hoàn tiền vô điều kiện
 };

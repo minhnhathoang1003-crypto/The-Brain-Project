@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Giá — The Brain Project</title>
+<meta name="description" content="Vòng lặp cốt lõi của The Brain Project miễn phí vĩnh viễn. Bản Pro trả một lần, dùng mãi, hoàn tiền vô điều kiện trong 30 ngày.">
+<link rel="icon" href="images/icon.png" type="image/png">
+<link rel="canonical" href="https://the-brain-project.vercel.app/gia">
+
+<meta property="og:title" content="Giá — The Brain Project">
+<meta property="og:description" content="Vòng lặp cốt lõi miễn phí vĩnh viễn. Pro trả một lần, dùng mãi.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://the-brain-project.vercel.app/gia">
+<meta property="og:image" content="https://the-brain-project.vercel.app/images/main.png">
+<meta property="og:locale" content="vi_VN">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="28" height="28">
+    <span>The Brain Project</span>
+  </a>
+  <nav class="topnav">
+    <a href="/">Trang chủ</a>
+    <a href="/#install">Cài đặt</a>
+    <a href="/quyen-rieng-tu">Quyền riêng tư</a>
+  </nav>
+  <div class="theme" role="group" aria-label="Giao diện">
+    <button type="button" data-theme-set="system" aria-pressed="true" title="Theo hệ thống">Hệ thống</button>
+    <button type="button" data-theme-set="light" aria-pressed="false" title="Sáng">Sáng</button>
+    <button type="button" data-theme-set="dark" aria-pressed="false" title="Tối">Tối</button>
+  </div>
+</header>
+
+<main class="doc">
+
+  <p class="kicker">Giá</p>
+  <h1 class="doc-title">Vòng lặp cốt lõi miễn phí vĩnh viễn</h1>
+
+  <p class="doc-lede">
+    Tập trung để kiếm credit, đổi credit để mở thứ gây nghiện, chặn website qua tiện ích trình duyệt —
+    toàn bộ phần đó <strong>không bao giờ nằm sau tường phí</strong>. Nó là thứ khiến người ta kể cho bạn bè;
+    đưa nó vào sau tường phí là tự cắt kênh lan truyền duy nhất.
+  </p>
+
+  <!-- Trạng thái khi chưa điền `price` trong config.js. -->
+  <div id="not-selling" class="doc-note" hidden>
+    <b>Hiện chưa mở bán.</b> Mọi tính năng đang mở cho tất cả mọi người, kể cả những thứ nằm ở cột Pro dưới
+    đây. Bảng này là ranh giới sẽ áp dụng khi bắt đầu bán, đăng trước để không ai bị bất ngờ.
+    <a href="/#waitlist">Để lại email</a> nếu muốn được báo trước.
+  </div>
+
+  <!-- Trạng thái khi đã mở bán. -->
+  <div id="selling" hidden>
+    <div class="price-card">
+      <div>
+        <p class="price-name">The Brain Project Pro</p>
+        <p class="price-amount" id="price-amount"></p>
+        <p class="price-note" id="price-note"></p>
+      </div>
+      <a class="btn btn-primary" id="buy" href="#" rel="noopener">Mua bản Pro</a>
+    </div>
+    <p class="small-print">
+      Thanh toán do <b>Lemon Squeezy</b> xử lý với tư cách merchant of record — họ xuất hóa đơn và lo thuế
+      từng nước. Mã bản quyền được gửi qua email ngay sau khi thanh toán; dán vào ⚙ trong ứng dụng là xong.
+    </p>
+  </div>
+
+  <h2>Free và Pro khác nhau ở đâu</h2>
+  <p>
+    Bốn dòng dưới đây là <strong>toàn bộ</strong> khác biệt. Không có gì khác bị khóa, và không có tính năng
+    nào được hứa mà chưa tồn tại — cả bốn đều đang chạy trong bản 0.6.0 mà bạn tải về hôm nay.
+  </p>
+
+  <div class="table-scroll">
+    <table class="plans plans-web">
+      <thead><tr><th>Tính năng</th><th>Free</th><th>Pro</th></tr></thead>
+      <tbody>
+        <tr><th>Số mục chặn được</th><td>5 mục</td><td>50 mục</td></tr>
+        <tr><th>Chặn ứng dụng và game Windows</th><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><th>Chế độ khóa không tự gỡ được</th><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><th>Lịch sử xem lại được</th><td>7 ngày</td><td>180 ngày</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="small-note">
+    Bảng này phải khớp từng chữ với <code>DIFFERENCES</code> trong <code>src/license.cjs</code>. Có một bài
+    kiểm thử đối chiếu hai nơi và báo lỗi nếu chúng lệch nhau, để trang web không bao giờ hứa thứ mà ứng dụng
+    không áp dụng.
+  </p>
+
+  <h2>Bản Free luôn dùng được</h2>
+  <ul class="doc-list">
+    <li>Trọn vòng lặp credit: tập trung → credit → mở khóa.</li>
+    <li>Chặn website qua tiện ích trình duyệt, kể cả khi ứng dụng đã tắt.</li>
+    <li>Tỉ lệ 5 phút = 1 credit, cố định, không mua được cách đi tắt.</li>
+    <li>Dữ liệu nằm trên máy bạn và được mã hóa.</li>
+  </ul>
+  <p>Không giới hạn thời gian dùng thử, không đếm ngược, không nhắc nâng cấp giữa phiên tập trung.</p>
+
+  <h2>Hoàn tiền</h2>
+  <p>
+    <strong>Hoàn tiền vô điều kiện trong <span data-bind="refundDays">30</span> ngày.</strong>
+    Không cần giải thích lý do, không cần trả lời bảng khảo sát, không có điều kiện kèm theo. Gửi một email
+    kèm mã đơn hàng là đủ.
+  </p>
+  <p>
+    Lý do đặt chính sách rộng như vậy: đây là phần mềm kỷ luật. Nếu nó không hợp với bạn thì giữ tiền của bạn
+    là điều tệ nhất tôi có thể làm — bạn sẽ ghét sản phẩm, và tôi mất một người có thể đã giới thiệu nó cho
+    người khác.
+  </p>
+
+  <h3>Hoàn tiền rồi thì chuyện gì xảy ra</h3>
+  <ul class="doc-list">
+    <li>Mã bản quyền bị thu hồi, ứng dụng trở về bản <strong>Free</strong>.</li>
+    <li><strong>Credit bạn đã kiếm được giữ nguyên.</strong> Nó là công sức của bạn, không phải thứ bạn mua.</li>
+    <li><strong>Những website và ứng dụng đang bị chặn vẫn bị chặn.</strong> Bản Free chỉ giới hạn việc thêm
+      mục mới quá hạn mức, chứ không bỏ chặn thứ gì đang có.</li>
+    <li>Lịch sử không bị xóa, chỉ hiện lại 7 ngày gần nhất thay vì 180.</li>
+  </ul>
+
+  <h3>Ba điều không bao giờ xảy ra</h3>
+  <p>Đây là ranh giới đóng đinh trong mã nguồn, không phải lời hứa suông:</p>
+  <ul class="doc-list">
+    <li>Bản quyền hỏng <strong>không bao giờ làm mất credit</strong> bạn đã kiếm.</li>
+    <li>Bản quyền hỏng <strong>không bao giờ làm bộ chặn ngừng chặn</strong> — bạn trả tiền để bị chặn.</li>
+    <li>Bản quyền hỏng <strong>không bao giờ làm ứng dụng không mở được</strong>, chỉ tụt xuống bậc Free.</li>
+  </ul>
+  <p>
+    Mất mạng cũng không sao: ứng dụng kiểm tra lại bản quyền khoảng 14 ngày một lần, và nếu không gọi được
+    máy chủ thì vẫn giữ bậc Pro thêm <strong>30 ngày</strong> nữa.
+  </p>
+
+  <h2>Mua một lần, không thuê bao</h2>
+  <p>
+    Trả một lần và dùng mãi bản đó. Không có phí hằng tháng, không tự động gia hạn, không có thẻ nào bị trừ
+    tiền lúc bạn không để ý.
+  </p>
+  <p class="doc-note">
+    Nói thẳng một giới hạn: ứng dụng <strong>chưa có cơ chế tự cập nhật</strong> và <strong>chưa được ký
+    số</strong>, nên bản mới phải tự tải về và Windows SmartScreen sẽ cảnh báo ở lần chạy đầu. Cả hai đều nằm
+    trong kế hoạch, nhưng hôm nay chưa có — bạn nên biết trước khi trả tiền.
+  </p>
+
+  <h2>Câu hỏi thường gặp</h2>
+  <dl class="doc-table">
+    <div><dt>Một mã dùng được mấy máy?</dt><dd>Sẽ ghi rõ ở trang thanh toán trước khi bạn trả tiền. Đổi máy thì gỡ mã ở máy cũ rồi dán vào máy mới.</dd></div>
+    <div><dt>Xóa toàn bộ dữ liệu có mất bản quyền không?</dt><dd>Không. Mã bản quyền được lưu ở một file riêng, cố ý không nằm chung với dữ liệu, đúng để tránh chuyện đó.</dd></div>
+    <div><dt>Có bản cho macOS hay điện thoại không?</dt><dd>Chưa. Hiện chỉ có Windows 10 và 11.</dd></div>
+    <div><dt>Đang khóa cứng thì mua Pro được không?</dt><dd>Được. Chế độ khóa không chặn việc nhập mã bản quyền — nó chỉ chặn những lối thoát khỏi chính nó.</dd></div>
+  </dl>
+
+  <p class="doc-note">
+    Còn thắc mắc gì trước khi mua, <span id="contact">hãy mở một issue trên kho mã nguồn</span>.
+  </p>
+
+</main>
+
+<footer class="footer">
+  <div class="foot-main">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="24" height="24">
+    <div>
+      <p class="foot-name">The Brain Project</p>
+      <p class="foot-sub">Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.</p>
+      <p class="foot-links">
+        <a href="/">← Về trang chủ</a>
+        <a href="/quyen-rieng-tu">Quyền riêng tư</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="gia.js"></script>
+<!-- Vercel Web Analytics + Speed Insights, giống trang chủ. Thiếu ở đây thì lượt
+     xem trang này không được đếm. Chỉ tồn tại trên Vercel; chạy ở máy thì 404, vô hại. -->
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>
