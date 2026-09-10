@@ -1,33 +1,78 @@
 # Trang giới thiệu The Brain Project
 
-Trang tĩnh, không build, không framework. Bốn file: `index.html`, `styles.css`, `app.js`, `config.js`.
+Trang tĩnh, không build, không framework.
+
+| Trang | File | Script riêng |
+|---|---|---|
+| `/` | `index.html` | `app.js` |
+| `/gia` | `gia.html` | `gia.js` |
+| `/quyen-rieng-tu` | `quyen-rieng-tu.html` | `privacy.js` |
+
+Dùng chung `styles.css`, `config.js` và `theme.js` (công tắc sáng/tối). Ngoài ra có `robots.txt`,
+`sitemap.xml` và `vercel.json`.
 
 ## Sửa nội dung
 
-Hai thứ duy nhất cần điền nằm trong `config.js`:
+Chữ nằm thẳng trong file HTML, sửa trực tiếp. Riêng những giá trị lặp lại ở nhiều nơi thì nằm trong
+`config.js`, để không bao giờ có hai chỗ nói hai số khác nhau:
 
 | Trường | Để trống thì sao |
 |---|---|
 | `downloadUrl` | Nút chính đổi thành “Xem hướng dẫn cài đặt” và cuộn xuống phần cài từ mã nguồn. Không bao giờ có link chết. |
 | `formEndpoint` | Khối đăng ký email bị ẩn hoàn toàn. |
+| `price` | Trang `/gia` không nói giá nào, hiện “chưa mở bán”. |
+| `checkoutUrl` | Có giá nhưng chưa có link thì nút mua đổi thành lối vào danh sách chờ, không phải nút chết. |
+| `repoUrl` | Các link “mã nguồn” và “mở issue” bị ẩn. |
+| `version`, `fileSize`, `sha256` | Hiện ở dòng dưới nút tải và ở chân trang. |
+| `refundDays` | Số ngày hoàn tiền trên `/gia`. |
 
-Chữ trên trang nằm thẳng trong `index.html`, sửa trực tiếp.
+**Lưu ý:** thẻ `og:` và `canonical` phải viết tuyệt đối ngay trong HTML — trình thu thập của mạng xã hội
+không chạy JS nên không đọc được `config.js`.
 
-## Đưa file cài đặt lên GitHub Releases (miễn phí, tối đa 2 GB/file)
+## Phát hành một bản mới
 
-Vercel không phục vụ được file 107 MB, nên file cài đặt phải nằm chỗ khác.
+Vercel không phục vụ được file hơn 100 MB, nên file cài đặt nằm ở GitHub Releases (miễn phí, tối đa
+2 GB mỗi file).
 
-1. Tạo repo trên <https://github.com/new>. Repo có thể để **Private** — release vẫn tải được nếu bạn chọn public repo; muốn giữ mã nguồn kín thì tạo một repo riêng chỉ để chứa bản phát hành.
-2. Vào tab **Releases → Draft a new release**, đặt tag `v0.6.0`.
-3. Kéo thả `release/The-Brain-Project-Setup-0.6.0.exe` vào ô Attach binaries.
-4. **Publish release**, rồi chuột phải vào file đã upload → Copy link address.
-5. Dán link đó vào `downloadUrl` trong `config.js`.
+Ở thư mục gốc của dự án:
 
-Link sẽ có dạng:
+1. Tăng `version` trong `package.json`.
+2. Thêm mục mới vào `CHANGELOG.md`.
+3. `npm.cmd run build`.
+4. Lấy mã băm:
+   ```bash
+   node -e "const c=require('crypto'),f=require('fs');const p='release/The-Brain-Project-Setup-<VER>.exe';console.log(c.createHash('sha256').update(f.readFileSync(p)).digest('hex').toUpperCase())"
+   ```
+5. Vào **Releases → Draft a new release**, đặt tag `v<VER>`, và đính **cả ba file** từ `release/`:
+
+   | File | Vì sao cần |
+   |---|---|
+   | `The-Brain-Project-Setup-<VER>.exe` | bản cài đặt |
+   | **`latest.yml`** | **thiếu là không ai tự cập nhật được.** `electron-updater` đọc đúng file này để biết có bản mới; không có nó thì ứng dụng im lặng báo “đang dùng bản mới nhất” mãi mãi |
+   | `The-Brain-Project-Setup-<VER>.exe.blockmap` | cho phép tải phần chênh lệch, bản cập nhật nhẹ hơn nhiều |
+
+6. **Publish release.**
+7. Quay lại `config.js`, sửa `downloadUrl`, `version`, `sha256`, và `fileSize` nếu đổi.
+
+Link tải sẽ có dạng:
 
 ```
-https://github.com/<tên-bạn>/<repo>/releases/download/v0.6.0/The-Brain-Project-Setup-0.6.0.exe
+https://github.com/<tên-bạn>/<repo>/releases/download/v<VER>/The-Brain-Project-Setup-<VER>.exe
 ```
+
+**Dung lượng ghi theo MiB**, vì đó là con số GitHub hiển thị cạnh file. 112.055.721 byte là `107 MB`
+trên trang web chứ không phải 112 MB, để người tải không tưởng là tải nhầm file.
+
+### Kiểm sau khi publish
+
+```bash
+curl -sIL "<downloadUrl>" | grep -i -E "^HTTP|^content-length"
+curl -sL "https://github.com/<tên-bạn>/<repo>/releases/download/v<VER>/latest.yml"
+```
+
+`content-length` phải khớp kích thước file thật, và `latest.yml` phải ghi đúng `version` mới. Nếu muốn
+chắc chắn, tải hẳn file về rồi đối chiếu SHA-256 với con số trong `config.js` — đó là toàn bộ lý do
+công bố mã băm.
 
 ## Thu email (miễn phí)
 
