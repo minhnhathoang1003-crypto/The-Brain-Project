@@ -1,14 +1,34 @@
-# The Brain Project — 0.6.0
+# The Brain Project
 
 Một vòng lặp duy nhất: **tập trung để kiếm credit, đổi credit để mở website gây nghiện.**
 
-Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồng hồ, nút bắt đầu), bên phải là ranh giới (danh sách website bị chặn và nút đổi credit). Cửa sổ hẹp thì hai cột xếp chồng thành một. Trong lúc chạy phiên hoặc đang mở website, cả màn hình chỉ còn một thứ để nhìn.
+Ứng dụng Windows chặn website, ứng dụng và game bạn tự đưa vào danh sách. Muốn mở lại thì phải tự kiếm thời gian: 5 phút tập trung đổi được 1 phút giải trí. Không có nút tắt, không có cách xin thêm.
+
+[**Tải về**](https://github.com/minhnhathoang1003-crypto/The-Brain-Project/releases/latest) · [Trang giới thiệu](https://the-brain-project.vercel.app) · [Có gì mới](CHANGELOG.md)
+
+![Màn hình chính](website/images/main.webp)
+
+Giao diện đơn sắc, hai cột: bên trái là nghi thức (số dư, đồng hồ, nút bắt đầu), bên phải là ranh giới (danh sách website bị chặn và nút đổi credit). Cửa sổ hẹp thì hai cột xếp chồng thành một.
+
+| Trong lúc tập trung | Khi mở website bị chặn |
+|---|---|
+| ![Phiên đang chạy](website/images/focus.webp) | ![Trang chặn](website/images/browser-blocked.webp) |
+| Hai cột biến mất, cả màn hình chỉ còn một thứ để nhìn. Số credit nhích lên từng giây, và ngay dưới là dòng nhắc bạn sẽ mất đúng chừng đó nếu dừng. | Trang chặn nói cho bạn biết cái giá thay vì chỉ báo lỗi. |
+
+| Khi mở ứng dụng bị chặn | Chế độ khóa |
+|---|---|
+| ![Lớp phủ ứng dụng](website/images/overlay.webp) | ![Chế độ khóa](website/images/locked.webp) |
+| Lớp phủ che kín ứng dụng đó. Không tiến trình nào bị giết nên bạn không mất dữ liệu đang làm dở. | Khóa cứng, không hủy và không rút ngắn được — kể cả bằng cách xóa dữ liệu. |
 
 ## Cài đặt
 
-Chạy `release/The-Brain-Project-Setup-0.6.0.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị. Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
+Tải bản mới nhất ở [trang Releases](https://github.com/minhnhathoang1003-crypto/The-Brain-Project/releases/latest) rồi chạy file `.exe`. Cài ở mức tài khoản người dùng nên không cần quyền quản trị.
 
-Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu.
+Binary chưa ký số, nên Windows SmartScreen sẽ cảnh báo ở lần chạy đầu — chọn *Thông tin khác → Vẫn chạy*.
+
+Từ bản 0.7.0, ứng dụng **tự kiểm tra bản mới** và báo trong ⚙. Nó không tự tải về và không tự cài: bạn bấm thì mới tải, và nó từ chối cài trong lúc bạn đang chạy phiên tập trung hoặc đang trong chế độ khóa.
+
+Chạy từ mã nguồn: `npm.cmd ci` rồi `npm.cmd start`.
 
 ## Vòng lặp
 

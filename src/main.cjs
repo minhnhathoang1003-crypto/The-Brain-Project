@@ -4,6 +4,11 @@ const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,V
 const {ForegroundWatcher,listWindows}=require('./foreground.cjs');
 const license=require('./license.cjs');
 const {createUpdater}=require('./updater.cjs');
+// Kênh góp ý. App cố ý không thu thập gì, nên đây là đường duy nhất để người dùng
+// nói với tác giả rằng họ kẹt ở đâu. Website giữ bản sao của hai giá trị này
+// trong website/config.js — đổi thì nhớ đổi cả hai.
+const EMAIL='minhnhat.hoang1003@gmail.com';
+const REPO='https://github.com/minhnhathoang1003-crypto/The-Brain-Project';
 if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR);
 // Windows ghép cửa sổ với shortcut đã ghim qua id này. Thiếu nó, taskbar coi app là một
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
@@ -100,6 +105,15 @@ app.whenReady().then(()=>{
     if(type==='updateCheck'){if(!updater)throw Error('Không dùng được bộ cập nhật.');updater.check();return {ok:true,message:'Đang kiểm tra bản mới…'};}
     if(type==='updateDownload'){if(!updater)throw Error('Không dùng được bộ cập nhật.');const r=updater.download();if(!r.ok)throw Error(r.error);return {ok:true,message:'Đang tải bản mới…'};}
     if(type==='updateInstall'){if(!updater)throw Error('Không dùng được bộ cập nhật.');const r=updater.install();if(!r.ok)throw Error(r.error);return {ok:true,message:'Đang đóng ứng dụng để cài…'};}
+    if(type==='feedbackEmail'){
+      // Điền sẵn phiên bản và trạng thái kết nối để đỡ một vòng hỏi đi hỏi lại.
+      // Người dùng nhìn thấy toàn bộ nội dung trước khi bấm gửi — không có gì lén.
+      const than=[`Phiên bản: ${app.getVersion()}`,`Windows: ${process.getSystemVersion()}`,
+        `Tiện ích: ${extensionConnected()?'đã kết nối':'chưa kết nối'}`,'','Tôi muốn góp ý:',''].join('\r\n');
+      await shell.openExternal(`mailto:${EMAIL}?subject=${encodeURIComponent('Góp ý The Brain Project '+app.getVersion())}&body=${encodeURIComponent(than)}`);
+      return {ok:true,message:'Đang mở ứng dụng email của bạn…'};
+    }
+    if(type==='feedbackIssues'){await shell.openExternal(REPO+'/issues/new');return {ok:true};}
     if(type==='copyPairing'){clipboard.writeText(engine.s.token);return {ok:true,message:'Đã sao chép mã ghép nối.'};}
     if(type==='extensionFolder'){await shell.openPath(extensionFolder);return {ok:true};}
     if(type==='reset'){
