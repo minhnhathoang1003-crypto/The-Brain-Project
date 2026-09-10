@@ -104,6 +104,9 @@ a { color: inherit; }
   display: flex; align-items: center; gap: 10px;
   font-weight: 600; letter-spacing: -.01em; text-decoration: none;
   margin-right: auto;
+  /* Đệm dọc chỉ để nới vùng chạm lên 44px theo khuyến nghị của di động;
+     không có nền nên nhìn không khác gì. */
+  padding: 8px 0;
 }
 .brand-mark { filter: var(--mark-filter); border-radius: 6px; }
 
