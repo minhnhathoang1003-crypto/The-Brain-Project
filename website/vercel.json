@@ -1,6 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/privacy",
+      "destination": "/quyen-rieng-tu",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/images/(.*)",
