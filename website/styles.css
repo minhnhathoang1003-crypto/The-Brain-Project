@@ -574,3 +574,15 @@ h1 {
 .plans-web tbody th{color:var(--fg); width:52%}
 .plans-web td{text-align:center; width:24%; font-variant-numeric:tabular-nums}
 .plans-web .yes{color:var(--fg); font-weight:600}
+
+/* Trên điện thoại, min-width:420px đẩy cột Pro ra ngoài màn hình. Vẫn cuộn ngang được
+   nhưng không có dấu hiệu nào báo phải vuốt — mà đây đúng là trang so sánh Free/Pro,
+   giấu mất cột Pro là hỏng đúng việc trang này sinh ra để làm. Siết đệm và cỡ chữ
+   cho cả ba cột vừa màn hình thay vì bắt người dùng đoán. */
+@media (max-width: 560px) {
+  .plans-web{min-width:0; font-size:14px}
+  .plans-web th,.plans-web td{padding:11px 9px}
+  .plans-web thead th{font-size:10px; letter-spacing:.08em}
+  .plans-web tbody th{width:46%}
+  .plans-web td{width:27%}
+}
