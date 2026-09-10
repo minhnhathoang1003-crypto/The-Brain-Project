@@ -1,6 +1,10 @@
 # Nộp tiện ích lên Chrome Web Store
 
-Trạng thái: chưa nộp. Trang chính sách quyền riêng tư đã có, các phần còn lại là việc điền form.
+Trạng thái: **đã nộp ngày 10/09/2026, đang chờ duyệt (Pending review).**
+
+- Extension ID: `coiphhfihfbpecbbmlacejgjbcgikhhn`
+- Trang store sau khi duyệt: <https://chrome.google.com/webstore/detail/coiphhfihfbpecbbmlacejgjbcgikhhn>
+- Bộ hồ sơ đầy đủ hơn nằm ở `chrome-web-store/` — xem mục "Trùng lặp" ở cuối trang.
 
 ## Điều đã kiểm, không phải sửa gì
 
