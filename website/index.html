@@ -270,7 +270,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <!-- ── CÀI ĐẶT ────────────────────────────────────────── -->
   <section id="install" class="section">
     <p class="kicker">Cài đặt</p>
-    <h2>Bốn bước. <span class="dim">Làm một lần duy nhất.</span></h2>
+    <h2>Năm bước. <span class="dim">Làm một lần duy nhất.</span></h2>
     <p class="section-lede">
       Việc chặn website do tiện ích trình duyệt thực hiện, nên lần chạy đầu ứng dụng sẽ dừng ở màn hình hướng dẫn
       cho tới khi ghép nối xong — vì chưa ghép nối thì credit không có tác dụng gì.
@@ -289,18 +289,34 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
         <p>Ứng dụng tự mở đúng thư mục cần dùng ở bước sau.</p>
       </li>
       <li>
-        <h3>Nạp tiện ích vào trình duyệt</h3>
+        <h3>Bật Developer mode</h3>
         <p>
-          Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>) →
-          bật <em>Developer mode</em> → <em>Load unpacked</em> → chọn thư mục vừa mở.
+          Vào <code>chrome://extensions</code> — gõ thẳng vào thanh địa chỉ rồi Enter.
+          Dùng Edge thì gõ <code>edge://extensions</code>. Gạt công tắc <em>Developer mode</em> ở góc phải trên.
         </p>
+        <figure class="step-shot">
+          <img src="images/huongdan-1-devmode.webp" alt="Trang Extensions của Chrome, công tắc Developer mode ở góc phải trên đang tắt và được khoanh đỏ." width="1280" height="132" loading="lazy" decoding="async">
+        </figure>
+      </li>
+      <li>
+        <h3>Nhấn “Load unpacked” và chọn thư mục vừa mở</h3>
+        <p>
+          Bật Developer mode xong sẽ có thêm một hàng nút hiện ra ngay bên dưới. Chọn <em>Load unpacked</em>,
+          rồi trỏ vào đúng thư mục mà ứng dụng đã mở ở bước 2.
+        </p>
+        <figure class="step-shot">
+          <img src="images/huongdan-2-loadunpacked.webp" alt="Sau khi bật Developer mode, hàng nút Load unpacked / Pack extension / Update hiện ra; nút Load unpacked được khoanh đỏ." width="1280" height="132" loading="lazy" decoding="async">
+        </figure>
       </li>
       <li>
         <h3>Dán mã ghép nối</h3>
         <p>
-          Nhấn <em>Sao chép mã ghép nối</em> trong ứng dụng, dán vào popup tiện ích rồi kết nối.
-          Xong bước này màn hình tự chuyển sang giao diện chính.
+          Nhấn <em>Sao chép mã ghép nối</em> trong ứng dụng, rồi mở biểu tượng tiện ích trên thanh công cụ
+          trình duyệt và dán vào ô này. Xong bước này màn hình tự chuyển sang giao diện chính.
         </p>
+        <figure class="step-shot narrow">
+          <img src="images/huongdan-3-popup.webp" alt="Popup của tiện ích với ô Dán mã ghép nối và nút Kết nối với Windows." width="420" height="340" loading="lazy" decoding="async">
+        </figure>
       </li>
     </ol>
 

@@ -589,3 +589,9 @@ h1 {
   .plans-web tbody th{width:46%}
   .plans-web td{width:27%}
 }
+
+/* Ảnh minh hoạ trong từng bước cài đặt. Viền mảnh để tách khỏi nền trắng của
+   chính ảnh chụp, bo góc nhẹ cho khớp với khung ảnh lớn ở trên. */
+.step-shot { margin: 14px 0 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.step-shot img { width: 100%; height: auto; display: block; filter: var(--shot-shade); }
+.step-shot.narrow { max-width: 320px; }
