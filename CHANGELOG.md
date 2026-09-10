@@ -1,5 +1,9 @@
 # Có gì mới
 
+## 0.7.1
+
+- **Có chỗ để góp ý.** Trong ⚙ giờ có mục **Góp ý** với hai nút: gửi email hoặc mở GitHub. Nút email điền sẵn phiên bản ứng dụng, phiên bản Windows và trạng thái kết nối tiện ích — ba thứ luôn phải hỏi tới hỏi lui mỗi lần báo lỗi. Bạn nhìn thấy toàn bộ nội dung trước khi bấm gửi; ứng dụng không tự gửi gì đi đâu cả.
+
 ## 0.7.0
 
 - **Ứng dụng tự báo khi có bản mới.** Từ bản này trở đi, không phải tự vào website xem có gì mới nữa — ứng dụng tự kiểm tra và hiện trong ⚙. Bản mới **không tự tải về**: bạn bấm mới tải, để không tốn dung lượng mạng ngoài ý muốn.
