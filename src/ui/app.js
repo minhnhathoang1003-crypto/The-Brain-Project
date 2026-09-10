@@ -25,7 +25,10 @@ const hhmm=ms=>{const m=Math.ceil(Math.max(0,ms)/60000);return m>=60?`${Math.flo
 
 function toast(message){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').classList.add('visible');toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),4200);}
 async function act(type,p={}){try{const r=await window.brain.action(type,p);if(!r.ok){toast(r.error);return false;}state=r.state;render();return true;}catch{toast('Không thể thực hiện thao tác. Hãy thử lại.');return false;}}
-async function system(type){try{const r=await window.brain.system(type);if(r.message)toast(r.message);}catch(e){toast(e.message);}}
+// Electron bọc lỗi từ tiến trình chính thành "Error invoking remote method 'system': Error: …".
+// Người dùng không cần thấy tên phương thức IPC, chỉ cần câu cuối cùng.
+const plainError=m=>String(m||'').replace(/^Error invoking remote method '[^']*':\s*/,'').replace(/^(Uncaught )?Error:\s*/,'')||'Không thực hiện được. Hãy thử lại.';
+async function system(type,payload){try{const r=await window.brain.system(type,payload);if(r.message)toast(r.message);}catch(e){toast(plainError(e.message));}}
 function ask(title,text,callback){dialogRevision++;$('#confirm-yes').style.display='';$('#confirm-title').textContent=title;$('#confirm-text').textContent=text;$('#confirm').showModal();$('#confirm-no').onclick=()=>$('#confirm').close();$('#confirm-yes').onclick=()=>{$('#confirm').close();callback();};}
 
 // Dải quy đổi: luật cốt lõi của sản phẩm, đặt ngay trên nút bắt đầu.
@@ -126,6 +129,34 @@ async function pickApp(){
     ? `<div class="app-pick">${open.map(a=>`<button class="ghost app-option" data-exe="${esc(a.exe)}" data-name="${esc(a.name)}"><b>${esc(a.name)}</b><small>${esc(a.exe)}.exe</small></button>`).join('')}</div>`
     : '<span class="note">Không thấy ứng dụng nào đang mở, hoặc mọi ứng dụng đang mở đều đã bị chặn. Mở ứng dụng bạn muốn chặn rồi thử lại.</span>';
 }
+// Bảng so sánh đọc thẳng từ license.cjs, nên nó không bao giờ lệch khỏi thứ engine
+// thật sự áp dụng. Thêm một hạn mức ở đó là bảng này tự có thêm dòng.
+function plansView(){
+  const l=state.license,pro=state.tier==='pro';
+  const cell=v=>v===true?'<span class="yes" aria-label="Có">✓</span>'
+              :v===false?'<span class="no" aria-label="Không">—</span>':esc(String(v));
+  return `<div class="set-row col"><div><b>Free và Pro khác nhau ở đâu</b>
+    <p>${l.selling
+      ? `Bạn đang dùng bản <b>${pro?'Pro':'Free'}</b>.`
+      : 'Hôm nay <b>mọi tính năng đều đang mở cho tất cả mọi người</b> — chưa bán, chưa ai bị giới hạn gì. Bảng dưới là ranh giới sẽ áp dụng khi bắt đầu bán.'}</p></div>
+    <table class="plans"><thead><tr><th></th><th>Free</th><th class="${pro&&l.selling?'on':''}">Pro</th></tr></thead>
+      <tbody>${state.plans.differences.map(d=>`<tr><th>${esc(d.label)}</th><td>${cell(d.free)}</td><td>${cell(d.pro)}</td></tr>`).join('')}</tbody></table>
+    <p class="small-note"><b>Vòng lặp cốt lõi miễn phí vĩnh viễn:</b> ${state.plans.alwaysFree.map(esc).join(' · ')}.</p>
+    <p class="small-note">Tụt xuống Free không bao giờ làm mất credit đã kiếm, và không bao giờ bỏ chặn thứ gì đang chặn — chỉ là không thêm được mục mới quá hạn mức.</p></div>`;
+}
+
+function licenseView(){
+  const l=state.license;
+  return `<div class="set-row col"><div><b>Bản quyền</b>
+    <p>${l.hasKey
+      ? `Mã đã lưu trên máy này: <code>${esc(l.maskedKey)}</code>.${l.status==='unverified'?' <b>Chưa xác minh được</b> vì cổng thanh toán chưa được nối.':''}`
+      : 'Chưa có mã nào trên máy này. Khi mở bán, bạn dán mã nhận qua email vào đây.'}</p></div>
+    ${l.hasKey
+      ? `<div class="actions start"><button class="ghost danger" data-system="licenseRemove">Gỡ mã khỏi máy này</button></div>`
+      : `<form class="preset-add" data-form="licenseActivate"><input class="field" name="key" type="text" spellcheck="false" autocomplete="off" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" aria-label="Mã bản quyền" required><button class="primary small">Kích hoạt</button></form>`}
+    <p class="small-note">Mã được lưu mã hóa trong một file riêng, <b>không nằm chung với dữ liệu</b> — nên “Xóa toàn bộ dữ liệu” không làm mất bản quyền bạn đã mua.</p></div>`;
+}
+
 function setupView(){
   const connected=state.system.extensionConnected;
   const themes=[['system','Theo hệ thống'],['light','Sáng'],['dark','Tối']];
@@ -152,6 +183,8 @@ function setupView(){
       return '<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
         ? rows.map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===state.history[0]?.day&&d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
         : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>');})()}</div></div>
+  ${licenseView()}
+  ${plansView()}
   <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
 }
 
@@ -227,6 +260,8 @@ document.addEventListener('submit',async e=>{
     if(await act('settings',{presets:[...state.presets,added]}))toast(`Đã thêm mốc ${added} phút.`);
     return;
   }
+  // Bản quyền không phải state của engine nên đi đường system, không đi qua act().
+  if(form.dataset.form==='licenseActivate'){await system('licenseActivate',{key:data.key});return;}
   if(await act(form.dataset.form,data))toast('Đã thêm vào danh sách chặn.');
 });
 document.addEventListener('input',e=>{

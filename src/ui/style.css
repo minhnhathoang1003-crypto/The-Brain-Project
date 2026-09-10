@@ -213,3 +213,14 @@ dialog p{font-size:12px;line-height:1.8;color:var(--ink-2);margin:0}
 .overlay-actions{display:flex;flex-direction:column;gap:8px;width:260px;margin-top:6px}
 .overlay-actions .mins{width:100%;padding:9px 10px;font-size:11.5px}
 .overlay-actions .primary,.overlay-actions .ghost{width:100%;padding:12px}
+
+/* Bảng so sánh Free/Pro. Dùng lại đúng ngôn ngữ của .ratio: viền mảnh, không nền thẻ. */
+.plans{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:7px;overflow:hidden;font-size:11.5px}
+.plans th,.plans td{padding:8px 12px;border-top:1px solid var(--line);text-align:left;font-weight:400}
+.plans thead th{border-top:0;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.plans thead th.on{color:var(--fg);font-weight:600}
+.plans tbody th{font-weight:400;width:56%}
+.plans td{text-align:center;width:22%;font-variant-numeric:tabular-nums}
+.plans .yes{font-weight:600}
+.plans .no{color:var(--muted)}
+.plans .field{width:100%}

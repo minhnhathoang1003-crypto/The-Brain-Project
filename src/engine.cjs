@@ -1,5 +1,5 @@
 const crypto = require('node:crypto');
-const {tier,limits} = require('./license.cjs');
+const {tier,limits,activation,DIFFERENCES,ALWAYS_FREE} = require('./license.cjs');
 const RATIO = 5;                    // 5 phút tập trung = 1 credit
 const PACKS = [1, 5, 10, 15, 30];   // các gói phút có thể đổi
 const VERSION = 8;
@@ -211,6 +211,7 @@ class Engine {
       history:s.history.slice(0,limits().historyDays).map(d=>({...d})), historyDays:limits().historyDays,
       packs:PACKS, ratio:RATIO, maxPresets:MAX_PRESETS,
       tier:tier(), maxTargets:limits().maxTargets, lockedMode:limits().lockedMode, appBlocking:limits().appBlocking,
+      license:activation(this.clock()), plans:{differences:DIFFERENCES,alwaysFree:ALWAYS_FREE},
       lockUntil:s.lockUntil&&s.lockUntil>this.clock()?s.lockUntil:null, lockPacks:LOCK_PACKS, now:this.clock() };
   }
   // main.cjs hỏi câu này mỗi khi cửa sổ tiền cảnh đổi.

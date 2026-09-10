@@ -55,9 +55,18 @@ theo ngày ở 0.5.0. Không còn phải xây gì trước khi bán.
 chặn `appAdd`, `maxTargets` chặn `targetAdd`, `lockedMode` chặn `lock`, và `historyDays` cắt lịch sử
 trong `snapshot()`. `snapshot()` cũng lộ `tier`, `maxTargets`, `lockedMode`, `appBlocking` ra cho giao diện.
 
-`src/license.cjs` — đường nối. `tier()` trả về `'free'` hoặc `'pro'`, `limits()` trả về hạn mức của bậc đó.
+**Bản quyền nằm ở file riêng `brain-license.enc`, cố ý không nằm trong `brain-data.enc`.** Nút "Xóa toàn bộ
+dữ liệu" gọi `initial()`; để chung là người đã trả tiền reset dữ liệu sẽ mất luôn thứ họ mua. Cùng lý do mà
+quà 15 credit được giữ ngoài `initial()`. Có kiểm thử chạy trên ứng dụng thật cho đúng điều này: xóa dữ liệu
+xong, credit về 0 mà mã bản quyền vẫn còn.
 
-Hôm nay `tier()` luôn trả `'pro'`, nên **không người dùng nào bị giới hạn gì**. App vẫn miễn phí hoàn toàn.
+`src/license.cjs` — đường nối. `tier()` trả về `'free'` hoặc `'pro'`, `limits()` trả về hạn mức của bậc đó.
+Module này cố ý không `require` electron để `tests/` nạp được bằng node trần; việc đọc/ghi file nằm ở
+`main.cjs` rồi bơm vào qua `load()`.
+
+Hôm nay hằng số `SELLING` trong `license.cjs` bằng `false`, nên `tier()` luôn trả `'pro'` và **không người
+dùng nào bị giới hạn gì**. App vẫn miễn phí hoàn toàn. Đừng bật `SELLING` trước khi `verify()` gọi được cổng
+thanh toán — bật sớm là khóa tính năng của những người đang dùng miễn phí mà chẳng có cách nào để họ mua.
 
 Đặt `BRAIN_TIER=free` để xem thử trải nghiệm bản Free:
 
@@ -75,9 +84,13 @@ Bậc lạ hoặc không đặt đều rơi về `'pro'` — hỏng cấu hình 
 2. Chốt giá. Tham khảo đối thủ (khoảng, nên kiểm lại trước khi định giá): Cold Turkey Blocker ~39 USD trọn
    đời, Freedom ~9 USD/tháng hoặc ~40 USD/năm, Forest ~4 USD trọn đời.
 3. Tạo tài khoản Lemon Squeezy, dựng sản phẩm và giá.
-4. Màn hình nhập key và trang so sánh Free/Pro trong ⚙. Làm được ngay cả khi chưa chốt giá — nó chỉ cần
-   biết key hợp lệ hay không.
-5. Gắn `activate` / `validate` vào thân hàm `tier()`. Đây là chỗ duy nhất phải sửa trong toàn bộ mã.
+4. ~~Màn hình nhập key và trang so sánh Free/Pro trong ⚙.~~ **Xong.** Bảng so sánh đọc thẳng từ
+   `DIFFERENCES` trong `license.cjs`, nên nó không thể lệch khỏi thứ engine thật sự áp dụng — thêm một hạn
+   mức ở đó là bảng tự có thêm dòng, và có kiểm thử bắt lỗi nếu một hạn mức trong `PLANS` không xuất hiện
+   trong bảng.
+5. Viết lại thân `license.verify()` để gọi `activate` của Lemon Squeezy, rồi **bật `SELLING = true`**.
+   Hai chỗ đó là toàn bộ những gì còn phải sửa trong mã. Hôm nay `verify()` chỉ kiểm định dạng và nói thẳng
+   với người dùng là chưa xác minh được, thay vì giả vờ đã xác minh.
 6. Trang giá và chính sách hoàn tiền trên website. Mục "Giá" hiện ghi *"Hiện miễn phí toàn bộ"* nên sẽ phải
    viết lại — nhưng lời hứa *"vòng lặp cốt lõi miễn phí vĩnh viễn"* thì giữ nguyên văn.
 

@@ -2,6 +2,7 @@ const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard
 const fs=require('node:fs'); const path=require('node:path'); const http=require('node:http'); const crypto=require('node:crypto');
 const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,VERSION,WELCOME_CREDITS}=require('./engine.cjs');
 const {ForegroundWatcher,listWindows}=require('./foreground.cjs');
+const license=require('./license.cjs');
 if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR);
 // Windows ghép cửa sổ với shortcut đã ghim qua id này. Thiếu nó, taskbar coi app là một
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
@@ -23,6 +24,21 @@ app.whenReady().then(()=>{
   catch(e){dialog.showErrorBox('Không đọc được dữ liệu',`Dữ liệu được giữ nguyên tại ${dataFile}.\n${e.message}`);app.quit();return;}
   engine=new Engine(state,()=>Date.now(),save);engine.recover();save(state);
   nativeTheme.themeSource=engine.s.theme;
+
+  // Bản quyền nằm ở file riêng, cố ý không nằm trong brain-data.enc: nút "Xóa toàn bộ
+  // dữ liệu" gọi initial(), nên để chung là người đã trả tiền reset dữ liệu mất luôn
+  // thứ họ mua. File này cũng không bị xóa khi reset.
+  const licenseFile=path.join(app.getPath('userData'),'brain-license.enc');
+  function saveLicense(r){
+    if(!r){fs.rmSync(licenseFile,{force:true});license.load(null);return;}
+    const temp=licenseFile+'.tmp';
+    fs.writeFileSync(temp,safeStorage.encryptString(JSON.stringify(r)));
+    fs.renameSync(temp,licenseFile);
+    license.load(r);
+  }
+  // Bản quyền đọc không được thì bỏ qua và chạy tiếp — quy tắc 3: không bao giờ chặn app mở lên.
+  try{ if(fs.existsSync(licenseFile)) license.load(JSON.parse(safeStorage.decryptString(fs.readFileSync(licenseFile)))); }
+  catch{ license.load(null); }
   const windowBackground=()=>nativeTheme.shouldUseDarkColors?'#0b0b0b':'#ffffff';
   const extensionConnected=()=>!!wss&&[...wss.clients].some(ws=>ws.authed&&ws.readyState===WebSocket.OPEN&&Date.now()-(ws.appliedAt||0)<5000);
   const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion()}});
@@ -58,7 +74,14 @@ app.whenReady().then(()=>{
     if(type==='settings'&&p.theme!==undefined){nativeTheme.themeSource=engine.s.theme;if(win&&!win.isDestroyed())win.setBackgroundColor(windowBackground());}
     broadcast();return {ok:true,state:snapshot()};
   }catch(err){return {ok:false,error:err.message};}});
-  ipcMain.handle('system',async(e,type)=>{verify(e);
+  ipcMain.handle('system',async(e,type,payload)=>{verify(e);
+    if(type==='licenseActivate'){
+      const result=await license.verify(payload?.key);
+      if(!result.ok)throw Error(result.error);
+      saveLicense(result.record);broadcast();
+      return {ok:true,message:result.message};
+    }
+    if(type==='licenseRemove'){saveLicense(null);broadcast();return {ok:true,message:'Đã gỡ mã bản quyền khỏi máy này.'};}
     if(type==='copyPairing'){clipboard.writeText(engine.s.token);return {ok:true,message:'Đã sao chép mã ghép nối.'};}
     if(type==='extensionFolder'){await shell.openPath(extensionFolder);return {ok:true};}
     if(type==='reset'){
