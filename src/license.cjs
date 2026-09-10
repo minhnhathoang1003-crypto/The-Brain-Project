@@ -10,22 +10,21 @@
 //   2. License hỏng không bao giờ làm bộ chặn ngừng chặn — họ trả tiền để bị chặn.
 //   3. License hỏng không bao giờ làm app không mở được; chỉ tụt xuống bậc 'free'.
 
+// Chỉ liệt kê những hạn mức mà engine thật sự đọc. Từng có thêm customRatio và
+// sync ở đây, nhưng không dòng nào trong src/ đọc chúng và tính năng thì chưa
+// tồn tại — giữ lại chỉ khiến bảng giá hứa thứ không có. Xây tới đâu thêm tới đó.
 const PLANS = {
   free: {
     maxTargets: 5,        // đủ cho YouTube, Facebook, TikTok, Instagram và một cái nữa
     historyDays: 7,
-    customRatio: false,
-    appBlocking: false,   // chặn ứng dụng & game Windows — chưa xây, xem docs/APP_BLOCKING.md
-    lockedMode: false,    // khóa cứng không tự gỡ được
-    sync: false,          // sao lưu và đồng bộ nhiều máy — chưa xây
+    appBlocking: false,   // chặn ứng dụng & game Windows, có từ 0.5.0
+    lockedMode: false,    // khóa cứng không tự gỡ được, có từ 0.4.0
   },
   pro: {
     maxTargets: 50,
     historyDays: 180,   // bằng đúng số ngày engine lưu trên đĩa
-    customRatio: true,
     appBlocking: true,
     lockedMode: true,
-    sync: true,
   },
 };
 
