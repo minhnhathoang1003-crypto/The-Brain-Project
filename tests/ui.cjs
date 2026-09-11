@@ -72,15 +72,15 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
     assert.notEqual(panel.dialogScrolls,'auto','tiêu đề và hàng nút phải đứng yên');
     assert(panel.soTab>=6,`thanh mục phải có ít nhất 6 tab, đang có ${panel.soTab}`);
     // Bấm sang một tab khác thì nội dung phải đổi theo.
-    await page.locator('[data-setup-tab="history"]').click();
-    await page.locator('.setup-panel').getByText('Tiến bộ').waitFor();
+    await page.locator('[data-setup-tab="about"]').click();
+    await page.locator('.setup-panel .changelog').waitFor();
     await page.locator('[data-setup-tab="blocker"]').click();
     await page.locator('.setup-panel').getByText('Bộ chặn website').waitFor();
     await page.screenshot({path:path.join(root,'test-results/settings.png'),fullPage:true});
     await page.locator('#setup-close').click();
 
     // Thêm rồi xóa một tên miền.
-    await page.getByRole('textbox',{name:'Tên miền cần chặn'}).fill('https://WWW.Reddit.com/');
+    await page.getByRole('textbox',{name:'Website cần chặn'}).fill('https://WWW.Reddit.com/');
     await page.getByRole('button',{name:'Thêm',exact:true}).click();
     await page.locator('.domain',{hasText:'reddit.com'}).waitFor();
     await page.getByRole('button',{name:'Bỏ chặn reddit.com'}).click();await page.locator('#confirm-yes').click();

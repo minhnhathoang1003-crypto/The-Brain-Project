@@ -40,6 +40,10 @@ function ruleStrip(m){
 
 function readyView(){
   const idleMinutes=state.idleSeconds/60;
+  // Website và ứng dụng là hai loại khác nhau: một cái do tiện ích chặn và sống
+  // sót khi app tắt, một cái cần app đang chạy. Trộn chung một danh sách thì
+  // người dùng không thấy được ranh giới đó.
+  const sites=state.targets.filter(t=>t.domain), apps=state.targets.filter(t=>t.exe);
   return `<section class="pane left">
     ${state.system.extensionConnected?'':`<div class="warn"><b>Chưa chặn được website nào.</b> Tiện ích trình duyệt chưa kết nối, nên danh sách bên cạnh chưa có hiệu lực.<br>Nếu bạn vừa mở lại ứng dụng thì chỉ cần đợi vài giây — tiện ích tự kết nối lại, <b>không phải ghép nối lại</b>. Mã ghép nối không đổi. <button class="link" id="warn-setup">Kiểm tra kết nối</button></div>`}
     <div class="stack"><div class="label">Số dư</div><div class="figure">${num(state.credits)}</div><div class="unit">credit</div></div>
@@ -54,20 +58,30 @@ function readyView(){
     ${ruleStrip(minutes)}
     <button class="primary big" data-action="start">Bắt đầu tập trung<b id="start-label">${minutes} phút</b></button>
     <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>`}
-    <div class="week">
+    <button class="week" id="open-stats" aria-label="Xem thống kê đầy đủ">
       <div class="week-bars">${(()=>{const days=lastDays(7),peak=Math.max(25,...days.map(d=>d.minutes));
         return days.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
           <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/peak*100)):0}%"></i></div>
           <span>${d.label}</span></div>`).join('');})()}</div>
-      <p class="today">Hôm nay <b>${state.todayMinutes}</b> phút · 7 ngày qua <b>${lastDays(7).reduce((n,d)=>n+d.minutes,0)}</b> phút</p>
-    </div>
+      <p class="today">Hôm nay <b>${state.todayMinutes}</b> phút · 7 ngày qua <b>${lastDays(7).reduce((n,d)=>n+d.minutes,0)}</b> phút · <span class="week-more">xem thống kê</span></p>
+    </button>
   </section>
   <section class="pane right">
     <div class="sites-head"><span>Đang bị chặn</span><span>${locked()?'Đang khóa':'Đổi credit để mở tạm'}</span></div>
     ${locked()?`<div class="warn locked-note"><b>Chế độ khóa · còn <span id="lock-left">${hhmm(state.lockUntil-state.now)}</span></b><br>Không đổi được credit và không bỏ chặn được website nào cho tới khi hết giờ. Tắt ứng dụng cũng không mở khóa — tiện ích tự giữ hạn khóa. Credit bạn kiếm trong lúc này vẫn được cộng.</div>`:''}
-    ${state.targets.map(siteRow).join('')||'<div class="empty">Danh sách trống. Thêm một tên miền để bắt đầu.</div>'}
-    <form class="add" data-form="targetAdd"><input class="field" name="domain" maxlength="253" placeholder="thêm tên miền, ví dụ reddit.com" aria-label="Tên miền cần chặn" required><button class="ghost">Thêm</button></form>
-    ${state.appBlocking&&!locked()?'<button class="link add-app" id="add-app">＋ Chặn một ứng dụng đang mở</button>':''}
+
+    <div class="group">
+      <div class="group-head"><span>Website</span><span class="group-count">${sites.length}</span></div>
+      ${sites.map(siteRow).join('')||'<div class="empty">Chưa chặn website nào.</div>'}
+      <form class="add" data-form="targetAdd"><input class="field" name="domain" maxlength="2048" placeholder="dán link hoặc gõ tên miền" aria-label="Website cần chặn" required><button class="ghost">Thêm</button></form>
+    </div>
+
+    ${state.appBlocking?`
+    <div class="group">
+      <div class="group-head"><span>Ứng dụng và game</span><span class="group-count">${apps.length}</span></div>
+      ${apps.map(siteRow).join('')||'<div class="empty">Chưa chặn ứng dụng nào.</div>'}
+      ${locked()?'':'<button class="ghost add-app" id="add-app">Chọn từ ứng dụng đang mở</button>'}
+    </div>`:''}
   </section>`;
 }
 function siteRow(t){
@@ -202,6 +216,7 @@ const ICON={
   session:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
   lock:'<rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
   history:'<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>',
+  about:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none"/>',
   license:'<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v4M15 12v3"/>',
   app:'<path d="M12 3 3 7.5v9L12 21l9-4.5v-9z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>',
 };
@@ -240,15 +255,53 @@ function tabLock(){
     ${locked()?'':`<div class="preset-edit">${state.lockPacks.map(m=>`<button class="ghost small" data-lock="${m}">${hhmm(m*60000)}</button>`).join('')}</div>`}</div>`;
 }
 
-function tabHistory(){
-  return `<div class="set-row col"><div><b>Tiến bộ</b><p>Lưu ${state.historyDays} ngày gần nhất. Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
-    <div class="ratio">${(()=>{const rows=state.history.filter(d=>d.minutes||d.interrupted).slice(0,14);
-      return '<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
-        ? rows.map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===state.history[0]?.day&&d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
-        : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>');})()}</div></div>`;
+function tabLicense(){ return licenseView()+plansView(); }
+
+// Thống kê tách hẳn khỏi Cài đặt: nó là thứ người ta xem thường xuyên, không
+// phải thứ chỉnh một lần rồi thôi. Mở bằng cách bấm vào dải bảy ngày.
+function statsView(){
+  const rows=state.history.filter(d=>d.minutes||d.interrupted);
+  const tong=rows.reduce((a,d)=>({phut:a.phut+d.minutes,xong:a.xong+(d.completed||0),do_:a.do_+(d.interrupted||0),credit:a.credit+(d.earned||0)}),
+    {phut:0,xong:0,do_:0,credit:0});
+  const ngay=rows.length;
+  const tb=ngay?Math.round(tong.phut/ngay):0;
+  const dai=lastDays(7),dinh=Math.max(25,...dai.map(d=>d.minutes));
+  return `<div class="stat-grid">
+    <div><span class="label">Tổng thời gian</span><b>${tong.phut} phút</b></div>
+    <div><span class="label">Phiên hoàn tất</span><b>${tong.xong}</b></div>
+    <div><span class="label">Phiên bỏ dở</span><b>${tong.do_}</b></div>
+    <div><span class="label">Credit đã kiếm</span><b>${num(Number(tong.credit.toFixed(2)))}</b></div>
+    <div><span class="label">Số ngày tập trung</span><b>${ngay}</b></div>
+    <div><span class="label">Trung bình mỗi ngày</span><b>${tb} phút</b></div>
+  </div>
+  <div class="set-row col"><div><b>Bảy ngày gần nhất</b></div>
+    <div class="week-bars big">${dai.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
+      <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/dinh*100)):0}%"></i></div>
+      <span>${d.label}</span></div>`).join('')}</div></div>
+  <div class="set-row col"><div><b>Theo ngày</b><p>Lưu ${state.historyDays} ngày gần nhất. Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
+    <div class="ratio">${'<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
+      ? rows.slice(0,30).map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
+      : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>')}</div></div>`;
 }
 
-function tabLicense(){ return licenseView()+plansView(); }
+// Giới thiệu, quyền riêng tư và lịch sử phiên bản — ba thứ người dùng cần để
+// hiểu họ đang chạy cái gì, thay vì phải lên website tìm.
+function tabAbout(){
+  const moi=CHANGELOG.slice(0,4);
+  return `<div class="set-row col"><div><b>The Brain Project ${esc(state.system.version)}</b>
+    <p>Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.
+    Dự án cá nhân, không phải công ty. Mã nguồn công khai.</p></div>
+    <div class="actions start"><button class="ghost small" data-system="openSite">Trang giới thiệu</button><button class="ghost small" data-system="openRepo">Mã nguồn</button></div></div>
+
+  <div class="set-row col"><div><b>Quyền riêng tư</b>
+    <p>Không có máy chủ, không có tài khoản, không có bộ theo dõi. Dữ liệu nằm trên máy bạn và được mã hóa
+    theo tài khoản Windows. Tiện ích đọc địa chỉ tab để đối chiếu danh sách chặn, nhưng
+    <b>không lưu và không gửi đi đâu</b> — kể cả về ứng dụng này.</p></div>
+    <div class="actions start"><button class="ghost small" data-system="openPrivacy">Đọc chính sách đầy đủ</button></div></div>
+
+  <div class="set-row col"><div><b>Có gì mới</b><p>Bốn bản gần nhất.</p></div>
+    <div class="changelog">${moi.map(v=>`<div class="cl-ver"><b>${esc(v.v)}</b><ul>${v.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join('')}</div></div>`;
+}
 
 function tabApp(){
   return `${updateView()}
@@ -262,10 +315,10 @@ function setupTabs(){
     {id:'blocker', ten:'Bộ chặn',     view:tabBlocker},
     {id:'session', ten:'Phiên',       view:tabSession},
     {id:'lock',    ten:'Chế độ khóa', view:tabLock, an:!state.lockedMode},
-    {id:'history', ten:'Tiến bộ',     view:tabHistory},
     {id:'look',    ten:'Giao diện',   view:tabLook},
     {id:'license', ten:'Bản quyền',   view:tabLicense},
     {id:'app',     ten:'Ứng dụng',    view:tabApp},
+    {id:'about',   ten:'Giới thiệu',  view:tabAbout},
   ];
   return t.filter(x=>!x.an);
 }
@@ -294,6 +347,7 @@ function render(){
   $('#main').className=gate||state.session?'stage':'split';
   $('#main').innerHTML=gate?gateView():state.session?focusView():readyView();
   if($('#setup').open)$('#setup-body').innerHTML=setupView();
+  if($('#stats').open)$('#stats-body').innerHTML=statsView();
   lastSignature=signature(state);
   live();
 }
@@ -317,6 +371,8 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='open-setup'||b.id==='warn-setup'){$('#setup-body').innerHTML=setupView();$('#setup').showModal();return;}
   if(b.id==='setup-close'){$('#setup').close();return;}
+  if(b.id==='open-stats'){$('#stats-body').innerHTML=statsView();$('#stats').showModal();return;}
+  if(b.id==='stats-close'){$('#stats').close();return;}
   if(b.dataset.setupTab){setupTab=b.dataset.setupTab;$('#setup-body').innerHTML=setupView();$('.setup-panel').scrollTop=0;return;}
   if(b.id==='add-app'){pickApp();return;}
   if(b.dataset.exe){

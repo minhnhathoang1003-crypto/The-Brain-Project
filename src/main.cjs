@@ -9,6 +9,7 @@ const {createUpdater}=require('./updater.cjs');
 // trong website/config.js — đổi thì nhớ đổi cả hai.
 const EMAIL='minhnhat.hoang1003@gmail.com';
 const REPO='https://github.com/minhnhathoang1003-crypto/The-Brain-Project';
+const SITE='https://the-brain-project.vercel.app';
 if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR);
 // Windows ghép cửa sổ với shortcut đã ghim qua id này. Thiếu nó, taskbar coi app là một
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
@@ -113,6 +114,9 @@ app.whenReady().then(()=>{
       await shell.openExternal(`mailto:${EMAIL}?subject=${encodeURIComponent('Góp ý The Brain Project '+app.getVersion())}&body=${encodeURIComponent(than)}`);
       return {ok:true,message:'Đang mở ứng dụng email của bạn…'};
     }
+    if(type==='openSite'){await shell.openExternal(SITE);return {ok:true};}
+    if(type==='openRepo'){await shell.openExternal(REPO);return {ok:true};}
+    if(type==='openPrivacy'){await shell.openExternal(SITE+'/quyen-rieng-tu');return {ok:true};}
     if(type==='feedbackIssues'){await shell.openExternal(REPO+'/issues/new');return {ok:true};}
     if(type==='copyPairing'){clipboard.writeText(engine.s.token);return {ok:true,message:'Đã sao chép mã ghép nối.'};}
     if(type==='extensionFolder'){await shell.openPath(extensionFolder);return {ok:true};}

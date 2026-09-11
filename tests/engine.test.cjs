@@ -24,7 +24,20 @@ test('redeem debits once, allows stacking another target, and expires back to bl
 test('no debt, free unlock or invalid target',()=>{const h=harness();for(const p of [{id:'youtube.com',minutes:1},{id:'fake.com',minutes:5},{id:'youtube.com',minutes:-1},{id:'youtube.com',minutes:0},{id:'youtube.com',minutes:7},{id:'youtube.com',minutes:NaN}])assert.throws(()=>h.e.action('redeem',p));assert.equal(h.e.s.credits,0);});
 test('early end has no refund',()=>{const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});h.e.action('endGrant');assert.equal(h.e.s.credits,0);assert.equal(h.e.rules().grants.length,0);assert.throws(()=>h.e.action('endGrant'));});
 test('policy is immutable during a focus session',()=>{const h=harness();h.e.action('start',{minutes:1});for(const [a,p] of [['targetAdd',{domain:'reddit.com'}],['targetDelete',{id:'youtube.com'}],['settings',{idleSeconds:900}],['redeem',{id:'youtube.com',minutes:1}],['start',{minutes:5}]])assert.throws(()=>h.e.action(a,p),a);});
-test('strict domain validation, normalisation and duplicates',()=>{const h=harness();h.e.action('targetAdd',{domain:'https://WWW.Reddit.com/'});assert(h.e.rules().targets.some(t=>t.domain==='reddit.com'));for(const domain of ['reddit.com','www.reddit.com','localhost','evil.com/path','a.com:80','x.com\nfoo','-evil.com','127.0.0.1','https://evil.com?x=1',''])assert.throws(()=>h.e.action('targetAdd',{domain}),String(domain));});
+test('strict domain validation, normalisation and duplicates',()=>{
+  const h=harness();
+  h.e.action('targetAdd',{domain:'https://WWW.Reddit.com/'});
+  assert(h.e.rules().targets.some(t=>t.domain==='reddit.com'));
+  // Link có đường dẫn, cổng hay tham số nay được nhận và rút về tên miền gốc:
+  // dán link thật mới là điều người ta làm nhiều nhất.
+  for(const [domain,mong] of [['evil.com/path','evil.com'],['a.com:80','a.com'],['https://other.com?x=1','other.com']]){
+    h.e.action('targetAdd',{domain});
+    assert(h.e.rules().targets.some(t=>t.domain===mong),`${domain} phải thành ${mong}`);
+  }
+  // Nhưng thứ không phải tên miền thì vẫn bị từ chối, và trùng vẫn bị chặn.
+  for(const domain of ['reddit.com','www.reddit.com','localhost','x.com\nfoo','-evil.com','127.0.0.1',''])
+    assert.throws(()=>h.e.action('targetAdd',{domain}),String(domain));
+});
 test('deleting a site removes it from the blocker but not while it is unlocked',()=>{const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});assert.throws(()=>h.e.action('targetDelete',{id:'youtube.com'}));h.e.action('targetDelete',{id:'tiktok.com'});assert(!h.e.rules().targets.some(t=>t.id==='tiktok.com'));});
 test('snapshot is detached and does not expose the bridge secret',()=>{const h=harness();const s=h.e.snapshot();assert.equal(s.token,undefined);s.targets.pop();assert.equal(h.e.s.targets.length,4);});
 test('invalid duration and settings rejected',()=>{const h=harness();for(const minutes of [0,-1,181,Infinity,1.5,'oops'])assert.throws(()=>h.e.action('start',{minutes}));assert.throws(()=>h.e.action('settings',{idleSeconds:0}));assert.throws(()=>h.e.action('settings',{}));h.e.action('settings',{idleSeconds:900});assert.equal(h.e.s.idleSeconds,900);});

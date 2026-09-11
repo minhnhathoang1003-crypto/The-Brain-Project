@@ -18,6 +18,22 @@ const DEFAULT_SITES = ['youtube.com', 'facebook.com', 'tiktok.com', 'instagram.c
 const DAY = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const round = n => Math.round(n*100)/100;
 const isSite = t => !!t.domain;
+
+// Lấy tên miền từ bất cứ thứ gì người dùng dán vào: link đầy đủ, có đường dẫn,
+// có tham số, có cổng, có cả tên đăng nhập. Trước đây chỉ bóc "https://", "www."
+// và dấu gạch cuối, nên dán một link thật là báo lỗi "không nhập đường dẫn" —
+// trong khi dán link thật mới là điều người ta làm nhiều nhất.
+function hostOf(raw) {
+  let v = String(raw == null ? '' : raw).trim().toLowerCase();
+  if (!v) return '';
+  v = v.replace(/^[a-z][a-z0-9+.-]*:\/\//, '');  // bỏ https:// , ftp:// ...
+  v = v.split(/[/?#\\]/)[0];                      // bỏ đường dẫn, query, neo
+  v = v.split('@').pop();                         // bỏ user:pass@
+  v = v.split(':')[0];                            // bỏ cổng
+  v = v.replace(/\.+$/, '');                      // bỏ dấu chấm cuối của FQDN
+  v = v.replace(/^www\./, '');
+  return v;
+}
 const isApp = t => !!t.exe;
 const clean = (v,max=253) => String(v??'').trim().slice(0,max);
 function requireThat(ok,msg) { if(!ok) throw new Error(msg); }
@@ -162,8 +178,8 @@ class Engine {
       }
       case 'targetAdd': {
         requireThat(!s.session,'Không đổi danh sách chặn giữa phiên.');
-        const domain=clean(p.domain).toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/$/,'');
-        requireThat(/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain),'Nhập tên miền, ví dụ reddit.com; không nhập đường dẫn.');
+        const domain=hostOf(clean(p.domain,2048));
+        requireThat(/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain),'Không đọc được tên miền. Dán địa chỉ website, ví dụ reddit.com hoặc https://reddit.com/r/gì-đó.');
         requireThat(!s.targets.some(t=>t.domain===domain),'Website này đã có trong danh sách.');
         requireThat(s.targets.length<limits().maxTargets,`Bản ${tier()==='free'?'Free':'hiện tại'} chặn tối đa ${limits().maxTargets} website.`);
         s.targets.push({id:domain,domain}); break;
@@ -232,4 +248,4 @@ class Engine {
       lockUntil, now };
   }
 }
-module.exports={Engine,initial,migrate,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS};
+module.exports={Engine,initial,migrate,hostOf,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS};
