@@ -186,6 +186,10 @@ app.whenReady().then(()=>{
     }
     if(type==='openSite'){await shell.openExternal(SITE);return {ok:true};}
     if(type==='openRepo'){await shell.openExternal(REPO);return {ok:true};}
+    // Mở trang giá chứ không mở thẳng trang thanh toán: ở đó có bảng so sánh, giá và
+    // chính sách hoàn tiền. Cũng để link thanh toán chỉ nằm đúng một chỗ là
+    // website/config.js, không phải chép thêm một bản vào app.asar rồi lệch nhau.
+    if(type==='openBuy'){await shell.openExternal(SITE+'/gia');return {ok:true};}
     if(type==='openPrivacy'){await shell.openExternal(SITE+'/quyen-rieng-tu');return {ok:true};}
     if(type==='feedbackIssues'){await shell.openExternal(REPO+'/issues/new');return {ok:true};}
     if(type==='copyPairing'){clipboard.writeText(engine.s.token);return {ok:true,message:'Đã sao chép mã ghép nối.'};}

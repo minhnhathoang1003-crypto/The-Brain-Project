@@ -356,3 +356,20 @@ button.week:not(:disabled):active{transform:none}
 .cl-ver ul{margin:6px 0 0;padding-left:18px}
 .cl-ver li{font-size:12.5px;color:var(--muted);line-height:1.75;margin-bottom:5px}
 .cl-ver li b{color:var(--ink);font-weight:600}
+
+/* ── Chạm trần bản Free ─────────────────────────────────── */
+/* Nhạt hơn mọi thứ quanh nó. Đây là lời giải thích, không phải lời chào hàng —
+   nếu nó nổi hơn danh sách chặn thì ứng dụng đã đổi mục đích. */
+
+.pro-note{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:14px 16px; margin-top:10px;
+  border:1px dashed var(--line-2); border-radius:12px;
+  background:var(--raise);
+}
+.pro-note p{margin:0; flex:1 1 220px; font-size:13px; line-height:1.7; color:var(--muted)}
+.pro-note b{color:var(--ink)}
+
+.stat-range{
+  margin:0 0 14px; font-size:12.5px; color:var(--muted);
+}

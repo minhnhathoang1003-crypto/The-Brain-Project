@@ -71,19 +71,43 @@ function readyView(){
     ${locked()?`<div class="warn locked-note"><b>Chế độ khóa · còn <span id="lock-left">${hhmm(state.lockUntil-state.now)}</span></b><br>Không đổi được credit và không bỏ chặn được website nào cho tới khi hết giờ. Tắt ứng dụng cũng không mở khóa — tiện ích tự giữ hạn khóa. Credit bạn kiếm trong lúc này vẫn được cộng.</div>`:''}
 
     <div class="group">
-      <div class="group-head"><span>Website</span><span class="group-count">${sites.length}</span></div>
+      <div class="group-head"><span>Website</span><span class="group-count">${state.targets.length}/${state.maxTargets}</span></div>
       ${sites.map(siteRow).join('')||'<div class="empty">Chưa chặn website nào.</div>'}
-      <form class="add" data-form="targetAdd"><input class="field" name="domain" maxlength="2048" placeholder="dán link hoặc gõ tên miền" aria-label="Website cần chặn" required><button class="ghost">Thêm</button></form>
+      ${state.targets.length<state.maxTargets
+        ? `<form class="add" data-form="targetAdd"><input class="field" name="domain" maxlength="2048" placeholder="dán link hoặc gõ tên miền" aria-label="Website cần chặn" required><button class="ghost">Thêm</button></form>`
+        : proNote(`Bạn đã dùng hết <b>${state.maxTargets} mục</b> của bản Free. Bản Pro chặn được ${proLimit()}.`)
+          || `<p class="small-note">Đã dùng hết ${state.maxTargets} mục. Bỏ chặn một mục để thêm mục mới.</p>`}
     </div>
 
-    ${state.appBlocking?`
     <div class="group">
-      <div class="group-head"><span>Ứng dụng và game</span><span class="group-count">${apps.length}</span></div>
-      ${apps.map(siteRow).join('')||'<div class="empty">Chưa chặn ứng dụng nào.</div>'}
-      ${locked()?'':'<button class="ghost add-app" id="add-app">Chọn từ ứng dụng đang mở</button>'}
-    </div>`:''}
+      <div class="group-head"><span>Ứng dụng và game</span><span class="group-count">${state.appBlocking?apps.length:'—'}</span></div>
+      ${state.appBlocking?`
+        ${apps.map(siteRow).join('')||'<div class="empty">Chưa chặn ứng dụng nào.</div>'}
+        ${locked()?'':'<button class="ghost add-app" id="add-app">Chọn từ ứng dụng đang mở</button>'}`
+      : proNote('Chặn ứng dụng và game Windows — Steam, Liên Minh, Discord — là tính năng của <b>bản Pro</b>. Khác với chặn website, phần này cần ứng dụng đang mở để hoạt động.')}
+    </div>
   </section>`;
 }
+// Chạm trần bản Free. Ba chỗ dùng chung một khối này nên lời lẽ không bao giờ lệch
+// nhau, và để chỉ có đúng một chỗ phải sửa nếu đổi cách nói.
+//
+// Cố ý giữ giọng bình thản: nói hạn mức hiện tại, nói bản Pro cho gì, rồi thôi. Không
+// đếm ngược, không "mở khóa ngay", không nhắc lại lần thứ hai. Đây là ứng dụng kỷ
+// luật — bán hàng bằng cách gây sốt ruột là tự mâu thuẫn với chính nó.
+// Đọc thẳng từ bảng so sánh mà license.cjs dựng ra, để con số trong lời mời chào
+// không bao giờ lệch với hạn mức engine thật sự áp dụng.
+function proValue(key){
+  const d=(state.plans.differences||[]).find(x=>x.key===key);
+  return d?d.pro:null;
+}
+const proLimit=()=>proValue('maxTargets')||'nhiều hơn';
+
+function proNote(text){
+  if(state.tier==='pro'||!state.license.selling)return '';
+  return `<div class="pro-note"><p>${text}</p>
+    <button class="ghost small" data-system="openBuy">Xem bản Pro</button></div>`;
+}
+
 function siteRow(t){
   const label=t.domain||t.name||t.exe;
   return `<div class="row"><span class="mark">${t.exe?'▣':esc(label[0].toUpperCase())}</span><span class="domain" title="${esc(t.exe?t.exe+'.exe':label)}">${esc(label)}</span>
@@ -281,7 +305,8 @@ function statsView(){
   const ngay=rows.length;
   const tb=ngay?Math.round(tong.phut/ngay):0;
   const dai=lastDays(7),dinh=Math.max(25,...dai.map(d=>d.minutes));
-  return `<div class="stat-grid">
+  return `<p class="stat-range">Tính trên ${state.historyDays} ngày gần nhất</p>
+  <div class="stat-grid">
     <div><span class="label">Tổng thời gian</span><b>${tong.phut} phút</b></div>
     <div><span class="label">Phiên hoàn tất</span><b>${tong.xong}</b></div>
     <div><span class="label">Phiên bỏ dở</span><b>${tong.do_}</b></div>
@@ -293,7 +318,9 @@ function statsView(){
     <div class="week-bars big">${dai.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
       <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/dinh*100)):0}%"></i></div>
       <span>${d.label}</span></div>`).join('')}</div></div>
-  <div class="set-row col"><div><b>Theo ngày</b><p>Lưu ${state.historyDays} ngày gần nhất. Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
+  <div class="set-row col"><div><b>Theo ngày</b><p>Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
+    ${proNote(`Bản Free xem lại được <b>${state.historyDays} ngày</b> gần nhất. Bản Pro xem lại được ${proValue('historyDays')||'lâu hơn'} — dữ liệu của những ngày trước đó vẫn nằm trên máy bạn và không bị xóa.`)
+      ||`<p class="small-note">Lưu ${state.historyDays} ngày gần nhất.</p>`}
     <div class="ratio">${'<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
       ? rows.slice(0,30).map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
       : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>')}</div></div>`;

@@ -93,7 +93,44 @@ const {WebSocket}=require('ws');
     assert.equal(await page.locator('.plans').count(),1,'phải có bảng so sánh để biết Pro thêm gì');
     console.log('§6 giao diện     ','tab khóa bị ẩn, mục Bản quyền nói rõ đang dùng bản nào');
 
+    // §7 Ba chỗ chạm trần bản Free phải nói ra tại chỗ, không im lặng và không
+    // bắt người dùng bấm thử rồi mới biết.
+    await page.locator('#setup-close').click();
+
+    // Nhóm "Ứng dụng và game" trước đây biến mất hoàn toàn với người dùng Free,
+    // nên họ không bao giờ biết tính năng đó tồn tại.
+    const nhomUngDung=page.locator('.group').filter({hasText:'Ứng dụng và game'});
+    await nhomUngDung.waitFor();
+    await nhomUngDung.locator('.pro-note').waitFor();
+    assert.match(await nhomUngDung.locator('.pro-note p').innerText(),/bản Pro/);
+    assert.equal(await nhomUngDung.locator('#add-app').count(),0,'Free không được có nút thêm ứng dụng');
+
+    // Danh sách website đã đầy 5/5 ở §4, nên ô "Thêm" phải nhường chỗ cho lời giải thích.
+    const nhomWeb=page.locator('.group').filter({hasText:'Website'}).first();
+    assert.equal(await nhomWeb.locator('.group-count').innerText(),'5/5','phải hiện rõ đang dùng bao nhiêu trên bao nhiêu');
+    assert.equal(await nhomWeb.locator('form.add').count(),0,'đầy rồi thì không để ô Thêm dụ người dùng bấm');
+    await nhomWeb.getByText(/hết.*5 mục/).waitFor();
+
+    // Mỗi lời mời chào đều phải có đúng một lối đi tiếp, không phải ngõ cụt.
+    const soNut=await page.locator('.pro-note [data-system="openBuy"]').count();
+    assert.equal(soNut,2,`mỗi khối chạm trần phải có nút xem bản Pro, đếm được ${soNut}`);
+    await page.screenshot({path:path.resolve(root,'test-results/free-limits.png'),fullPage:true});
+    console.log('§7 chạm trần     ','nhóm ứng dụng và danh sách đầy đều nói rõ, có lối đi tiếp');
+
+    // §8 Lịch sử: nói rõ Free xem được bao nhiêu ngày và Pro xem được bao lâu.
+    await page.locator('#open-stats').click();
+    await page.locator('#stats[open]').waitFor();
+    assert.match(await page.locator('.stat-range').innerText(),/7 ngày/,
+      'con số tổng chỉ tính trên 7 ngày, phải nói ra chứ đừng để tưởng là tổng mọi thời đại');
+    const ghiChu=page.locator('#stats .pro-note');
+    await ghiChu.waitFor();
+    const chu=await ghiChu.innerText();
+    assert.match(chu,/7 ngày/);
+    assert.match(chu,/180 ngày/,`phải nói Pro xem được bao lâu, nhận được: ${chu}`);
+    assert.match(chu,/không bị xóa/,'phải trấn an rằng dữ liệu cũ vẫn còn trên máy');
+    console.log('§8 lịch sử       ',chu.split('\n')[0].slice(0,70)+'…');
+
     assert.deepEqual(errors,[],'giao diện ném lỗi JavaScript');
-    console.log('PASS: người dùng Free chạy được trọn vòng lặp cốt lõi, và những thứ họ không có đều bị từ chối tử tế.');
+    console.log('PASS: người dùng Free chạy được trọn vòng lặp cốt lõi, và những thứ họ không có đều được nói rõ kèm lối đi tiếp.');
   }finally{ if(desktop)await desktop.close(); console.log('Isolated test data: '+dir); }
 })().catch(e=>{console.error(e);process.exitCode=1;});
