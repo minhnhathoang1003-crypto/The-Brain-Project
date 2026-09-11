@@ -1,6 +1,6 @@
 {
   "name": "the-brain-project",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "The Brain Project — một màn hình: tập trung để kiếm credit, đổi credit để mở website gây nghiện.",
   "main": "src/main.cjs",
   "author": "The Brain Project",

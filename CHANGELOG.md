@@ -1,5 +1,10 @@
 # Có gì mới
 
+## 0.7.2
+
+- **Nút phản hồi ngay lúc bạn nhấn.** Trước đây nút chỉ đổi màu khi rê chuột, nhấn xuống thì không có gì xảy ra cho tới lúc nhả — nút có cảm giác chết. Nay nút co nhẹ ngay khi bạn nhấn.
+- **Tôn trọng thiết lập trợ năng của Windows.** Bật "giảm chuyển động" thì bỏ mọi hiệu ứng trượt và phóng, nhưng vẫn giữ mờ dần để bạn biết chuyện gì vừa xảy ra. Tắt "hiệu ứng trong suốt" thì nền hộp thoại đặc hơn. Bật "tương phản cao" thì viền dày và màu đậm hơn.
+
 ## 0.7.1
 
 - **Có chỗ để góp ý.** Trong ⚙ giờ có mục **Góp ý** với hai nút: gửi email hoặc mở GitHub. Nút email điền sẵn phiên bản ứng dụng, phiên bản Windows và trạng thái kết nối tiện ích — ba thứ luôn phải hỏi tới hỏi lui mỗi lần báo lỗi. Bạn nhìn thấy toàn bộ nội dung trước khi bấm gửi; ứng dụng không tự gửi gì đi đâu cả.
