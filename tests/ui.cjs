@@ -37,11 +37,15 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
 
     // Chủ đề: ba lựa chọn, lưu lại được.
     await page.locator('#open-setup').click();await page.locator('#setup').waitFor();
+    await page.locator('[data-setup-tab="look"]').click();
     await page.getByRole('button',{name:'Tối',exact:true}).click();
     await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');
     assert.equal((await page.evaluate(()=>window.brain.get())).theme,'dark');
     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(11, 11, 11)');
+    // Chụp ở tab có nội dung: tab Giao diện gần như trống nên làm ảnh minh hoạ thì yếu.
+    await page.locator('[data-setup-tab="blocker"]').click();
     await page.screenshot({path:path.join(root,'test-results/dark.png'),fullPage:true});
+    await page.locator('[data-setup-tab="look"]').click();
     await page.getByRole('button',{name:'Theo hệ thống',exact:true}).click();
     await page.waitForFunction(()=>!document.documentElement.dataset.theme);
     await page.getByRole('button',{name:'Sáng',exact:true}).click();
@@ -49,6 +53,7 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(255, 255, 255)');
 
     // Khung thời gian tùy chỉnh: bỏ một mốc, thêm một mốc, và màn hình chính đi theo.
+    await page.locator('[data-setup-tab="session"]').click();
     assert.deepEqual(await page.locator('.chips .chip-btn').allInnerTexts(),['25 phút','50 phút','90 phút','Khác']);
     await page.getByRole('button',{name:'Bỏ khung 50 phút'}).click();
     await page.waitForFunction(()=>document.querySelectorAll('.preset-chip').length===2);
@@ -58,9 +63,19 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
     assert.deepEqual((await page.evaluate(()=>window.brain.get())).presets,[15,25,90],'được sắp tăng dần');
     assert.deepEqual(await page.locator('.chips .chip-btn').allInnerTexts(),['15 phút','25 phút','90 phút','Khác']);
     // Bảng cài đặt: tiêu đề và hàng nút đứng yên, chỉ phần giữa cuộn.
-    const panel=await page.evaluate(()=>{const b=document.querySelector('#setup-body');
-      return {bodyScrolls:getComputedStyle(b).overflowY,dialogScrolls:getComputedStyle(document.querySelector('#setup')).overflowY};});
-    assert.equal(panel.bodyScrolls,'auto');assert.notEqual(panel.dialogScrolls,'auto');
+    const panel=await page.evaluate(()=>({
+      panelScrolls:getComputedStyle(document.querySelector('.setup-panel')).overflowY,
+      railScrolls:getComputedStyle(document.querySelector('.setup-rail')).overflowY,
+      dialogScrolls:getComputedStyle(document.querySelector('#setup')).overflowY,
+      soTab:document.querySelectorAll('.setup-rail [data-setup-tab]').length}));
+    assert.equal(panel.panelScrolls,'auto','chỉ phần nội dung được cuộn');
+    assert.notEqual(panel.dialogScrolls,'auto','tiêu đề và hàng nút phải đứng yên');
+    assert(panel.soTab>=6,`thanh mục phải có ít nhất 6 tab, đang có ${panel.soTab}`);
+    // Bấm sang một tab khác thì nội dung phải đổi theo.
+    await page.locator('[data-setup-tab="history"]').click();
+    await page.locator('.setup-panel').getByText('Tiến bộ').waitFor();
+    await page.locator('[data-setup-tab="blocker"]').click();
+    await page.locator('.setup-panel').getByText('Bộ chặn website').waitFor();
     await page.screenshot({path:path.join(root,'test-results/settings.png'),fullPage:true});
     await page.locator('#setup-close').click();
 
@@ -101,6 +116,7 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
 
     // Chế độ khóa: bật từ Cài đặt, đóng mọi lối thoát, không rút ngắn được.
     await page.locator('#open-setup').click();await page.locator('#setup').waitFor();
+    await page.locator('[data-setup-tab="lock"]').click();
     await page.getByRole('button',{name:'30 phút',exact:true}).click();
     await page.locator('#confirm-yes').click();
     await page.waitForFunction(()=>document.querySelector('.locked-note')!==null);
@@ -109,8 +125,11 @@ const { _electron:electron }=require('playwright');const fs=require('node:fs');c
     assert.match(await page.locator('.sites-head').innerText(),/ĐANG KHÓA/,'cột phải đổi sang trạng thái khóa');
     assert.equal(await page.getByRole('button',{name:'Mở'}).first().isDisabled(),true,'không đổi được credit');
     assert.equal(await page.getByRole('button',{name:/Bỏ chặn/}).count(),0,'không bỏ chặn được website');
-    assert.equal(await page.getByRole('button',{name:'Xóa toàn bộ'}).isDisabled(),true,'không xóa được dữ liệu');
+    // Còn đang ở tab Chế độ khóa: không được có nút khóa thêm.
     assert.equal(await page.getByRole('button',{name:'30 phút',exact:true}).count(),0,'không có nút khóa thêm');
+    // Nút xóa dữ liệu nằm ở tab Ứng dụng.
+    await page.locator('[data-setup-tab="app"]').click();
+    assert.equal(await page.getByRole('button',{name:'Xóa toàn bộ'}).isDisabled(),true,'không xóa được dữ liệu');
     for(const [type,p2,pattern] of [['redeem',{id:'youtube.com',minutes:5},/chế độ khóa/],
                                     ['targetDelete',{id:'youtube.com'},/chế độ khóa/],
                                     ['lock',{minutes:30},/khóa rồi/]]){

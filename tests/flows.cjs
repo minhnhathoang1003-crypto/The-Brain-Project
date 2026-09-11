@@ -110,6 +110,7 @@ test('lớp phủ: bấm mở, bấm lặp, lỗi thiếu credit, giới hạn q
     await page.waitForTimeout(3200);
     await page.getByRole('button',{name:'Dừng phiên',exact:true}).click();await page.locator('#confirm-yes').click();
     await page.locator('#open-setup').click();
+    await page.locator('[data-setup-tab="lock"]').click();
     await page.getByRole('button',{name:'30 phút',exact:true}).click();await page.locator('#confirm-yes').click();
     await page.locator('#setup-close').click();
     await focus(app,'notepad');await showOverlay(app);

@@ -189,38 +189,96 @@ function licenseView(){
     <p class="small-note">Mã được lưu mã hóa trong một file riêng, <b>không nằm chung với dữ liệu</b> — nên “Xóa toàn bộ dữ liệu” không làm mất bản quyền bạn đã mua.</p></div>`;
 }
 
-function setupView(){
+// ── Cài đặt: bảy mục, mỗi mục một tab ──────────────────────────────
+// Trước đây cả mười hai khối nằm chung một cột cuộn dài, phải kéo rất sâu mới
+// tới mục cuối. Nay thanh bên trái đứng yên, chỉ phần nội dung cuộn.
+let setupTab='blocker';
+
+// Icon vẽ bằng SVG nét, không dùng emoji: emoji có màu riêng và mỗi hệ điều
+// hành vẽ một kiểu, phá luôn nguyên tắc đơn sắc của sản phẩm.
+const ICON={
+  blocker:'<path d="M9 7V3M15 7V3M7 7h10v5a5 5 0 0 1-10 0z"/><path d="M12 17v4"/>',
+  look:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/>',
+  session:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  lock:'<rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  history:'<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>',
+  license:'<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v4M15 12v3"/>',
+  app:'<path d="M12 3 3 7.5v9L12 21l9-4.5v-9z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>',
+};
+const svgIcon=id=>`<svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[id]}</svg>`;
+
+function tabBlocker(){
   const connected=state.system.extensionConnected;
-  const themes=[['system','Theo hệ thống'],['light','Sáng'],['dark','Tối']];
   return `<div class="set-row"><div><b>Bộ chặn website</b><p>${connected?'Đang chặn '+state.targets.length+' website.':'Chưa chặn được website nào — tiện ích không kết nối.'}${state.system.bridgeError?'<br>'+esc(state.system.bridgeError):''}</p></div><span class="chip ${connected?'on':''}">${connected?'Đang chạy':'Chưa chạy'}</span></div>
   <p class="small-note">Chỉ phải làm một lần. Mã ghép nối được giữ lại, nên các lần mở ứng dụng sau tiện ích tự kết nối lại trong vài giây.</p>
   <ol class="steps"><li>Nhấn <b>Mở thư mục tiện ích</b>.</li><li>Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>).</li><li>Bật <b>Developer mode</b>, chọn <b>Load unpacked</b> và chọn thư mục vừa mở.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
-  <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>
-  <div class="set-row"><div><b>Giao diện</b><p>Mặc định đi theo cài đặt sáng/tối của Windows.</p></div>
-    <span class="seg" role="group" aria-label="Chủ đề giao diện">${themes.map(([id,name])=>`<button class="${state.theme===id?'on':''}" data-theme="${id}">${name}</button>`).join('')}</span></div>
-  <div class="set-row col"><div><b>Khung thời gian</b><p>Các mốc hiện sẵn trên màn hình chính. Giữ từ 1 đến ${state.maxPresets} mốc; ngoài các mốc này vẫn luôn có ô “Khác”.</p></div>
+  <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>`;
+}
+
+function tabLook(){
+  const themes=[['system','Theo hệ thống'],['light','Sáng'],['dark','Tối']];
+  return `<div class="set-row col"><div><b>Giao diện</b><p>Mặc định đi theo cài đặt sáng/tối của Windows.</p></div>
+    <span class="seg" role="group" aria-label="Chủ đề giao diện">${themes.map(([id,name])=>`<button class="${state.theme===id?'on':''}" data-theme="${id}">${name}</button>`).join('')}</span></div>`;
+}
+
+function tabSession(){
+  return `<div class="set-row col"><div><b>Khung thời gian</b><p>Các mốc hiện sẵn trên màn hình chính. Giữ từ 1 đến ${state.maxPresets} mốc; ngoài các mốc này vẫn luôn có ô “Khác”.</p></div>
     <div class="preset-edit">
       ${state.presets.map(m=>`<span class="preset-chip">${m} phút${state.presets.length>1?`<button class="x" data-preset-remove="${m}" aria-label="Bỏ khung ${m} phút">×</button>`:''}</span>`).join('')}
       ${state.presets.length<state.maxPresets?`<form class="preset-add" data-form="presetAdd"><input class="field narrow" name="minutes" type="number" min="1" max="180" placeholder="phút" aria-label="Số phút cho khung mới" required><button class="ghost small">Thêm mốc</button></form>`:'<span class="preset-note">Đã đủ mốc. Bỏ bớt một mốc để thêm mốc khác.</span>'}
     </div></div>
-  ${state.lockedMode?`<div class="set-row col"><div><b>Chế độ khóa</b><p>${locked()
-    ? `Đang khóa, còn <b>${hhmm(state.lockUntil-state.now)}</b>. Không có cách nào rút ngắn — kể cả xóa dữ liệu.`
-    : 'Khóa cứng trong một khoảng thời gian: không đổi được credit, không bỏ chặn được website, không xóa được dữ liệu, và không ngắt được tiện ích. Không hủy được sau khi bật.'}</p></div>
-    ${locked()?'':`<div class="preset-edit">${state.lockPacks.map(m=>`<button class="ghost small" data-lock="${m}">${hhmm(m*60000)}</button>`).join('')}</div>`}</div>`:''}
   <div class="set-row"><div><b>Ngưỡng không hoạt động</b><p>Không chạm chuột hay bàn phím quá lâu sẽ hủy phiên. Cơ chế này chỉ giảm việc treo máy, không xác minh được bạn đang học.</p></div>
     <select id="idle" class="field mins" aria-label="Ngưỡng không hoạt động" ${state.session?'disabled':''}>${[120,300,600,900].map(n=>`<option value="${n}" ${state.idleSeconds===n?'selected':''}>${n/60} phút</option>`).join('')}</select></div>
-  <div class="ratio"><div><span>Tập trung</span><span>Nhận được</span></div>${[25,50,90].map(m=>`<div><span>${m} phút</span><span>${creditsFor(m)} credit</span></div>`).join('')}</div>
-  <div class="set-row col"><div><b>Tiến bộ</b><p>Lưu ${state.historyDays} ngày gần nhất. Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
+  <div class="set-row col"><div><b>Bảng quy đổi</b><p>Tỉ lệ cố định, không đổi được: 5 phút tập trung bằng 1 credit.</p></div>
+    <div class="ratio"><div><span>Tập trung</span><span>Nhận được</span></div>${[25,50,90].map(m=>`<div><span>${m} phút</span><span>${creditsFor(m)} credit</span></div>`).join('')}</div></div>`;
+}
+
+function tabLock(){
+  return `<div class="set-row col"><div><b>Chế độ khóa</b><p>${locked()
+    ? `Đang khóa, còn <b>${hhmm(state.lockUntil-state.now)}</b>. Không có cách nào rút ngắn — kể cả xóa dữ liệu.`
+    : 'Khóa cứng trong một khoảng thời gian: không đổi được credit, không bỏ chặn được website, không xóa được dữ liệu, và không ngắt được tiện ích. Không hủy được sau khi bật.'}</p></div>
+    ${locked()?'':`<div class="preset-edit">${state.lockPacks.map(m=>`<button class="ghost small" data-lock="${m}">${hhmm(m*60000)}</button>`).join('')}</div>`}</div>`;
+}
+
+function tabHistory(){
+  return `<div class="set-row col"><div><b>Tiến bộ</b><p>Lưu ${state.historyDays} ngày gần nhất. Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
     <div class="ratio">${(()=>{const rows=state.history.filter(d=>d.minutes||d.interrupted).slice(0,14);
       return '<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
         ? rows.map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===state.history[0]?.day&&d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
-        : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>');})()}</div></div>
-  ${licenseView()}
-  ${plansView()}
-  ${updateView()}
+        : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>');})()}</div></div>`;
+}
+
+function tabLicense(){ return licenseView()+plansView(); }
+
+function tabApp(){
+  return `${updateView()}
   <div class="set-row"><div><b>Góp ý</b><p>Kẹt ở đâu, thấy chỗ nào khó hiểu, hay muốn xin thêm tính năng — nói thẳng với tác giả. Ứng dụng không thu thập gì về bạn, nên đây là cách duy nhất tôi biết được điều gì đang không ổn.</p></div>
     <div class="actions start"><button class="ghost small" data-system="feedbackIssues">Mở GitHub</button><button class="primary small" data-system="feedbackEmail">Gửi email</button></div></div>
   <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
+}
+
+function setupTabs(){
+  const t=[
+    {id:'blocker', ten:'Bộ chặn',     view:tabBlocker},
+    {id:'session', ten:'Phiên',       view:tabSession},
+    {id:'lock',    ten:'Chế độ khóa', view:tabLock, an:!state.lockedMode},
+    {id:'history', ten:'Tiến bộ',     view:tabHistory},
+    {id:'look',    ten:'Giao diện',   view:tabLook},
+    {id:'license', ten:'Bản quyền',   view:tabLicense},
+    {id:'app',     ten:'Ứng dụng',    view:tabApp},
+  ];
+  return t.filter(x=>!x.an);
+}
+
+function setupView(){
+  const tabs=setupTabs();
+  // Bậc Free không có chế độ khóa nên tab đó biến mất; nếu đang đứng ở đó thì lùi về tab đầu.
+  if(!tabs.some(t=>t.id===setupTab)) setupTab=tabs[0].id;
+  const hien=tabs.find(t=>t.id===setupTab);
+  return `<nav class="setup-rail" role="tablist" aria-label="Mục cài đặt">
+    ${tabs.map(t=>`<button role="tab" aria-selected="${t.id===setupTab}" data-setup-tab="${t.id}" class="${t.id===setupTab?'on':''}">${svgIcon(t.id)}<span>${t.ten}</span></button>`).join('')}
+  </nav>
+  <div class="setup-panel" role="tabpanel">${hien.view()}</div>`;
 }
 
 const signature=s=>JSON.stringify({...s,now:0,session:s.session?{...s.session,elapsedMs:0}:null,grants:s.grants.map(g=>({...g,until:0})),lastSession:0});
@@ -259,6 +317,7 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='open-setup'||b.id==='warn-setup'){$('#setup-body').innerHTML=setupView();$('#setup').showModal();return;}
   if(b.id==='setup-close'){$('#setup').close();return;}
+  if(b.dataset.setupTab){setupTab=b.dataset.setupTab;$('#setup-body').innerHTML=setupView();$('.setup-panel').scrollTop=0;return;}
   if(b.id==='add-app'){pickApp();return;}
   if(b.dataset.exe){
     $('#confirm').close();$('#confirm-yes').style.display='';
