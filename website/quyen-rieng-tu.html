@@ -37,12 +37,13 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
   <p class="kicker">Chính sách quyền riêng tư</p>
   <h1 class="doc-title">Không có gì rời khỏi máy bạn</h1>
   <p class="doc-meta">Áp dụng cho ứng dụng <strong>The Brain Project</strong> (Windows) và tiện ích trình duyệt
-    <strong>The Brain Project · Focus Bridge</strong> (Chrome, Edge). Cập nhật lần cuối: 9 tháng 9, 2026.</p>
+    <strong>The Brain Project · Focus Bridge</strong> (Chrome, Edge). Cập nhật lần cuối: 11 tháng 9, 2026.</p>
 
   <p class="doc-lede">
-    Không có máy chủ. Không có tài khoản. Không có quảng cáo, không có bộ theo dõi, không có bên thứ ba nào
-    nhận dữ liệu. Chúng tôi không thu thập, không lưu trữ trên mạng, không bán và không chia sẻ bất kỳ dữ liệu
-    nào của bạn — vì không có chỗ nào để gửi tới.
+    Không có tài khoản. Không có quảng cáo, không có bộ theo dõi. Chúng tôi không thu thập, không lưu trữ
+    trên mạng, không bán và không chia sẻ bất kỳ dữ liệu nào của bạn. Không có máy chủ nào của chúng tôi giữ
+    dữ liệu của bạn, vì chẳng có máy chủ nào cả. Ứng dụng có nối ra Internet đúng hai việc — tìm bản cập nhật
+    và kiểm mã bản quyền — và <a href="#ket-noi">mục bên dưới</a> nói rõ hai việc đó gửi đi những gì.
   </p>
 
   <h2>Ai vận hành</h2>
@@ -105,7 +106,37 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
     credit, lịch sử số phút theo ngày, danh sách tên miền và ứng dụng bị chặn, chủ đề giao diện, khung thời
     gian, ngưỡng không hoạt động, phiên đang chạy và lượt mở đang chạy.
   </p>
-  <p>Không có đồng bộ, không có sao lưu lên mạng, không có cập nhật tự động.</p>
+  <p>Không có đồng bộ, không có sao lưu lên mạng, không có bản sao nào ở nơi khác.</p>
+
+  <h2 id="ket-noi">Ứng dụng nối ra Internet lúc nào</h2>
+  <p>
+    Đúng hai lúc, và không lúc nào khác. Cả hai đều không kèm dữ liệu tập trung, danh sách chặn, số credit
+    hay bất cứ thứ gì bạn làm trong ứng dụng.
+  </p>
+  <ul class="doc-list">
+    <li>
+      <strong>Tìm bản cập nhật</strong> — ứng dụng hỏi GitHub xem có bản mới hơn không. Gửi đi: phiên bản bạn
+      đang chạy. Bản mới <strong>không bao giờ tự tải và không bao giờ tự cài</strong>: bạn bấm mới tải, bấm
+      lần nữa mới cài. Ứng dụng cũng từ chối cài trong lúc bạn đang chạy phiên tập trung hoặc đang trong chế
+      độ khóa.
+    </li>
+    <li>
+      <strong>Kiểm mã bản quyền</strong> — chỉ xảy ra nếu bạn đã mua và dán mã vào. Ứng dụng gọi tới
+      <code>api.lemonsqueezy.com</code> lúc bạn kích hoạt, rồi khoảng hai tuần một lần để xác nhận mã còn hiệu
+      lực. Gửi đi đúng hai thứ: <strong>mã bản quyền</strong> và <strong>tên máy tính của bạn</strong> — tên máy
+      để chính bạn nhận ra nên gỡ máy nào khi dùng hết ba lượt kích hoạt. Nếu bạn không mua, ứng dụng không bao
+      giờ gọi tới địa chỉ này.
+    </li>
+  </ul>
+  <p class="doc-note">
+    Lemon Squeezy là bên thu tiền và xuất hóa đơn thay chúng tôi. Họ biết email và thông tin thanh toán bạn đã
+    khai với họ lúc mua, vì đó là giao dịch của bạn với họ. Họ không nhận được gì từ ứng dụng ngoài hai thứ kể
+    trên, và chúng tôi không gửi cho họ bất cứ thông tin nào về cách bạn dùng phần mềm.
+  </p>
+  <p class="doc-note">
+    Mất mạng không làm bạn mất bản Pro. Ứng dụng giữ nguyên bậc của bạn trong 30 ngày kể từ lần kiểm cuối, và
+    khi không nối được thì nó không đụng vào bản ghi bản quyền. Bản quyền hỏng cũng không bao giờ làm mất credit
+    bạn đã kiếm, không làm bộ chặn ngừng chặn, và không làm ứng dụng mở không lên.
 
   <h2>Xóa dữ liệu</h2>
   <ul class="doc-list">
@@ -152,12 +183,16 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
     <h2 class="doc-title-en">Nothing leaves your machine</h2>
     <p class="doc-meta">
       Applies to <strong>The Brain Project</strong> (Windows app) and <strong>The Brain Project · Focus Bridge</strong>
-      (Chrome / Edge extension). Last updated: 9 September 2026.
+      (Chrome / Edge extension). Last updated: 11 September 2026.
     </p>
 
     <p>
-      There is no server, no account, no advertising, no tracker and no third party receiving data. We do not
-      collect, transmit, sell or share any of your data, because there is nowhere for it to go.
+      There is no account, no advertising and no tracker. We do not collect, transmit, sell or share any of
+      your data; we run no server that holds it. <strong>The extension makes no outbound connection at all.</strong>
+      The desktop app connects outward for exactly two things — checking GitHub for a newer version, and
+      verifying a licence key with <code>api.lemonsqueezy.com</code> if you bought one. Neither carries your
+      focus data, block list or credit balance; the licence check sends only the key itself and your computer's
+      name, so that you can tell your own devices apart.
     </p>
 
     <h3>Who operates this</h3>

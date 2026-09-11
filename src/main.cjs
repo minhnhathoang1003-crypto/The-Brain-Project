@@ -64,6 +64,10 @@ app.whenReady().then(()=>{
   const extensionConnected=()=>!!wss&&[...wss.clients].some(ws=>ws.authed&&ws.readyState===WebSocket.OPEN&&Date.now()-(ws.appliedAt||0)<5000);
   const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion(),update:updater?updater.snapshot():null}});
   const broadcast=()=>{if(win&&!win.isDestroyed())win.webContents.send('state',snapshot());if(wss)for(const ws of wss.clients)if(ws.authed&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify(engine.rules()));};
+
+  // Kiểm lại bản quyền với máy chủ hai tuần một lần. Chạy trễ và không chờ: khởi động
+  // không bao giờ được phụ thuộc vào mạng. Không nối được thì bản ghi giữ nguyên.
+  setTimeout(()=>{license.revalidate().then(r=>{if(r&&r.changed&&r.record){saveLicense(r.record);broadcast();}}).catch(()=>{});},20000).unref?.();
   server=http.createServer((req,res)=>{res.writeHead(404);res.end();});
   wss=new WebSocketServer({noServer:true,maxPayload:4096});
   server.on('upgrade',(req,socket,head)=>{
@@ -102,7 +106,13 @@ app.whenReady().then(()=>{
       saveLicense(result.record);broadcast();
       return {ok:true,message:result.message};
     }
-    if(type==='licenseRemove'){saveLicense(null);broadcast();return {ok:true,message:'Đã gỡ mã bản quyền khỏi máy này.'};}
+    if(type==='licenseRemove'){
+      // Trả lượt kích hoạt lại cho máy chủ TRƯỚC khi xóa bản ghi, vì sau khi xóa thì
+      // không còn instanceId để mà trả. Lỗi mạng không được chặn việc gỡ.
+      let freed=false;try{freed=(await license.deactivate()).freed;}catch{}
+      saveLicense(null);broadcast();
+      return {ok:true,message:freed?'Đã gỡ mã khỏi máy này và trả lại một lượt kích hoạt.':'Đã gỡ mã bản quyền khỏi máy này.'};
+    }
     if(type==='updateCheck'){if(!updater)throw Error('Không dùng được bộ cập nhật.');updater.check();return {ok:true,message:'Đang kiểm tra bản mới…'};}
     if(type==='updateDownload'){if(!updater)throw Error('Không dùng được bộ cập nhật.');const r=updater.download();if(!r.ok)throw Error(r.error);return {ok:true,message:'Đang tải bản mới…'};}
     if(type==='updateInstall'){if(!updater)throw Error('Không dùng được bộ cập nhật.');const r=updater.install();if(!r.ok)throw Error(r.error);return {ok:true,message:'Đang đóng ứng dụng để cài…'};}

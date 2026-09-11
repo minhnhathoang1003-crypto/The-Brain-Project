@@ -23,6 +23,22 @@
 const SELLING = false;
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CỔNG THANH TOÁN. Lemon Squeezy đứng tên merchant of record: họ thu tiền, xuất
+// hóa đơn, nộp thuế thay. Ba endpoint dưới đây là endpoint CÔNG KHAI — không cần
+// API key, nên không có bí mật nào phải nhét vào app.asar. Điều đó quan trọng:
+// mọi thứ trong asar đều giải nén đọc được bằng một câu lệnh.
+const API = 'https://api.lemonsqueezy.com/v1/licenses';
+const TIMEOUT = 15000;
+
+// Mã cửa hàng và mã sản phẩm trên Lemon Squeezy. PHẢI điền trước khi bật SELLING:
+// bỏ trống thì mọi mã của mọi cửa hàng Lemon Squeezy trên đời đều mở khóa được app
+// này, vì endpoint activate không biết ai đang hỏi. tests/license.test.cjs canh
+// đúng chuyện đó và sẽ đỏ nếu bật bán mà quên điền.
+const STORE_ID = 0;
+const PRODUCT_ID = 0;
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Chỉ liệt kê những hạn mức mà engine thật sự đọc. Từng có thêm customRatio và
 // sync ở đây, nhưng không dòng nào trong src/ đọc chúng và tính năng thì chưa
 // tồn tại — giữ lại chỉ khiến bảng giá hứa thứ không có. Xây tới đâu thêm tới đó.
@@ -121,21 +137,131 @@ function activation(now = Date.now()) {
   };
 }
 
-// CHƯA NỐI. Khi có tài khoản Lemon Squeezy, đây là hàm duy nhất phải viết lại:
-// gọi /v1/licenses/activate, lấy instance_id, rồi trả về bản ghi để lưu.
-// Cho tới lúc đó nó nói thẳng là chưa xác minh được, thay vì giả vờ đã xác minh.
+// ─── Lớp mạng ────────────────────────────────────────────────────────────────
+// Tách ra một chỗ để test thay được, và để mọi lỗi mạng đi qua đúng một cửa.
+let transport = (url, init) => fetch(url, init);
+function setTransport(fn) {
+  transport = typeof fn === 'function' ? fn : (url, init) => fetch(url, init);
+}
+
+// Tên máy, để chính bạn nhận ra nên gỡ máy nào khi hết ba lượt kích hoạt. Đây là
+// thứ duy nhất rời khỏi máy ngoài chính mã bản quyền — không kèm dữ liệu tập trung,
+// không kèm danh sách chặn, không kèm gì khác.
+function instanceName() {
+  try { return String(require('node:os').hostname() || 'máy tính').slice(0, 60); }
+  catch { return 'máy tính'; }
+}
+
+// Trả về một trong ba dạng:
+//   { answered:false }                  — không nối được, hoặc máy chủ lỗi. KHÔNG phải phán quyết.
+//   { answered:true, http, data }       — máy chủ đã trả lời rõ ràng.
+async function call(path, body) {
+  let res;
+  try {
+    res = await transport(`${API}/${path}`, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(body).toString(),
+      signal: AbortSignal.timeout(TIMEOUT),
+    });
+  } catch { return { answered: false }; }
+  // 5xx là máy chủ hỏng, không phải câu trả lời "mã của bạn sai". Phân biệt hai thứ
+  // này là lý do người dùng không bị tụt bậc vì Lemon Squeezy sập một buổi chiều.
+  if (res.status >= 500) return { answered: false };
+  let data = null;
+  try { data = await res.json(); } catch { data = null; }
+  if (!data || typeof data !== 'object') return { answered: false };
+  return { answered: true, http: res.status, data };
+}
+
+// Mã có đúng là của sản phẩm này không. Thiếu bước này thì mã mua bất kỳ thứ gì
+// trên Lemon Squeezy cũng mở khóa được app.
+function ownedByUs(meta) {
+  // Chưa điền hai hằng số ở đầu file: không kiểm được. Việc này chỉ xảy ra khi
+  // SELLING còn tắt, lúc đó ai cũng là 'pro' nên chẳng có gì để lách.
+  if (!STORE_ID || !PRODUCT_ID) return true;
+  return Number(meta && meta.store_id) === STORE_ID
+      && Number(meta && meta.product_id) === PRODUCT_ID;
+}
+
+// Lemon Squeezy trả lỗi bằng tiếng Anh. Dịch những lỗi người dùng thật sự gặp,
+// kèm cách xử lý — báo lỗi mà không nói phải làm gì thì bằng không.
+function refusal(data) {
+  const raw = String((data && data.error) || '').toLowerCase();
+  if (raw.includes('activation limit'))
+    return 'Mã này đã dùng hết lượt kích hoạt. Mỗi mã dùng được cho 3 máy. Nếu bạn đã cài lại Windows hoặc đổi máy, nhắn cho tác giả để gỡ bớt một máy cũ.';
+  if (raw.includes('not found'))
+    return 'Không tìm thấy mã này. Kiểm tra lại xem đã dán đủ cả mã chưa — mã có 5 khối, dạng XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.';
+  if (raw.includes('disabled'))
+    return 'Mã này đã bị vô hiệu hóa. Nếu bạn cho rằng đây là nhầm lẫn, nhắn cho tác giả kèm email bạn đã dùng để mua.';
+  if (raw.includes('expired'))
+    return 'Mã này đã hết hạn.';
+  return (data && data.error)
+    ? `Máy chủ bản quyền từ chối mã này: ${data.error}`
+    : 'Không kích hoạt được mã này.';
+}
+
+// Kích hoạt lần đầu. Người dùng chủ động bấm, nên ở đây báo lỗi thẳng là đúng —
+// khác hẳn revalidate() phía dưới, nơi im lặng mới là đúng.
 async function verify(key, now = Date.now()) {
-  if (!validFormat(key)) return { ok:false, error:'Mã bản quyền sai định dạng. Mã có dạng XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.' };
+  if (!validFormat(key))
+    return { ok: false, error: 'Mã bản quyền sai định dạng. Mã có dạng XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.' };
+  const k = normalizeKey(key);
+  const r = await call('activate', { license_key: k, instance_name: instanceName() });
+  if (!r.answered)
+    return { ok: false, error: 'Không nối được tới máy chủ bản quyền. Kiểm tra mạng rồi thử lại — mã của bạn vẫn còn nguyên.' };
+  const d = r.data;
+  if (!d.activated) return { ok: false, error: refusal(d) };
+  if (!ownedByUs(d.meta))
+    return { ok: false, error: 'Mã này thuộc về một sản phẩm khác, không mở khóa được The Brain Project.' };
+
+  const lk = d.license_key || {};
+  const dung = Number(lk.activation_usage), toi_da = Number(lk.activation_limit);
+  const con = Number.isFinite(dung) && Number.isFinite(toi_da)
+    ? ` Máy này là lượt ${dung} trên ${toi_da}.` : '';
   return {
-    ok: true,
-    wired: false,
-    record: { key: normalizeKey(key), instanceId: null, status: 'unverified', checkedAt: now },
-    message: 'Đã lưu mã trên máy này. Chưa xác minh được vì cổng thanh toán chưa được nối — hiện mọi tính năng vẫn đang mở cho tất cả mọi người.',
+    ok: true, wired: true,
+    record: { key: k, instanceId: (d.instance && d.instance.id) || null, status: 'active', checkedAt: now },
+    message: `Đã kích hoạt bản Pro.${con}`,
   };
+}
+
+// Tới hạn gọi lại máy chủ chưa.
+function needsRecheck(r, now = Date.now()) {
+  if (!r || !r.key || r.status !== 'active') return false;
+  return now - (typeof r.checkedAt === 'number' ? r.checkedAt : 0) >= RECHECK_DAYS * DAY;
+}
+
+// Kiểm lại định kỳ. Quy tắc quan trọng nhất của hàm này: KHÔNG nối được thì không
+// đụng gì vào bản ghi. Người trả tiền rồi mà mất mạng hai tuần vẫn phải là 'pro' —
+// 30 ngày ân hạn lo phần đó. Chỉ hạ bậc khi máy chủ trả lời rõ ràng rằng mã hết
+// hiệu lực (hoàn tiền, thu hồi, chargeback).
+async function revalidate(now = Date.now()) {
+  const r = record;
+  if (!needsRecheck(r, now)) return { changed: false, reason: 'chưa tới hạn' };
+  const body = r.instanceId ? { license_key: r.key, instance_id: r.instanceId } : { license_key: r.key };
+  const res = await call('validate', body);
+  if (!res.answered) return { changed: false, reason: 'không nối được' };
+  const d = res.data;
+  if (d.valid && ownedByUs(d.meta))
+    return { changed: true, record: { ...r, status: 'active', checkedAt: now } };
+  return { changed: true, reason: refusal(d), record: { ...r, status: 'revoked', checkedAt: now } };
+}
+
+// Trả lại lượt kích hoạt cho máy chủ khi người dùng gỡ mã khỏi máy này. Thiếu bước
+// này thì gỡ mã ba lần là hết sạch ba lượt dù chỉ có một máy.
+// Không bao giờ để lỗi mạng chặn việc gỡ: người dùng bảo gỡ thì phải gỡ được.
+async function deactivate() {
+  const r = record;
+  if (!r || !r.key || !r.instanceId) return { freed: false };
+  const res = await call('deactivate', { license_key: r.key, instance_id: r.instanceId });
+  return { freed: !!(res.answered && res.data && res.data.deactivated) };
 }
 
 module.exports = {
   PLANS, DIFFERENCES, ALWAYS_FREE, SELLING, RECHECK_DAYS, GRACE_DAYS,
-  tier, limits, load, stored, activation, verify,
+  STORE_ID, PRODUCT_ID, API,
+  tier, limits, load, stored, activation,
+  verify, revalidate, deactivate, needsRecheck, setTransport,
   normalizeKey, validFormat, maskKey, healthy,
 };

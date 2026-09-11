@@ -92,17 +92,160 @@ test('graceDaysLeft đếm ngược đúng', () => {
   assert.equal(L.activation(now).graceDaysLeft, 0, 'không bao giờ âm');
 });
 
-test('verify() từ chối mã sai định dạng và nói thẳng là chưa nối cổng thanh toán', async () => {
+// ─── Cổng thanh toán ─────────────────────────────────────────────────────────
+// Không test nào ở đây được chạm vào mạng thật. setTransport() thay lớp fetch bằng
+// một hàm giả trả về đúng hình dạng Lemon Squeezy trả về.
+
+function gia(body, status = 200) {
+  const calls = [];
+  L.setTransport(async (url, init) => {
+    calls.push({ url, body: Object.fromEntries(new URLSearchParams(init.body)) });
+    return { status, json: async () => body };
+  });
+  return calls;
+}
+function mangHong(loi = new Error('ECONNREFUSED')) {
+  L.setTransport(async () => { throw loi; });
+}
+const OK_ACTIVATE = {
+  activated: true, error: null,
+  license_key: { status: 'active', activation_usage: 1, activation_limit: 3 },
+  instance: { id: 'inst-abc', name: 'MAY-CUA-TOI' },
+  meta: { store_id: 111, product_id: 222 },
+};
+
+test.afterEach(() => L.setTransport(null));
+
+test('bật SELLING mà quên điền mã cửa hàng là lỗ hổng: mọi mã Lemon Squeezy đều lọt', () => {
+  // Nếu có ngày bạn bật SELLING, hai hằng số này bắt buộc phải có giá trị thật.
+  // Không có bước kiểm chủ sở hữu thì mã mua bất kỳ thứ gì trên Lemon Squeezy
+  // cũng mở khóa được app này.
+  if (L.SELLING) {
+    assert.ok(L.STORE_ID > 0, 'đã bật bán nhưng STORE_ID còn 0');
+    assert.ok(L.PRODUCT_ID > 0, 'đã bật bán nhưng PRODUCT_ID còn 0');
+  }
+});
+
+test('verify() từ chối mã sai định dạng trước khi gọi mạng', async () => {
+  const calls = gia(OK_ACTIVATE);
   const xau = await L.verify('không-phải-mã');
   assert.equal(xau.ok, false);
   assert.match(xau.error, /định dạng/);
+  assert.equal(calls.length, 0, 'mã sai định dạng không được tốn một lượt gọi mạng');
+});
 
-  const tot = await L.verify(KEY.toLowerCase());
-  assert.equal(tot.ok, true);
-  assert.equal(tot.wired, false, 'chưa nối thì phải nói là chưa nối');
-  assert.equal(tot.record.key, KEY, 'mã phải được chuẩn hóa trước khi lưu');
-  assert.equal(tot.record.status, 'unverified');
-  assert.match(tot.message, /[Cc]hưa xác minh/);
+test('verify() kích hoạt được: chuẩn hóa mã, lưu instanceId, không gửi gì thừa', async () => {
+  const calls = gia(OK_ACTIVATE);
+  const r = await L.verify(KEY.toLowerCase());
+  assert.equal(r.ok, true);
+  assert.equal(r.wired, true);
+  assert.equal(r.record.key, KEY, 'mã phải được chuẩn hóa trước khi lưu');
+  assert.equal(r.record.instanceId, 'inst-abc');
+  assert.equal(r.record.status, 'active');
+  assert.match(r.message, /1 trên 3/);
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].url, /\/licenses\/activate$/);
+  assert.equal(calls[0].body.license_key, KEY);
+  // Chỉ được gửi đúng hai trường. Không credit, không danh sách chặn, không lịch sử.
+  assert.deepEqual(Object.keys(calls[0].body).sort(), ['instance_name', 'license_key']);
+});
+
+test('verify() dịch lỗi của Lemon Squeezy và luôn kèm cách xử lý', async () => {
+  for (const [loi, mong] of [
+    ['license key activation limit reached', /hết lượt kích hoạt/],
+    ['license_key not found', /Không tìm thấy mã/],
+    ['license key has been disabled', /vô hiệu hóa/],
+    ['license key has expired', /hết hạn/],
+  ]) {
+    gia({ activated: false, error: loi }, 400);
+    const r = await L.verify(KEY);
+    assert.equal(r.ok, false);
+    assert.match(r.error, mong, `không dịch được lỗi ${JSON.stringify(loi)}`);
+  }
+});
+
+test('verify() từ chối mã của cửa hàng khác khi đã điền mã sản phẩm', async () => {
+  if (!L.STORE_ID || !L.PRODUCT_ID) return; // chưa điền thì chưa kiểm được, test ở trên canh việc đó
+  gia({ ...OK_ACTIVATE, meta: { store_id: 999999, product_id: 999999 } });
+  const r = await L.verify(KEY);
+  assert.equal(r.ok, false);
+  assert.match(r.error, /sản phẩm khác/);
+});
+
+test('mất mạng lúc kích hoạt: báo lỗi rõ ràng, không giả vờ đã kích hoạt', async () => {
+  mangHong();
+  const r = await L.verify(KEY);
+  assert.equal(r.ok, false);
+  assert.match(r.error, /Không nối được/);
+  assert.equal(r.record, undefined, 'không được lưu bản ghi khi chưa xác minh được');
+});
+
+test('máy chủ lỗi 500 không phải là phán quyết mã sai', async () => {
+  gia({ activated: false, error: 'server exploded' }, 503);
+  const r = await L.verify(KEY);
+  assert.equal(r.ok, false);
+  assert.match(r.error, /Không nối được/, '5xx phải được coi là mất liên lạc, không phải mã hỏng');
+});
+
+test('revalidate() chỉ gọi mạng khi tới hạn hai tuần', async () => {
+  const now = Date.now();
+  const calls = gia({ valid: true, meta: { store_id: 111, product_id: 222 } });
+
+  L.load({ key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: now - 13 * DAY });
+  assert.equal(L.needsRecheck(L.stored(), now), false);
+  assert.equal((await L.revalidate(now)).changed, false);
+  assert.equal(calls.length, 0, 'chưa tới hạn mà vẫn gọi mạng');
+
+  L.load({ key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: now - 15 * DAY });
+  const r = await L.revalidate(now);
+  assert.equal(r.changed, true);
+  assert.equal(r.record.status, 'active');
+  assert.equal(r.record.checkedAt, now, 'phải đẩy mốc kiểm tra lên để đồng hồ ân hạn chạy lại');
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].url, /\/licenses\/validate$/);
+  assert.equal(calls[0].body.instance_id, 'inst-abc');
+});
+
+test('QUY TẮC SỐ MỘT: mất mạng lúc kiểm lại KHÔNG được hạ bậc người đã trả tiền', async () => {
+  const now = Date.now();
+  const cu = { key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: now - 20 * DAY };
+
+  for (const hong of [() => mangHong(), () => gia({ valid: false, error: 'gateway down' }, 502)]) {
+    hong();
+    L.load({ ...cu });
+    const r = await L.revalidate(now);
+    assert.equal(r.changed, false, 'máy chủ không trả lời mà vẫn sửa bản ghi');
+    assert.equal(L.stored().status, 'active', 'bản ghi bị đụng vào');
+    assert.equal(L.stored().checkedAt, cu.checkedAt, 'mốc ân hạn bị đẩy lên dù chưa xác minh được');
+  }
+});
+
+test('máy chủ nói mã không còn hợp lệ thì thu hồi, và revoked không phải là active', async () => {
+  const now = Date.now();
+  gia({ valid: false, error: 'license key has been disabled' }, 400);
+  L.load({ key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: now - 20 * DAY });
+  const r = await L.revalidate(now);
+  assert.equal(r.changed, true);
+  assert.equal(r.record.status, 'revoked');
+  assert.equal(L.healthy(r.record, now), false, 'mã bị thu hồi vẫn tính là hợp lệ');
+});
+
+test('gỡ mã trả lại lượt kích hoạt cho máy chủ', async () => {
+  const calls = gia({ deactivated: true });
+  L.load({ key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: Date.now() });
+  const r = await L.deactivate();
+  assert.equal(r.freed, true);
+  assert.match(calls[0].url, /\/licenses\/deactivate$/);
+  assert.equal(calls[0].body.instance_id, 'inst-abc');
+});
+
+test('gỡ mã không bao giờ bị mạng chặn lại', async () => {
+  mangHong();
+  L.load({ key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: Date.now() });
+  const r = await L.deactivate();
+  assert.equal(r.freed, false, 'không nối được thì nói thật là chưa trả được lượt');
+  // Quan trọng: không ném lỗi. main.cjs xóa file ngay sau dòng này.
 });
 
 test('mã chưa xác minh không tự biến thành pro khi bật bán', () => {

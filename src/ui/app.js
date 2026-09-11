@@ -294,9 +294,11 @@ function tabAbout(){
     <div class="actions start"><button class="ghost small" data-system="openSite">Trang giới thiệu</button><button class="ghost small" data-system="openRepo">Mã nguồn</button></div></div>
 
   <div class="set-row col"><div><b>Quyền riêng tư</b>
-    <p>Không có máy chủ, không có tài khoản, không có bộ theo dõi. Dữ liệu nằm trên máy bạn và được mã hóa
-    theo tài khoản Windows. Tiện ích đọc địa chỉ tab để đối chiếu danh sách chặn, nhưng
-    <b>không lưu và không gửi đi đâu</b> — kể cả về ứng dụng này.</p></div>
+    <p>Không có tài khoản, không có bộ theo dõi, không có máy chủ nào giữ dữ liệu của bạn. Dữ liệu nằm trên
+    máy bạn và được mã hóa theo tài khoản Windows. Tiện ích đọc địa chỉ tab để đối chiếu danh sách chặn, nhưng
+    <b>không lưu và không gửi đi đâu</b> — kể cả về ứng dụng này.</p>
+    <p>Ứng dụng nối ra Internet đúng hai việc: hỏi GitHub xem có bản mới không, và kiểm mã bản quyền nếu bạn đã
+    mua. Cả hai đều không kèm dữ liệu tập trung, danh sách chặn hay số credit của bạn.</p></div>
     <div class="actions start"><button class="ghost small" data-system="openPrivacy">Đọc chính sách đầy đủ</button></div></div>
 
   <div class="set-row col"><div><b>Có gì mới</b><p>Bốn bản gần nhất.</p></div>
