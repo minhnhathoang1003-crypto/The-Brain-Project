@@ -1,5 +1,14 @@
 # Có gì mới
 
+## 0.7.4
+
+- **Dán link nào cũng chặn được.** Trước đây dán `github.com/ai-đó/repo` thì ứng dụng báo lỗi và bắt bạn tự gõ lại tên miền. Nay dán cả đường link dài — có tham số, có cổng, có gì đi nữa — ứng dụng tự nhận ra tên miền gốc và chặn đúng nó.
+- **Thống kê tách thành cửa sổ riêng.** Bấm vào dải bảy ngày ở màn hình chính để mở: tổng thời gian, số phiên hoàn tất, số phiên bỏ dở, credit đã kiếm, số ngày có tập trung, trung bình mỗi ngày, và bảng 30 ngày gần nhất.
+- **Danh sách chặn chia thành hai nhóm rõ ràng:** Website, và Ứng dụng và game — kèm số lượng từng nhóm. Trước đây hai loại này trộn chung một danh sách, dù website thì tiện ích chặn nên vẫn chạy khi tắt ứng dụng, còn ứng dụng thì cần ứng dụng đang mở.
+- **Thêm mục Giới thiệu** trong ⚙: bản đang chạy, tóm tắt quyền riêng tư, và danh sách "Có gì mới" của bốn bản gần nhất — không phải lên website mới xem được.
+- **Cửa sổ Cài đặt không còn nhảy kích thước** mỗi lần bạn chuyển tab.
+- **Ô nhập số phút tùy ý** bỏ nút tăng giảm mặc định của Windows và trông hợp với phần còn lại của ứng dụng.
+
 ## 0.7.3
 
 - **Cài đặt chia thành bảy mục, không phải cuộn dài nữa.** Thanh mục bên trái đứng yên — Bộ chặn, Phiên, Chế độ khóa, Tiến bộ, Giao diện, Bản quyền, Ứng dụng — và chỉ phần nội dung bên phải cuộn. Trước đây mọi thứ nằm chung một cột nên phải kéo rất sâu mới tới mục cuối.
