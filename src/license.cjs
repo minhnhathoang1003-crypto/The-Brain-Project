@@ -31,12 +31,19 @@ const SELLING = false;
 const API = 'https://api.lemonsqueezy.com/v1/licenses';
 const TIMEOUT = 15000;
 
-// Mã cửa hàng và mã sản phẩm trên Lemon Squeezy. PHẢI điền trước khi bật SELLING:
-// bỏ trống thì mọi mã của mọi cửa hàng Lemon Squeezy trên đời đều mở khóa được app
-// này, vì endpoint activate không biết ai đang hỏi. tests/license.test.cjs canh
-// đúng chuyện đó và sẽ đỏ nếu bật bán mà quên điền.
+// Mã sản phẩm trên Lemon Squeezy, lấy từ URL trang sản phẩm trong dashboard:
+// app.lemonsqueezy.com/products/1353919. Mã này là duy nhất trên toàn hệ thống —
+// chính cái URL đó chứng minh: nó không có đoạn nào chỉ cửa hàng mà vẫn tra ra
+// đúng một sản phẩm.
+//
+// PHẢI điền trước khi bật SELLING. Bỏ trống nghĩa là không biết mã vừa kích hoạt
+// là mã mua cái gì, tức mọi mã của mọi cửa hàng Lemon Squeezy trên đời đều mở khóa
+// được app này. tests/license.test.cjs canh đúng chuyện đó.
+const PRODUCT_ID = 1353919;
+
+// Lớp phòng thủ thêm, không bắt buộc: để 0 thì bỏ qua. Chỉ có ích nếu một ngày nào
+// đó mã sản phẩm bị dùng lại — điều chưa từng xảy ra, nhưng kiểm thêm không tốn gì.
 const STORE_ID = 0;
-const PRODUCT_ID = 0;
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Chỉ liệt kê những hạn mức mà engine thật sự đọc. Từng có thêm customRatio và
@@ -177,11 +184,11 @@ async function call(path, body) {
 // Mã có đúng là của sản phẩm này không. Thiếu bước này thì mã mua bất kỳ thứ gì
 // trên Lemon Squeezy cũng mở khóa được app.
 function ownedByUs(meta) {
-  // Chưa điền hai hằng số ở đầu file: không kiểm được. Việc này chỉ xảy ra khi
-  // SELLING còn tắt, lúc đó ai cũng là 'pro' nên chẳng có gì để lách.
-  if (!STORE_ID || !PRODUCT_ID) return true;
-  return Number(meta && meta.store_id) === STORE_ID
-      && Number(meta && meta.product_id) === PRODUCT_ID;
+  // Chưa điền mã sản phẩm: không kiểm được. Chỉ xảy ra khi SELLING còn tắt, lúc đó
+  // ai cũng là 'pro' nên chẳng có gì để lách.
+  if (!PRODUCT_ID) return true;
+  if (Number(meta && meta.product_id) !== PRODUCT_ID) return false;
+  return STORE_ID ? Number(meta && meta.store_id) === STORE_ID : true;
 }
 
 // Lemon Squeezy trả lỗi bằng tiếng Anh. Dịch những lỗi người dùng thật sự gặp,

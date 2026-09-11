@@ -111,7 +111,7 @@ const OK_ACTIVATE = {
   activated: true, error: null,
   license_key: { status: 'active', activation_usage: 1, activation_limit: 3 },
   instance: { id: 'inst-abc', name: 'MAY-CUA-TOI' },
-  meta: { store_id: 111, product_id: 222 },
+  meta: { store_id: 111, product_id: L.PRODUCT_ID },
 };
 
 test.afterEach(() => L.setTransport(null));
@@ -120,10 +120,7 @@ test('bật SELLING mà quên điền mã cửa hàng là lỗ hổng: mọi mã
   // Nếu có ngày bạn bật SELLING, hai hằng số này bắt buộc phải có giá trị thật.
   // Không có bước kiểm chủ sở hữu thì mã mua bất kỳ thứ gì trên Lemon Squeezy
   // cũng mở khóa được app này.
-  if (L.SELLING) {
-    assert.ok(L.STORE_ID > 0, 'đã bật bán nhưng STORE_ID còn 0');
-    assert.ok(L.PRODUCT_ID > 0, 'đã bật bán nhưng PRODUCT_ID còn 0');
-  }
+  if (L.SELLING) assert.ok(L.PRODUCT_ID > 0, 'đã bật bán nhưng PRODUCT_ID còn 0');
 });
 
 test('verify() từ chối mã sai định dạng trước khi gọi mạng', async () => {
@@ -165,12 +162,17 @@ test('verify() dịch lỗi của Lemon Squeezy và luôn kèm cách xử lý', 
   }
 });
 
-test('verify() từ chối mã của cửa hàng khác khi đã điền mã sản phẩm', async () => {
-  if (!L.STORE_ID || !L.PRODUCT_ID) return; // chưa điền thì chưa kiểm được, test ở trên canh việc đó
-  gia({ ...OK_ACTIVATE, meta: { store_id: 999999, product_id: 999999 } });
+test('verify() từ chối mã mua sản phẩm khác', async () => {
+  assert.ok(L.PRODUCT_ID > 0, 'PRODUCT_ID chưa điền thì không có bước kiểm chủ sở hữu nào cả');
+  gia({ ...OK_ACTIVATE, meta: { store_id: 111, product_id: 999999 } });
   const r = await L.verify(KEY);
   assert.equal(r.ok, false);
   assert.match(r.error, /sản phẩm khác/);
+});
+
+test('mã đúng sản phẩm thì qua, dù có điền STORE_ID hay không', async () => {
+  gia({ ...OK_ACTIVATE, meta: { store_id: L.STORE_ID || 111, product_id: L.PRODUCT_ID } });
+  assert.equal((await L.verify(KEY)).ok, true);
 });
 
 test('mất mạng lúc kích hoạt: báo lỗi rõ ràng, không giả vờ đã kích hoạt', async () => {
@@ -190,7 +192,7 @@ test('máy chủ lỗi 500 không phải là phán quyết mã sai', async () =>
 
 test('revalidate() chỉ gọi mạng khi tới hạn hai tuần', async () => {
   const now = Date.now();
-  const calls = gia({ valid: true, meta: { store_id: 111, product_id: 222 } });
+  const calls = gia({ valid: true, meta: { store_id: 111, product_id: L.PRODUCT_ID } });
 
   L.load({ key: KEY, instanceId: 'inst-abc', status: 'active', checkedAt: now - 13 * DAY });
   assert.equal(L.needsRecheck(L.stored(), now), false);
