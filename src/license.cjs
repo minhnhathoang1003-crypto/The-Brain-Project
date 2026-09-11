@@ -103,6 +103,33 @@ function validFormat(raw) {
   return /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/.test(normalizeKey(raw));
 }
 
+// ─── Link kích hoạt ──────────────────────────────────────────────────────────
+// Sau khi trả tiền, Lemon Squeezy gửi khách tới một trang trên website mình, trang
+// đó mở ứng dụng bằng link thebrainproject://activate?key=... — để khách không phải
+// gõ lại mã bằng tay.
+//
+// Đây là dữ liệu từ bên ngoài đi thẳng vào ứng dụng, nên không tin gì cả: chỉ lấy
+// đúng một tham số, và chỉ nhận nếu nó đúng hình dạng mã. Mọi thứ khác trong link
+// đều bị bỏ qua.
+const PROTOCOL = 'thebrainproject';
+
+function keyFromUrl(raw) {
+  const v = String(raw == null ? '' : raw).trim();
+  if (!v.toLowerCase().startsWith(PROTOCOL + '://')) return null;
+  let u;
+  try { u = new URL(v); } catch { return null; }
+  if (u.hostname.toLowerCase() !== 'activate') return null;
+  const k = u.searchParams.get('key');
+  return validFormat(k) ? normalizeKey(k) : null;
+}
+
+// Windows đưa link vào qua argv, lẫn giữa các tham số khác của Electron.
+function keyFromArgv(argv) {
+  if (!Array.isArray(argv)) return null;
+  for (const a of argv) { const k = keyFromUrl(a); if (k) return k; }
+  return null;
+}
+
 // Chỉ để hiện lên màn hình: giữ khối đầu và khối cuối, giấu phần giữa.
 function maskKey(raw) {
   const k = normalizeKey(raw);
@@ -267,8 +294,8 @@ async function deactivate() {
 
 module.exports = {
   PLANS, DIFFERENCES, ALWAYS_FREE, SELLING, RECHECK_DAYS, GRACE_DAYS,
-  STORE_ID, PRODUCT_ID, API,
+  STORE_ID, PRODUCT_ID, API, PROTOCOL,
   tier, limits, load, stored, activation,
   verify, revalidate, deactivate, needsRecheck, setTransport,
-  normalizeKey, validFormat, maskKey, healthy,
+  normalizeKey, validFormat, maskKey, healthy, keyFromUrl, keyFromArgv,
 };

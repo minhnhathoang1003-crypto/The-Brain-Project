@@ -39,6 +39,8 @@ const EDGE=['C:','Program Files (x86)','Microsoft','Edge','Application','msedge.
       assert.equal((await read(p)).attr,want,'trang giá cũng giữ');
       await p.goto(site+'/quyen-rieng-tu.html');
       assert.equal((await read(p)).attr,want,'trang quyền riêng tư cũng giữ');
+      await p.goto(site+'/kich-hoat.html');
+      assert.equal((await read(p)).attr,want,'trang kích hoạt cũng giữ');
       console.log('  tải lại và sang trang khác vẫn giữ');
 
       await p.emulateMedia({colorScheme:scheme==='dark'?'light':'dark'});
@@ -54,6 +56,6 @@ const EDGE=['C:','Program Files (x86)','Microsoft','Edge','Application','msedge.
     console.log('chưa chọn gì: hệ thống đổi lúc trang đang mở thì công tắc đi theo');
     await p.screenshot({path:path.resolve(__dirname,'../test-results/site-dark.png'),clip:{x:0,y:0,width:1280,height:110}});
     await ctx.close();
-    console.log('PASS: công tắc chủ đề — mặc định theo hệ thống, gạt một lần là nhớ, ba trang đồng bộ.');
+    console.log('PASS: công tắc chủ đề — mặc định theo hệ thống, gạt một lần là nhớ, bốn trang đồng bộ.');
   } finally { await browser.close(); }
 })().catch(e=>{console.error('LỖI:',e.message);process.exitCode=1;});

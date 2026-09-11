@@ -17,7 +17,24 @@ app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
 let win,overlay,watcher,engine,server,wss,interval,updater=null,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
-app.on('second-instance',()=>{if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}});
+
+// Link kích hoạt: sau khi trả tiền, khách bấm một nút và Windows mở app kèm mã, để
+// không ai phải gõ lại 36 ký tự bằng tay. Bản đã cài đăng ký giao thức qua trình cài
+// đặt (xem "protocols" trong package.json); dòng dưới lo nốt trường hợp chạy từ mã
+// nguồn, và ghi đè nếu người dùng cài lại app ở chỗ khác.
+// Không đăng ký trong lúc chạy test — test không được phép sửa registry của máy.
+if(!process.env.BRAIN_TEST_DIR){
+  if(app.isPackaged) app.setAsDefaultProtocolClient(license.PROTOCOL);
+  else app.setAsDefaultProtocolClient(license.PROTOCOL,process.execPath,[path.resolve(process.argv[1]||'.')]);
+}
+// Link tới trước khi app kịp dựng xong thì giữ lại, xử lý sau. Mất link ở đây nghĩa
+// là khách trả tiền xong bấm nút mà chẳng thấy gì xảy ra.
+let onDeepLink=null,pendingKey=null;
+const takeLink=key=>{if(!key)return;if(onDeepLink)onDeepLink(key);else pendingKey=key;};
+app.on('second-instance',(_e,argv)=>{
+  if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}
+  takeLink(license.keyFromArgv(argv));
+});
 app.whenReady().then(()=>{
   const dataFile=path.join(app.getPath('userData'),'brain-data.enc');
   const extensionFolder=app.isPackaged?path.join(app.getPath('userData'),'extension'):path.join(__dirname,'../extension');
@@ -68,6 +85,28 @@ app.whenReady().then(()=>{
   // Kiểm lại bản quyền với máy chủ hai tuần một lần. Chạy trễ và không chờ: khởi động
   // không bao giờ được phụ thuộc vào mạng. Không nối được thì bản ghi giữ nguyên.
   setTimeout(()=>{license.revalidate().then(r=>{if(r&&r.changed&&r.record){saveLicense(r.record);broadcast();}}).catch(()=>{});},20000).unref?.();
+
+  // Kích hoạt bằng link. Ba điều phải giữ:
+  //   1. Bấm lại link cũ không được làm gì cả — khách hay bấm nhầm nút trong email.
+  //   2. Đổi sang mã khác thì trả lượt của mã cũ về máy chủ trước, nếu không mã cũ
+  //      vĩnh viễn mất một lượt cho một máy không còn dùng nó.
+  //   3. Hỏng thế nào cũng chỉ là một dòng thông báo. Không hộp thoại, không đóng app.
+  onDeepLink=async key=>{
+    if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}
+    const noi=r=>{if(win&&!win.isDestroyed())win.webContents.send('activation',r);};
+    const dang=license.stored();
+    if(dang&&dang.key===key&&dang.status==='active')
+      return noi({ok:true,message:'Máy này đã kích hoạt bằng đúng mã đó rồi.'});
+    try{
+      if(dang&&dang.key&&dang.key!==key&&dang.instanceId) await license.deactivate();
+      const r=await license.verify(key);
+      if(r.ok){saveLicense(r.record);broadcast();}
+      noi(r.ok?{ok:true,message:r.message}:{ok:false,message:r.error});
+    }catch(err){noi({ok:false,message:err.message});}
+  };
+  // Khởi động nguội: Windows nhét link vào argv của tiến trình đầu tiên.
+  takeLink(license.keyFromArgv(process.argv));
+  if(pendingKey){const k=pendingKey;pendingKey=null;onDeepLink(k);}
   server=http.createServer((req,res)=>{res.writeHead(404);res.end();});
   wss=new WebSocketServer({noServer:true,maxPayload:4096});
   server.on('upgrade',(req,socket,head)=>{

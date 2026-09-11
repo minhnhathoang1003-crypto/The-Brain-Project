@@ -447,4 +447,13 @@ window.brain.onState(s=>{
   if(previous?.session&&!s.session){const last=s.lastSession;
     toast(last?.status==='completed'?`Hoàn tất phiên! +${num(last.credits)} credit.`:`Phiên đã dừng: ${last?.reason||'Gián đoạn'}. Không cộng credit.`);}
 });
+// Kích hoạt bằng link: mở thẳng mục Bản quyền để người dùng nhìn thấy kết quả,
+// thay vì một dòng toast trôi qua rồi thôi.
+window.brain.onActivation(r=>{
+  toast(r.message);
+  if(!r.ok)return;
+  setupTab='license';
+  $('#setup-body').innerHTML=setupView();
+  if(!$('#setup').open)$('#setup').showModal();
+});
 window.brain.get().then(s=>{state=s;render();}).catch(()=>{$('#main').innerHTML='<div class="pane left"><div class="warn">Không kết nối được ứng dụng. Hãy đóng và mở lại.</div></div>';});

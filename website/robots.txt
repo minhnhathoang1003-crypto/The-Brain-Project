@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# Trang kích hoạt mang mã bản quyền của khách trong địa chỉ. Không có gì để lập chỉ mục.
+Disallow: /kich-hoat
 
 Sitemap: https://the-brain-project.vercel.app/sitemap.xml

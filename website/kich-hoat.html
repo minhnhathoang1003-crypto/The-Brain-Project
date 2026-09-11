@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kích hoạt — The Brain Project</title>
+<meta name="description" content="Mở The Brain Project và kích hoạt bản Pro bằng mã bạn vừa nhận.">
+<link rel="icon" href="images/icon.png" type="image/png">
+<link rel="canonical" href="https://the-brain-project.vercel.app/kich-hoat">
+<!-- Trang này chỉ có ý nghĩa với người vừa mua, và địa chỉ của nó mang theo mã bản
+     quyền. Không có lý do gì để nó nằm trong kết quả tìm kiếm. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>/* Sơn chủ đề trước khi vẽ, tránh loé sai màu khi người dùng đã tự chọn. */
+try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="28" height="28">
+    <span>The Brain Project</span>
+  </a>
+  <nav class="topnav">
+    <a href="/">Trang chủ</a>
+    <a href="/#install">Cài đặt</a>
+    <a href="/quyen-rieng-tu">Quyền riêng tư</a>
+  </nav>
+  <button type="button" class="theme-switch" data-theme-switch role="switch" aria-checked="false" aria-label="Chế độ tối">
+    <span class="theme-track"><span class="theme-knob"></span></span>
+  </button>
+</header>
+
+<main class="doc">
+
+  <p class="kicker">Kích hoạt</p>
+  <h1 class="doc-title">Cảm ơn bạn đã mua</h1>
+
+  <!-- Có mã trong địa chỉ: đường đi bình thường, một cú bấm là xong. -->
+  <section id="co-ma" hidden>
+    <p class="doc-lede">
+      Bấm nút dưới đây, The Brain Project sẽ mở lên và tự kích hoạt bản Pro. Bạn không cần gõ gì cả.
+    </p>
+
+    <p class="kh-actions">
+      <a class="btn btn-primary" id="mo-app" href="#">Mở The Brain Project</a>
+    </p>
+
+    <p class="doc-note">
+      Trình duyệt sẽ hỏi bạn có cho phép mở The Brain Project không — chọn <strong>Mở</strong>.
+      Nếu bạn đánh dấu ghi nhớ, những lần sau nó không hỏi nữa.
+    </p>
+
+    <h2>Nếu nút trên không chạy</h2>
+    <p>
+      Chép mã dưới đây, mở The Brain Project, vào <strong>⚙ → Bản quyền</strong> rồi dán vào. Kết quả giống hệt.
+    </p>
+    <p class="key-row">
+      <code class="key" id="ma"></code>
+      <button type="button" class="btn btn-ghost btn-small" id="chep">Chép mã</button>
+    </p>
+    <p class="doc-note">
+      Mã này cũng nằm trong email biên nhận gửi cho bạn, nên không mất được. Mỗi mã dùng được cho
+      <strong>3 máy</strong>; gỡ mã khỏi một máy sẽ trả lại một lượt.
+    </p>
+
+    <h2>Chưa cài phần mềm?</h2>
+    <p>
+      Tải bản mới nhất ở <a href="/#install">trang chủ</a>, cài xong rồi quay lại đây bấm nút trên — hoặc dán mã
+      bằng tay. Phần mềm miễn phí; mã này mở khóa bản Pro.
+    </p>
+  </section>
+
+  <!-- Không có mã trong địa chỉ: ai đó vào thẳng trang này. -->
+  <section id="khong-ma" hidden>
+    <p class="doc-lede">
+      Địa chỉ này không kèm mã bản quyền nào. Nếu bạn vừa mua, hãy mở <strong>email biên nhận</strong> và bấm
+      nút trong đó — hoặc chép mã trong email rồi dán vào <strong>⚙ → Bản quyền</strong> trong phần mềm.
+    </p>
+    <p class="doc-note">
+      Không thấy email? Kiểm tra hộp thư rác. Vẫn không có thì
+      <a href="mailto:minhnhat.hoang1003@gmail.com">nhắn cho tôi</a> kèm email bạn đã dùng để mua, tôi gửi lại mã.
+    </p>
+    <p class="kh-actions"><a class="btn btn-ghost" href="/">Về trang chủ</a></p>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot-main">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="24" height="24">
+    <div>
+      <p class="foot-name">The Brain Project</p>
+      <p class="foot-sub">Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.</p>
+      <p class="foot-links">
+        <a href="/">← Về trang chủ</a>
+        <a href="/quyen-rieng-tu">Quyền riêng tư</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script src="theme.js"></script>
+<script src="kich-hoat.js"></script>
+<!-- CỐ Ý không nạp Vercel Analytics và Speed Insights ở đây, khác với mọi trang khác.
+     Địa chỉ trang này mang theo mã bản quyền của khách; hai script kia gửi đường dẫn
+     trang về máy chủ phân tích. Đừng "sửa cho đồng bộ" — sự thiếu vắng này là có chủ ý. -->
+</body>
+</html>
