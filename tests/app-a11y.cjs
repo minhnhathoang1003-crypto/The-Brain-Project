@@ -28,7 +28,13 @@ const launch=extra=>{
     assert.notEqual(pressed,'none','phải co lại ngay lúc nhấn xuống, chưa cần nhả');
     assert.match(pressed,/^matrix\(0\.9/,`co lại đúng tỉ lệ, nhận được ${pressed}`);
     await page.waitForTimeout(200);
-    assert.equal(await at(),'none','nhả ra là trở lại như cũ');
+    const released=await at();
+    assert.ok(!/^matrix\(0\.9/.test(released),`nhả ra là hết co lại, nhận được ${released}`);
+    // Chuột vẫn nằm trên nút nên :hover còn nhấc nó lên 1px — chỗ này KHÔNG được
+    // đòi 'none'. Phải rời chuột đi mới về đúng trạng thái nghỉ.
+    await page.mouse.move(4,4);
+    await page.waitForTimeout(200);
+    assert.equal(await at(),'none','rời chuột ra là trở lại như cũ');
     console.log('§1 phản hồi lúc nhấn   ',pressed);
 
     // §14 Ba thiết lập, đọc bằng chính media query của trình duyệt.
