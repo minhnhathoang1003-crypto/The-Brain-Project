@@ -86,12 +86,12 @@
   // xuống — đúng thứ mà Cumulative Layout Shift trừ điểm.
   var SHOTS = {
     main: {
-      src: 'images/main.webp', w: 1233, h: 854,
+      src: 'images/main.webp', w: 1479, h: 1025,
       alt: 'Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.',
       cap: 'Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.'
     },
     focus: {
-      src: 'images/focus.webp', w: 1233, h: 854,
+      src: 'images/focus.webp', w: 1479, h: 1025,
       alt: 'Phiên tập trung đang chạy: đồng hồ đếm ngược 22:56 còn lại, ô "đang tích lũy" ghi 0,42 trên 5 credit, và nút Dừng phiên.',
       cap: 'Trong lúc chạy phiên, hai cột biến mất — cả màn hình chỉ còn một thứ để nhìn. Số credit nhích lên từng giây, và ngay dưới là dòng nhắc bạn sẽ mất đúng chừng đó nếu dừng: cùng một con số, dùng cho cả động lực lẫn răn đe.'
     },
@@ -101,32 +101,32 @@
       cap: 'Trang chặn của tiện ích. Nó nói cho bạn biết cái giá — 5 phút tập trung đổi 1 phút — thay vì chỉ báo lỗi.'
     },
     overlay: {
-      src: 'images/overlay.webp', w: 1280, h: 803,
+      src: 'images/overlay.webp', w: 1536, h: 960,
       alt: 'Lớp phủ chặn ứng dụng che kín màn hình: chữ "Đang bị chặn", tên ứng dụng, ô chọn 5 phút · 5 credit, nút Đổi credit để mở và nút Đóng ứng dụng, quay lại làm việc.',
       cap: 'Khi ứng dụng bị chặn lên tiền cảnh, lớp phủ này che kín nó — không tiến trình nào bị giết, nên bạn không mất dữ liệu đang làm dở. Hai lựa chọn: trả credit để mở, hoặc đóng ứng dụng đó và quay lại làm việc.'
     },
     locked: {
-      src: 'images/locked.webp', w: 1233, h: 854,
+      src: 'images/locked.webp', w: 1479, h: 1025,
       alt: 'Bảng cài đặt đang ở chế độ khóa, còn 30 phút, kèm bảng đối chiếu 25 phút đổi 5 credit.',
       cap: 'Chế độ khóa: không hủy, không rút ngắn — kể cả bằng cách xóa dữ liệu. Tiện ích tự giữ hạn khóa nên tắt ứng dụng cũng vô ích.'
     },
     gate: {
-      src: 'images/gate.webp', w: 1233, h: 854,
+      src: 'images/gate.webp', w: 1479, h: 1025,
       alt: 'Màn hình mở đầu với tiêu đề "Còn một bước nữa: bật bộ chặn", khung tặng 15 credit, bốn bước ghép nối và dòng chờ tiện ích kết nối.',
       cap: 'Lần chạy đầu tiên dừng ở đây, chưa vào được màn hình chính — vì chưa ghép nối thì credit không có tác dụng gì. Chỉ chặn ở lần đầu; về sau rớt kết nối thì app chỉ cảnh báo chứ không nhốt bạn khỏi credit đã kiếm.'
     },
     settings: {
-      src: 'images/settings.webp', w: 1233, h: 854,
+      src: 'images/settings.webp', w: 1479, h: 1025,
       alt: 'Bảng cài đặt: mục bộ chặn website với bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và hàng khung thời gian 15 / 25 / 90 phút.',
       cap: 'Toàn bộ cài đặt nằm trong một bảng: bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và các mốc thời gian bạn tự đặt. Tiêu đề và hàng nút đứng yên, chỉ phần giữa cuộn.'
     },
     dark: {
-      src: 'images/dark.webp', w: 1233, h: 854,
+      src: 'images/dark.webp', w: 1479, h: 1025,
       alt: 'Ứng dụng ở chế độ tối với bảng cài đặt đang mở.',
       cap: 'Ba lựa chọn giao diện: theo hệ thống, sáng, tối. Mặc định đi theo cài đặt của Windows.'
     },
     narrow: {
-      src: 'images/narrow.webp', w: 650, h: 800,
+      src: 'images/narrow.webp', w: 780, h: 960,
       alt: 'Ứng dụng ở cửa sổ hẹp, hai cột xếp chồng thành một cột.',
       cap: 'Dưới 860 px, hai cột xếp chồng lại. Không khối nào bị cắt mất chữ — có bài kiểm thử riêng cho việc này.'
     }
