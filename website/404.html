@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Không tìm thấy trang — The Brain Project</title>
+<meta name="description" content="Đường dẫn này không tồn tại. Về trang chủ The Brain Project.">
+<link rel="icon" href="/images/icon.png" type="image/png">
+<meta name="robots" content="noindex">
+
+<!-- Mọi đường dẫn ở đây là tuyệt đối (bắt đầu bằng /), khác với các trang khác.
+     Trang này được phục vụ cho MỌI đường dẫn sai, kể cả /a/b/c — đường dẫn tương
+     đối sẽ tính từ /a/b/ và hỏng hết ảnh với CSS. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<script>/* Sơn chủ đề trước khi vẽ, tránh loé sai màu khi người dùng đã tự chọn. */
+try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="/images/logo.webp" alt="" class="brand-mark" width="28" height="28">
+    <span>The Brain Project</span>
+  </a>
+  <nav class="topnav">
+    <a href="/">Trang chủ</a>
+    <a href="/#install">Cài đặt</a>
+    <a href="/quyen-rieng-tu">Quyền riêng tư</a>
+  </nav>
+  <button type="button" class="theme-switch" data-theme-switch role="switch" aria-checked="false" aria-label="Chế độ tối">
+    <span class="theme-track"><span class="theme-knob"></span></span>
+  </button>
+</header>
+
+<main class="doc">
+
+  <p class="kicker">404</p>
+  <h1 class="doc-title">Không có trang nào ở đây</h1>
+
+  <p class="doc-lede">
+    Đường dẫn <code id="duong-dan">bạn vừa mở</code> không tồn tại. Có thể link bị cắt mất một đoạn lúc gửi qua
+    tin nhắn, hoặc thiếu một chữ. Website vẫn chạy bình thường — bấm vào một trong các mục dưới đây.
+  </p>
+
+  <ul class="doc-list">
+    <li><a href="/"><strong>Trang chủ</strong></a> — giới thiệu phần mềm và nút tải về.</li>
+    <li><a href="/#install"><strong>Hướng dẫn cài đặt</strong></a> — ba bước, kèm ảnh.</li>
+    <li><a href="/gia"><strong>Giá</strong></a> — Free và Pro khác nhau ở đâu, chính sách hoàn tiền.</li>
+    <li><a href="/quyen-rieng-tu"><strong>Quyền riêng tư</strong></a> — phần mềm lưu gì và gửi đi những gì.</li>
+  </ul>
+
+  <p class="doc-note">
+    Nếu bạn bấm vào một link ai đó gửi mà gặp trang này, nhiều khả năng link bị thiếu.
+    Địa chỉ đúng của trang chủ là <code>the-brain-project.vercel.app</code>.
+  </p>
+
+  <p class="kh-actions"><a class="btn btn-primary" href="/">Về trang chủ</a></p>
+
+</main>
+
+<footer class="foot">
+  <div class="foot-main">
+    <img src="/images/logo.webp" alt="" class="brand-mark" width="24" height="24">
+    <div>
+      <p class="foot-name">The Brain Project</p>
+      <p class="foot-sub">Một vòng lặp duy nhất: tập trung để kiếm credit, đổi credit để mở thứ gây nghiện.</p>
+      <p class="foot-links">
+        <a href="/">← Về trang chủ</a>
+        <a href="/quyen-rieng-tu">Quyền riêng tư</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script src="/theme.js"></script>
+<script>
+/* Hiện đúng đường dẫn người dùng đã mở, để họ tự thấy chỗ sai — thường là thiếu
+   một đoạn cuối. textContent chứ không phải innerHTML: đây là dữ liệu từ địa chỉ. */
+(function(){
+  try{
+    var p=location.pathname;
+    if(p&&p!=='/')document.getElementById('duong-dan').textContent=p;
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

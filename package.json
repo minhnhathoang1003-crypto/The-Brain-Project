@@ -21,6 +21,7 @@
     "test:site:mobile": "node tests/site-mobile.cjs",
     "test:site:a11y": "node tests/site-a11y.cjs",
     "test:site:activate": "node tests/site-activate.cjs",
+    "test:site:404": "node tests/site-404.cjs",
     "test:a11y": "node tests/app-a11y.cjs",
     "build": "electron-builder --win nsis --x64",
     "pack": "electron-builder --win --dir --x64"
