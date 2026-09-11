@@ -16,6 +16,8 @@
     "test:flows": "node --test tests/flows.cjs",
     "test:site": "node tests/site-theme.cjs",
     "test:site:mobile": "node tests/site-mobile.cjs",
+    "test:site:a11y": "node tests/site-a11y.cjs",
+    "test:a11y": "node tests/app-a11y.cjs",
     "build": "electron-builder --win nsis --x64",
     "pack": "electron-builder --win --dir --x64"
   },

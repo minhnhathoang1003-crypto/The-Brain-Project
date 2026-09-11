@@ -147,6 +147,7 @@ a { color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   .theme-track, .theme-knob { transition: none; }
+  .theme-switch:active, .btn:active, .calc-tab:active, .gallery-tab:active { transform: none; }
 }
 
 /* ── Khung chung ────────────────────────────────────────── */
@@ -222,6 +223,10 @@ h1 {
   transition: transform .16s var(--ease), background .16s var(--ease), border-color .16s var(--ease), opacity .16s var(--ease);
 }
 .btn:active { transform: translateY(1px); }
+/* Mọi thứ bấm được đều phải nhúc nhích ngay lúc nhấn, không chỉ hai nút lớn. */
+.calc-tab:active, .gallery-tab:active, .theme-switch:active { transform: scale(0.97); }
+.calc-tab, .gallery-tab { transition: background .16s var(--ease), border-color .16s var(--ease), color .16s var(--ease), transform .1s ease-out; }
+.theme-switch { transition: transform .1s ease-out; }
 
 .btn-primary { background: var(--fg); color: var(--bg); }
 .btn-primary:hover { opacity: .84; transform: translateY(-1px); }
@@ -595,3 +600,25 @@ h1 {
 .step-shot { margin: 14px 0 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
 .step-shot img { width: 100%; height: auto; display: block; filter: var(--shot-shade); }
 .step-shot.narrow { max-width: 320px; }
+
+/* ── Thiết lập trợ năng của hệ điều hành ─────────────────
+   Đặt ở CUỐI file có chủ đích: đây là lớp ghi đè, phải thắng mọi luật phía trên.
+   Lần đầu tôi để chúng ở giữa file và shorthand `border` của .btn phía dưới đã
+   ghi đè ngược lại, nên viền tương phản cao không có tác dụng. */
+
+/* §14 — xin bớt trong suốt thì thanh đầu trang thành nền đặc, bỏ hẳn blur.
+   Lớp kính chỉ là trang trí; chữ đọc được mới là điều kiện. */
+@media (prefers-reduced-transparency: reduce) {
+  .topbar { background: var(--bg); backdrop-filter: none; }
+}
+
+/* §14 — tương phản cao: nền gần như đặc và viền rõ ràng thay vì nét mảnh gợi ý. */
+@media (prefers-contrast: more) {
+  :root { --line: #8a8a8a; --line-soft: #9d9d9d; --muted: #3f3f3f; --faint: #5a5a5a; }
+  :root[data-theme="dark"], :root:not([data-theme="light"]) {
+    --line: #8a8a8a; --line-soft: #6e6e6e; --muted: #cfcfcf; --faint: #a8a8a8;
+  }
+  .topbar { background: var(--bg); backdrop-filter: none; }
+  .btn-ghost, .calc-tab, .gallery-tab, .plans-web { border-width: 2px; }
+  .dim { color: var(--muted); }
+}

@@ -28,7 +28,11 @@
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,Arial,sans-serif;font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
 button,input,select{font:inherit;outline:none;color:inherit}
-button{cursor:pointer;transition:background .14s,border-color .14s,color .14s}
+button{cursor:pointer;transition:background .14s,border-color .14s,color .14s,transform .1s ease-out}
+/* Phản hồi phải xuất hiện ngay lúc ngón tay/chuột NHẤN XUỐNG, không đợi lúc nhả.
+   Chờ tới lúc nhả mới sáng lên là nút có cảm giác chết. */
+button:not(:disabled):active{transform:scale(.97)}
+.primary:not(:disabled):active,.big:not(:disabled):active{transform:scale(.985)}
 button:disabled,select:disabled{cursor:not-allowed;opacity:.4}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 b{font-weight:600}
@@ -159,10 +163,14 @@ select.field{cursor:pointer}
 @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
 
 /* ── toast, dialog ──────────────────────── */
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);background:var(--on);color:var(--on-ink);border-radius:8px;padding:12px 18px;font-size:11.5px;line-height:1.6;opacity:0;pointer-events:none;transition:.18s;max-width:min(440px,90vw);text-align:center;z-index:20}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);background:var(--on);color:var(--on-ink);border-radius:8px;padding:12px 18px;font-size:11.5px;line-height:1.6;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;max-width:min(440px,90vw);text-align:center;z-index:20}
 .toast.visible{opacity:1;transform:translate(-50%,0)}
 dialog{border:1px solid var(--line-2);border-radius:12px;width:min(480px,92vw);padding:24px;color:var(--ink);background:var(--bg);box-shadow:0 24px 70px rgba(0,0,0,.28)}
 dialog::backdrop{background:rgba(0,0,0,.42)}
+/* Hộp thoại hiện ra như một tấm vật liệu chứ không bật ra đột ngột.
+   Rất ngắn: đủ để mắt bắt được nó đến từ đâu, không đủ để thành chờ đợi. */
+dialog[open]{animation:sheet-in .14s cubic-bezier(.2,.7,.3,1)}
+@keyframes sheet-in{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
 dialog h2{font-size:17px;font-weight:600;margin:0 0 10px;letter-spacing:-.02em}
 dialog p{font-size:12px;line-height:1.8;color:var(--ink-2);margin:0}
 
@@ -202,7 +210,29 @@ dialog p{font-size:12px;line-height:1.8;color:var(--ink-2);margin:0}
   .pane{padding:26px 22px}
   .figure{font-size:54px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* §14 — giảm chuyển động không có nghĩa là bỏ hết phản hồi, mà là đổi sang thứ
+   không gây chóng mặt. Bỏ mọi thứ trượt, phóng, bật lại; GIỮ chuyển màu và mờ dần
+   vì chúng giúp hiểu chuyện gì vừa xảy ra chứ không làm ai choáng. */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  button:not(:disabled):active,.primary:not(:disabled):active,.big:not(:disabled):active{transform:none!important}
+  .toast{transition:opacity .18s!important;transform:translate(-50%,0)!important}
+  .progress>i{transition:none!important}
+  .theme-track,.theme-knob{transition:none!important}
+}
+
+/* §14 — nền mờ đục hơn khi người dùng xin bớt trong suốt. */
+@media (prefers-reduced-transparency:reduce){
+  dialog::backdrop{background:rgba(0,0,0,.82)}
+}
+
+/* §14 — tương phản cao: viền phải rõ ràng thay vì nét mảnh gợi ý. */
+@media (prefers-contrast:more){
+  :root{--line:#8a8a8a;--line-2:#6a6a6a;--muted:#4a4a4a}
+  :root[data-theme="dark"],:root:not([data-theme="light"]){--line:#8a8a8a;--line-2:#a5a5a5;--muted:#c8c8c8}
+  .ghost,.field,.chip-btn,dialog{border-width:2px}
+  dialog::backdrop{background:rgba(0,0,0,.9)}
+}
 
 /* ── lớp phủ khi mở ứng dụng bị chặn ────── */
 .overlay-body{display:grid;place-items:center;height:100vh;background:var(--bg)}
