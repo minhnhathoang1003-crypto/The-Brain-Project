@@ -1,6 +1,10 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
 const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES,VERSION}=require('../src/engine.cjs');
-const {PLANS,tier,limits}=require('../src/license.cjs');
+const {PLANS,tier,limits,load}=require('../src/license.cjs');
+// Từ ngày bật bán, không có bản quyền nghĩa là bậc 'free'. Phần lớn test trong file
+// này kiểm hành vi của engine chứ không kiểm ranh giới trả phí, nên đặt nền là 'pro'.
+// Những test kiểm đúng ranh giới đó tự đặt 'free' rồi trả lại nền này.
+process.env.BRAIN_TIER='pro';
 function harness(){let now=Date.now();const e=new Engine(initial(),()=>now);return {e,advance(ms,idle=0){now+=ms;e.tick(idle);},complete(minutes=25){e.action('start',{minutes});for(let i=0;i<minutes*60;i++){now+=1000;e.tick(0);}},at:()=>now};}
 
 test('credit only after full completion; never awarded twice',()=>{const h=harness();h.e.action('start',{minutes:1});for(let i=0;i<59;i++)h.advance(1000);assert.equal(h.e.s.credits,0);h.advance(1000);assert.equal(h.e.s.credits,.2);h.advance(1000);assert.equal(h.e.s.credits,.2);assert.equal(h.e.s.lastSession.status,'completed');});
@@ -85,12 +89,21 @@ test('license seam gates the blocklist size and is the only place the boundary l
   } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
   assert.equal(tier(),'pro','khôi phục lại bậc mặc định');
 });
-test('unknown or absent tier falls back to the paid tier, never locks anyone out',()=>{
+test('giá trị BRAIN_TIER lạ bị bỏ qua hoàn toàn, không nâng cũng không hạ bậc ai',()=>{
   const before=process.env.BRAIN_TIER;
+  const KEY='1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D';
+  const rac=['','enterprise','FREE','null','0'];
   try{
-    for(const bad of ['','enterprise','FREE','null']){process.env.BRAIN_TIER=bad;assert.equal(tier(),'pro',bad);}
-    delete process.env.BRAIN_TIER;assert.equal(tier(),'pro');
-  } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
+    // Có bản quyền: giá trị rác không được cướp mất bản Pro của người đã trả tiền.
+    load({key:KEY,status:'active',checkedAt:Date.now()});
+    for(const x of rac){process.env.BRAIN_TIER=x;assert.equal(tier(),'pro',`có bản quyền, BRAIN_TIER=${JSON.stringify(x)}`);}
+    delete process.env.BRAIN_TIER;assert.equal(tier(),'pro','có bản quyền thì là pro');
+
+    // Không bản quyền: giá trị rác cũng không được phát không bản Pro.
+    load(null);
+    for(const x of rac){process.env.BRAIN_TIER=x;assert.equal(tier(),'free',`không bản quyền, BRAIN_TIER=${JSON.stringify(x)}`);}
+    delete process.env.BRAIN_TIER;assert.equal(tier(),'free','không bản quyền thì là free');
+  } finally { load(null); if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
 });
 test('removed feature endpoints cannot mutate state',()=>{const h=harness();for(const type of ['taskAdd','habitToggle','reflect','skipBreak','sleep','usage'])assert.throws(()=>h.e.action(type,{title:'x',id:'study'}),type);assert.deepEqual(Object.keys(h.e.s).sort(),['credits','grants','history','idleSeconds','lastSession','lockUntil','paired','presets','session','targets','theme','token','version']);});
 

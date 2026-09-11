@@ -156,7 +156,7 @@ function plansView(){
     <table class="plans"><thead><tr><th></th><th>Free</th><th class="${pro&&l.selling?'on':''}">Pro</th></tr></thead>
       <tbody>${state.plans.differences.map(d=>`<tr><th>${esc(d.label)}</th><td>${cell(d.free)}</td><td>${cell(d.pro)}</td></tr>`).join('')}</tbody></table>
     <p class="small-note"><b>Vòng lặp cốt lõi miễn phí vĩnh viễn:</b> ${state.plans.alwaysFree.map(esc).join(' · ')}.</p>
-    <p class="small-note">Tụt xuống Free không bao giờ làm mất credit đã kiếm, và không bao giờ bỏ chặn thứ gì đang chặn — chỉ là không thêm được mục mới quá hạn mức.</p></div>`;
+    <p class="small-note">Tụt xuống Free <b>không bao giờ làm mất credit</b> bạn đã kiếm, và <b>không xóa mục nào</b> khỏi danh sách chặn — bạn chỉ không thêm được mục mới quá hạn mức. Riêng phần chặn ứng dụng và game Windows thì ngừng hoạt động, vì đó là tính năng của bản Pro; chặn website vẫn chạy như thường.</p></div>`;
 }
 
 function updateView(){

@@ -18,9 +18,10 @@
 // false → mọi người đều ở bậc 'pro', không ai bị khóa gì. Đây là trạng thái hôm nay.
 // true  → không có bản quyền hợp lệ thì tụt xuống 'free'.
 //
-// Đừng bật cho tới khi verify() dưới đây thật sự gọi được cổng thanh toán. Bật sớm là
-// khóa tính năng của những người đang dùng miễn phí mà chẳng có cách nào để họ mua.
-const SELLING = false;
+// Bật ngày 11/9/2026, sau khi verify() gọi thật được /licenses/activate và một mã
+// mua thử đã kích hoạt thành công trên máy thật. Đừng bật lại bằng tay ở nơi nào
+// khác: đây là chỗ duy nhất quyết định.
+const SELLING = true;
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────────────────────

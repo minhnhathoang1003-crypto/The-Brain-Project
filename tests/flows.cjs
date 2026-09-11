@@ -8,7 +8,7 @@ const {WebSocket}=require('ws');
 const root=path.resolve(__dirname,'..');
 
 async function launch(dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-flows-'))){
-  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47858'};
+  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47858',BRAIN_TIER:'pro'};
   delete env.ELECTRON_RUN_AS_NODE;
   const app=await electron.launch({...(process.env.BRAIN_FLOW_EXE?{executablePath:process.env.BRAIN_FLOW_EXE,args:[]}:{args:[root]}),env,timeout:15000});
   const page=await app.firstWindow();page.setDefaultTimeout(5000);

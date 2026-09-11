@@ -1,7 +1,7 @@
 const {_electron}=require('playwright');const fs=require('node:fs'),path=require('node:path'),os=require('node:os');const assert=require('node:assert/strict');
 (async()=>{
   const root=path.resolve(__dirname,'..'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-migrate-'));
-  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47842'};delete env.ELECTRON_RUN_AS_NODE;
+  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47842',BRAIN_TIER:'pro'};delete env.ELECTRON_RUN_AS_NODE;
   const launch=()=>_electron.launch({args:[root],env});let app;
   const shots=path.join(root,'test-results');fs.mkdirSync(shots,{recursive:true});
   try{

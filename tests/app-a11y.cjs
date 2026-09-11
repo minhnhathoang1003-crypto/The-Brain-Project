@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),asse
 const root=path.resolve(__dirname,'..');
 const launch=extra=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-a11y-'));
-  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47862',...extra};
+  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47862',BRAIN_TIER:'pro',...extra};
   delete env.ELECTRON_RUN_AS_NODE;
   return electron.launch({args:[root],env});
 };
@@ -27,14 +27,18 @@ const launch=extra=>{
     await page.mouse.up();
     assert.notEqual(pressed,'none','phải co lại ngay lúc nhấn xuống, chưa cần nhả');
     assert.match(pressed,/^matrix\(0\.9/,`co lại đúng tỉ lệ, nhận được ${pressed}`);
-    await page.waitForTimeout(200);
-    const released=await at();
-    assert.ok(!/^matrix\(0\.9/.test(released),`nhả ra là hết co lại, nhận được ${released}`);
+    // So bằng SỐ chứ không bằng chuỗi: giữa lúc chuyển tiếp, transform là những giá
+    // trị như matrix(0.999999,…) — vẫn khớp mọi biểu thức chính quy kiểu /^matrix\(0\.9/.
+    const tiLe=t=>{const m=/^matrix\(([-\d.]+)/.exec(t);return m?Number(m[1]):1;};
+    // Đợi cho hiệu ứng dừng hẳn thay vì đoán một con số mili giây.
+    const yen=async()=>{let truoc=null;for(let i=0;i<40;i++){const nay=await at();if(nay===truoc)return nay;truoc=nay;await page.waitForTimeout(50);}return truoc;};
+
+    const released=await yen();
+    assert.ok(tiLe(released)>0.995,`nhả ra là hết co lại, nhận được ${released}`);
     // Chuột vẫn nằm trên nút nên :hover còn nhấc nó lên 1px — chỗ này KHÔNG được
     // đòi 'none'. Phải rời chuột đi mới về đúng trạng thái nghỉ.
     await page.mouse.move(4,4);
-    await page.waitForTimeout(200);
-    assert.equal(await at(),'none','rời chuột ra là trở lại như cũ');
+    assert.equal(await yen(),'none','rời chuột ra là trở lại như cũ');
     console.log('§1 phản hồi lúc nhấn   ',pressed);
 
     // §14 Ba thiết lập, đọc bằng chính media query của trình duyệt.

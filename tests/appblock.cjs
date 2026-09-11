@@ -4,7 +4,7 @@
 const {_electron:electron}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-appblock-'));
-const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47852'};delete env.ELECTRON_RUN_AS_NODE;
+const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47852',BRAIN_TIER:'pro'};delete env.ELECTRON_RUN_AS_NODE;
 
 const focus = (app,exe) => app.evaluate(({BrowserWindow},exe)=>{
   // Bộ theo dõi được giữ trong biến module; gọi lại đúng listener mà main.cjs đã đăng ký.

@@ -5,7 +5,7 @@ const {_electron:electron,chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),PORT=47851;
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-restart-'));
-const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:String(PORT)};delete env.ELECTRON_RUN_AS_NODE;
+const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:String(PORT),BRAIN_TIER:'pro'};delete env.ELECTRON_RUN_AS_NODE;
 const launchApp=()=>electron.launch({args:[root],env});
 const waitFor=async(fn,label,timeout=180000)=>{
   const t0=Date.now();

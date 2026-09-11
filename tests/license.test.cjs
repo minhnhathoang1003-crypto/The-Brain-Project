@@ -7,12 +7,33 @@ const DAY = 86400000;
 
 test.afterEach(() => L.load(null));
 
-test('công tắc bán hàng còn tắt: không ai bị giới hạn gì', () => {
-  assert.equal(L.SELLING, false, 'bật SELLING là khóa tính năng của người đang dùng miễn phí');
-  L.load(null);
-  assert.equal(L.tier(), 'pro', 'chưa có bản quyền vẫn phải là pro khi chưa bán');
-  assert.equal(L.limits().appBlocking, true);
-  assert.equal(L.limits().lockedMode, true);
+test('đã bật bán: không bản quyền là free, bản quyền còn hiệu lực là pro', () => {
+  const saved = process.env.BRAIN_TIER;
+  delete process.env.BRAIN_TIER;
+  try {
+    assert.equal(L.SELLING, true);
+    L.load(null);
+    assert.equal(L.tier(), 'free');
+    assert.equal(L.limits().appBlocking, false);
+    assert.equal(L.limits().lockedMode, false);
+
+    L.load({ key: KEY, status: 'active', checkedAt: Date.now() });
+    assert.equal(L.tier(), 'pro');
+    assert.equal(L.limits().appBlocking, true);
+    assert.equal(L.limits().lockedMode, true);
+  } finally { if (saved === undefined) delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER = saved; }
+});
+
+test('hết hạn ân hạn thì tụt về free, nhưng hạn mức Free vẫn còn nguyên vòng lặp cốt lõi', () => {
+  const saved = process.env.BRAIN_TIER;
+  delete process.env.BRAIN_TIER;
+  try {
+    L.load({ key: KEY, status: 'active', checkedAt: Date.now() - 31 * DAY });
+    assert.equal(L.tier(), 'free', 'quá 30 ngày không xác minh được thì hết hiệu lực');
+    // Thứ người dùng kiếm được bằng công sức không bao giờ nằm sau tường phí.
+    assert.ok(L.limits().maxTargets >= 5, 'bản Free vẫn chặn được ít nhất 5 mục');
+    assert.ok(L.limits().historyDays >= 7, 'bản Free vẫn xem lại được ít nhất 7 ngày');
+  } finally { if (saved === undefined) delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER = saved; }
 });
 
 test('bảng so sánh chỉ liệt kê hạn mức mà engine thật sự đọc', () => {
@@ -35,16 +56,25 @@ test('hai bậc thật sự khác nhau ở cả bốn hạn mức', () => {
   }
 });
 
-test('BRAIN_TIER ép được bậc, giá trị rác luôn rơi về pro', () => {
+test('BRAIN_TIER ép được cả hai bậc, giá trị rác bị bỏ qua', () => {
   const saved = process.env.BRAIN_TIER;
   try {
+    L.load({ key: KEY, status: 'active', checkedAt: Date.now() });
     process.env.BRAIN_TIER = 'free';
-    assert.equal(L.tier(), 'free');
+    assert.equal(L.tier(), 'free', 'ép được xuống free dù đang có bản quyền, để tự xem thử');
     assert.equal(L.limits().maxTargets, 5);
     assert.equal(L.limits().historyDays, 7);
+    process.env.BRAIN_TIER = 'pro';
+    assert.equal(L.tier(), 'pro');
+    // Giá trị lạ không được coi là một bậc; phải rơi về đúng thứ bản quyền cho phép.
     for (const rac of ['rác', '', 'PRO', 'undefined', '0']) {
       process.env.BRAIN_TIER = rac;
-      assert.equal(L.tier(), 'pro', `giá trị ${JSON.stringify(rac)} phải rơi về pro`);
+      assert.equal(L.tier(), 'pro', `có bản quyền, ${JSON.stringify(rac)} phải bị bỏ qua`);
+    }
+    L.load(null);
+    for (const rac of ['rác', '', 'PRO', 'undefined', '0']) {
+      process.env.BRAIN_TIER = rac;
+      assert.equal(L.tier(), 'free', `không bản quyền, ${JSON.stringify(rac)} không được phát không bản Pro`);
     }
   } finally {
     if (saved === undefined) delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER = saved;

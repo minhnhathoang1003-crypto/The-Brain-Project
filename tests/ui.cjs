@@ -1,7 +1,7 @@
 const { _electron:electron }=require('playwright');const fs=require('node:fs');const path=require('node:path');const os=require('node:os');const assert=require('node:assert/strict');const {WebSocket}=require('ws');
 (async()=>{
   const root=path.resolve(__dirname,'..'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'brain-ui-test-'));fs.mkdirSync(path.join(root,'test-results'),{recursive:true});
-  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47841'};delete env.ELECTRON_RUN_AS_NODE;
+  const env={...process.env,BRAIN_TEST_DIR:dir,BRAIN_TEST_PORT:'47841',BRAIN_TIER:'pro'};delete env.ELECTRON_RUN_AS_NODE;
   const origin='chrome-extension://'+'a'.repeat(32);
   let desktop;const errors=[];
   try{

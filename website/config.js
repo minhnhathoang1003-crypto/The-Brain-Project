@@ -30,6 +30,6 @@ window.SITE_CONFIG = {
   // src/license.cjs, nếu không thì web đòi tiền trong khi ứng dụng vẫn cho không.
   price: '390.000₫',         // để trống thì trang không nói giá nào
   priceNote: 'Trả một lần, dùng vĩnh viễn. Không thuê bao.',
-  checkoutUrl: '',           // link Lemon Squeezy; trống thì nút mua bị ẩn
+  checkoutUrl: 'https://the-brain-project.lemonsqueezy.com/checkout/buy/aeff41f6-c9bd-4e9a-8a3a-cfa80cabd592',
   refundDays: 30             // số ngày hoàn tiền vô điều kiện
 };
