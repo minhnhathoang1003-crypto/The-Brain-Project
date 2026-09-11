@@ -11,6 +11,7 @@
     "test:ui": "node tests/ui.cjs",
     "test:free": "node tests/free.cjs",
     "test:browser": "node tests/browser.cjs",
+    "test:browser:redeem": "node tests/browser-redeem.cjs",
     "test:migrate": "node tests/migrate.cjs",
     "test:restart": "node tests/restart.cjs",
     "test:appblock": "node tests/appblock.cjs",

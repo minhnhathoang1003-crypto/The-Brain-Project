@@ -88,15 +88,22 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
     The Brain Project đang chạy trên chính máy của bạn. <code>127.0.0.1</code> là địa chỉ nội bộ; dữ liệu
     không đi qua mạng và không thể ra khỏi máy.
   </p>
-  <p>Qua kết nối đó chỉ có ba loại tin được gửi đi:</p>
+  <p>Tiện ích gửi lên ứng dụng đúng bốn loại tin:</p>
   <ul class="doc-list">
     <li><strong>Mã ghép nối</strong>, để ứng dụng biết đây đúng là tiện ích của bạn.</li>
     <li><strong>Tín hiệu ping</strong> mỗi 10 giây, để hai bên biết còn kết nối.</li>
     <li><strong>Một cờ đúng/sai</strong> báo rằng luật chặn đã được áp dụng.</li>
+    <li>
+      <strong>Yêu cầu đổi credit</strong>, chỉ khi chính bạn bấm nút trên màn hình chặn: gồm mã của mục
+      trong danh sách chặn của bạn và số phút bạn chọn. Không bấm thì không có tin này.
+    </li>
   </ul>
+  <p>Ứng dụng gửi xuống tiện ích danh sách chặn của bạn, các lượt mở đang có hiệu lực, hạn chế độ khóa,
+    số credit hiện có và các gói phút — chỉ vừa đủ để màn hình chặn hiện đúng số dư và các nút bấm.</p>
   <p class="doc-note">
     Không có URL, không có tên miền bạn đang xem, không có lịch sử, không có nội dung trang nào nằm trong
-    những tin này.
+    những tin này. Tiện ích biết những tên miền <strong>bạn đã tự thêm vào danh sách chặn</strong> — nó phải
+    biết mới chặn được — nhưng không ghi lại và không báo cho ai việc bạn có ghé vào chúng hay không.
   </p>
 
   <h2>Ứng dụng trên Windows lưu gì</h2>
@@ -229,9 +236,13 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
     <p>
       The extension opens exactly one connection, to <code>ws://127.0.0.1:47831</code> — the companion desktop
       app running on your own computer. <code>127.0.0.1</code> is a loopback address; the data never traverses
-      a network and cannot leave the machine. Only three kinds of message are sent over it: the pairing token,
-      a keep-alive ping every 10 seconds, and a boolean flag confirming the blocking rules were applied.
-      <strong>No URLs, no hostnames, no history and no page content are included.</strong>
+      a network and cannot leave the machine. Four kinds of message are sent over it: the pairing token,
+      a keep-alive ping every 10 seconds, a boolean flag confirming the blocking rules were applied, and — only
+      when you press a button on the block screen yourself — a request to spend credits, containing the id of
+      an entry on your own block list and the number of minutes you chose. The app sends back your block list,
+      any active unlocks, the lock-mode deadline, your credit balance and the available minute packs, which is
+      exactly what the block screen needs to show the right balance and buttons.
+      <strong>No URLs, no browsing history and no page content are included.</strong>
     </p>
 
     <h3>Deleting your data</h3>

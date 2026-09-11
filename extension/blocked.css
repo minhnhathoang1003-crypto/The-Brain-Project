@@ -77,6 +77,43 @@ button:hover{opacity:.84;transform:translateY(-1px)}
 button:active{transform:translateY(1px)}
 button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 
+/* ── Đổi credit ngay trên màn hình chặn ─────────────────── */
+/* Khu này cố ý KHÔNG nổi bật bằng nút chính. Đây là màn hình dừng lại, không phải
+   màn hình mua hàng — giá phải nhìn thấy rõ hơn là cái nút. */
+
+.redeem{
+  border-top:1px solid var(--line); margin-top:30px; padding-top:26px;
+}
+.balance{font-size:14px;margin:0 0 4px}
+.balance strong{font-size:17px}
+.redeem-label{font-size:13px;color:var(--faint);margin:0 0 14px}
+
+.packs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* Nút gói phút: viền mảnh, nền trong — khác hẳn nút đen "Thử mở lại website",
+   để mắt không tự động rơi vào đây trước. */
+.pack{
+  background:transparent; color:var(--fg); border:1px solid var(--line-2);
+  padding:10px 18px; font-size:13.5px; margin-top:0; border-radius:999px;
+}
+.pack:hover:not(:disabled){border-color:var(--fg);opacity:1}
+.pack:disabled{
+  color:var(--faint); border-color:var(--line); cursor:not-allowed;
+  opacity:1; transform:none;
+}
+.pack:disabled:hover{transform:none}
+
+.redeem-error{
+  font-size:13px; color:var(--fg); background:var(--surface);
+  border:1px solid var(--line-2); border-radius:10px;
+  padding:12px 16px; margin:16px 0 0; line-height:1.7;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .pack,button{transition:opacity .16s var(--ease)}
+  .pack:hover,button:hover,button:active{transform:none}
+}
+
 /* ── Popup ──────────────────────────────────────────────── */
 
 .popup{width:350px;padding:26px}

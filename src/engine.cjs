@@ -243,9 +243,13 @@ class Engine {
   rules() {
     const now=this.clock();
     const lockUntil=this.s.lockUntil&&this.s.lockUntil>now?this.s.lockUntil:null;
+    // credits và packs chỉ để màn hình chặn của tiện ích hiện được số dư và các gói
+    // phút. Chúng đi qua đúng một kết nối tới 127.0.0.1 — không rời khỏi máy.
+    // session: đang trong phiên tập trung thì không đổi được credit, và màn hình chặn
+    // cần biết điều đó để nói lý do thay vì báo lỗi cụt ngủn.
     return { targets:this.s.targets.filter(isSite).map(t=>({id:t.id,domain:t.domain})),
       grants:lockUntil?[]:this.s.grants.filter(g=>g.until>now).map(g=>({targetId:g.targetId,until:g.until})),
-      lockUntil, now };
+      lockUntil, now, credits:this.s.credits, packs:PACKS, session:!!this.s.session };
   }
 }
 module.exports={Engine,initial,migrate,hostOf,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS};

@@ -286,4 +286,23 @@ test('app blocking is a paid feature and is inert on the free tier',()=>{
   } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
   assert.equal(harness().e.snapshot().appBlocking,true);
 });
-test('bridge payload keeps the wire shape the extension expects',()=>{const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});const r=h.e.rules();assert.deepEqual(Object.keys(r).sort(),['grants','lockUntil','now','targets']);assert.deepEqual(Object.keys(r.targets[0]).sort(),['domain','id']);assert.deepEqual(Object.keys(r.grants[0]).sort(),['targetId','until']);});
+test('bridge payload keeps the wire shape the extension expects',()=>{
+  const h=harness();h.complete();h.e.action('redeem',{id:'youtube.com',minutes:5});
+  const r=h.e.rules();
+  // Ghim đúng từng trường đi qua dây. credits/packs/session được thêm ở 0.7.5 để màn
+  // hình chặn của tiện ích hiện được số dư và các nút đổi credit.
+  assert.deepEqual(Object.keys(r).sort(),['credits','grants','lockUntil','now','packs','session','targets']);
+  assert.deepEqual(Object.keys(r.targets[0]).sort(),['domain','id']);
+  assert.deepEqual(Object.keys(r.grants[0]).sort(),['targetId','until']);
+  assert.equal(typeof r.credits,'number');
+  assert.equal(typeof r.session,'boolean');
+  assert.ok(Array.isArray(r.packs)&&r.packs.length);
+
+  // Những thứ KHÔNG được lên dây. Tiện ích không cần biết, nên không được biết.
+  const tren_day=JSON.stringify(r);
+  for(const bi_mat of [h.e.s.token,'history','presets','idleSeconds','theme'])
+    assert.ok(!tren_day.includes(bi_mat),`${bi_mat} không được lên dây`);
+  // Mục ứng dụng Windows không bao giờ được gửi sang trình duyệt.
+  h.e.s.targets.push({id:'app:leagueclient',exe:'leagueclient',name:'LMHT'});
+  assert.ok(!h.e.rules().targets.some(t=>t.id.startsWith('app:')),'mục ứng dụng không được lên dây');
+});

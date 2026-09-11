@@ -1,1 +1,33 @@
-<!doctype html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="blocked.css"><title>Một khoảng dừng · The Brain Project</title></head><body class="blocked"><main><img class="logo" src="icons/icon-128.png" alt=""><p class="eyebrow">THE BRAIN PROJECT / A MOMENT OF INTENTION</p><h1>Một khoảng dừng.<br>Một lựa chọn tốt hơn.</h1><p><strong id="host">Website này</strong> đang nằm trong ranh giới bạn đã đặt.</p><div class="rule">5 phút tập trung <span>→</span> 1 credit <span>→</span> 1 phút giải trí</div><p class="note">Quay lại ứng dụng The Brain Project để tập trung hoặc đổi credit.<br>Sau khi mở khóa, bạn có thể truy cập lại website.</p><button id="retry">Thử mở lại website</button><p class="fine">Chưa muốn dùng bộ chặn? Bạn có thể ngắt kết nối trong tiện ích.</p></main><script src="blocked.js"></script></body></html>
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="blocked.css">
+<title>Một khoảng dừng · The Brain Project</title>
+</head>
+<body class="blocked">
+<main>
+  <img class="logo" src="icons/icon-128.png" alt="">
+  <p class="eyebrow">THE BRAIN PROJECT / A MOMENT OF INTENTION</p>
+  <h1>Một khoảng dừng.<br>Một lựa chọn tốt hơn.</h1>
+  <p><strong id="host">Website này</strong> đang nằm trong ranh giới bạn đã đặt.</p>
+  <div class="rule">5 phút tập trung <span>→</span> 1 credit <span>→</span> 1 phút giải trí</div>
+
+  <!-- Khu đổi credit. JavaScript quyết định hiện cái nào; mặc định ẩn hết để lúc
+       chưa nối được ứng dụng thì trang vẫn là một màn hình chặn tử tế. -->
+  <section id="doi" class="redeem" hidden>
+    <p class="balance">Bạn đang có <strong id="so-du">0</strong> credit</p>
+    <p class="redeem-label">Mở <span id="host-2">website này</span> trong</p>
+    <div id="goi" class="packs"></div>
+    <p id="doi-loi" class="redeem-error" role="alert" hidden></p>
+  </section>
+
+  <p id="note" class="note">Quay lại ứng dụng The Brain Project để tập trung hoặc đổi credit.<br>Sau khi mở khóa, bạn có thể truy cập lại website.</p>
+
+  <button id="retry">Thử mở lại website</button>
+  <p class="fine">Chưa muốn dùng bộ chặn? Bạn có thể ngắt kết nối trong tiện ích.</p>
+</main>
+<script src="blocked.js"></script>
+</body>
+</html>

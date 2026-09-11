@@ -115,7 +115,28 @@ app.whenReady().then(()=>{
   });
   wss.on('connection',ws=>{
     const deadline=setTimeout(()=>{if(!ws.authed)ws.close();},3000);
-    ws.on('message',raw=>{try {const m=JSON.parse(raw);if(!ws.authed){const a=Buffer.from(String(m.token||'')),b=Buffer.from(engine.s.token);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){ws.close();return;}ws.authed=true;clearTimeout(deadline);ws.send(JSON.stringify(engine.rules()));if(!engine.s.paired){engine.s.paired=true;engine.commit();}}else if(m.applied!==undefined){ws.appliedAt=m.applied===true?Date.now():0;}}catch{ws.close();}});
+    ws.on('message',raw=>{try {const m=JSON.parse(raw);if(!ws.authed){const a=Buffer.from(String(m.token||'')),b=Buffer.from(engine.s.token);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){ws.close();return;}ws.authed=true;clearTimeout(deadline);ws.send(JSON.stringify(engine.rules()));if(!engine.s.paired){engine.s.paired=true;engine.commit();}}else if(m.applied!==undefined){ws.appliedAt=m.applied===true?Date.now():0;}
+      else if(m.redeem&&typeof m.redeem==='object'){
+        // Đổi credit ngay trên màn hình chặn của trình duyệt. Cùng một hình dạng
+        // quyền với lớp phủ chặn ứng dụng ở ipcMain 'action': chỉ được mở đúng thứ
+        // đang bị chặn, không phải bất cứ mục nào trong danh sách.
+        //
+        // Mọi luật vẫn do engine quyết: chế độ khóa, đang trong phiên, không đủ
+        // credit, mục đang mở rồi. Ở đây không nới một luật nào.
+        const id=String(m.redeem.targetId||''),minutes=Number(m.redeem.minutes);
+        const reqId=Number(m.redeem.reqId)||0;
+        let kq;
+        try{
+          const target=engine.s.targets.find(t=>t.id===id);
+          if(!target||!target.domain)throw Error('Không tìm thấy website trong danh sách.');
+          engine.action('redeem',{id,minutes});
+          kq={ok:true,until:engine.s.grants.find(g=>g.targetId===id)?.until||null};
+        }catch(err){kq={ok:false,error:err.message};}
+        // Đẩy luật mới lên dây TRƯỚC khi báo "xong": tiện ích cần gỡ luật chặn rồi
+        // mới nên để trang điều hướng, nếu không nó bị đá ngược về màn hình chặn.
+        if(kq.ok)broadcast();
+        if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({redeemResult:{...kq,reqId}}));
+      }}catch{ws.close();}});
     ws.on('error',()=>{});ws.on('close',()=>clearTimeout(deadline));
   });
   server.on('error',e=>{bridgeError=`Cổng ${PORT}: ${e.code}. Tiện ích chưa kết nối được.`;broadcast();});

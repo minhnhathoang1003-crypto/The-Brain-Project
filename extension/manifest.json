@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "The Brain Project · Focus Bridge",
   "short_name": "Focus Bridge",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Chặn website gây nghiện theo danh sách bạn đặt trong ứng dụng The Brain Project trên Windows. Mở tạm bằng credit.",
   "homepage_url": "https://the-brain-project.vercel.app/",
   "minimum_chrome_version": "120",
