@@ -6,7 +6,7 @@ window.SITE_CONFIG = {
   // phần hướng dẫn cài từ mã nguồn — trang không bao giờ có link chết.
   // Sau khi tạo GitHub Release, dán link dạng:
   // https://github.com/<tên-bạn>/the-brain-project/releases/download/v0.7.1/The-Brain-Project-Setup-0.7.1.exe
-  downloadUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project/releases/download/v0.7.1/The-Brain-Project-Setup-0.7.1.exe',
+  downloadUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project/releases/download/v0.7.2/The-Brain-Project-Setup-0.7.2.exe',
 
   // Endpoint nhận email danh sách chờ (Formspree, Getform, Basin...).
   // Để trống thì cả khối đăng ký email được ẩn đi.
@@ -14,9 +14,9 @@ window.SITE_CONFIG = {
   // Link có dạng: https://formspree.io/f/xxxxxxxx
   formEndpoint: 'https://formspree.io/f/mljeokde',
 
-  version: '0.7.1',
+  version: '0.7.2',
   fileSize: '107 MB',
-  sha256: '28BA311F3008C749DAF43F11178290CFD9393E33A65E1AB36C505162C311A17B',
+  sha256: 'A62FC4E5608D55BE569A250A5B34148E14CB846FFB211886A081D58A21ACE141',
 
   // Link tới mã nguồn. Để trống thì các link "mã nguồn" bị ẩn.
   repoUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project',
