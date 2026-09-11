@@ -19,11 +19,19 @@ let win,overlay,watcher,engine,server,wss,interval,updater=null,bridgeError=null
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
 
 // Link kích hoạt: sau khi trả tiền, khách bấm một nút và Windows mở app kèm mã, để
-// không ai phải gõ lại 36 ký tự bằng tay. Bản đã cài đăng ký giao thức qua trình cài
-// đặt (xem "protocols" trong package.json); dòng dưới lo nốt trường hợp chạy từ mã
-// nguồn, và ghi đè nếu người dùng cài lại app ở chỗ khác.
-// Không đăng ký trong lúc chạy test — test không được phép sửa registry của máy.
-if(!process.env.BRAIN_TEST_DIR){
+// không ai phải gõ lại 36 ký tự bằng tay.
+//
+// Dòng này là chỗ DUY NHẤT đăng ký giao thức. Tùy chọn "protocols" của
+// electron-builder chỉ có tác dụng trên macOS — trình cài NSIS không đụng tới nó,
+// nên đừng thêm lại vào package.json rồi tưởng là xong.
+//
+// Đăng ký lúc chạy cũng đúng hơn cho bản cài theo từng người dùng: nó ghi vào
+// HKCU và tự sửa lại nếu app được cài sang chỗ khác. Trình cài bật runAfterFinish
+// nên app chạy ngay sau khi cài, kịp đăng ký trước khi ai đó bấm link.
+//
+// Test không được sửa registry của máy, trừ khi bài test nói thẳng là nó muốn thế
+// và tự dọn sau — tests/protocol.cjs làm đúng vậy.
+if(!process.env.BRAIN_TEST_DIR||process.env.BRAIN_TEST_PROTOCOL==='1'){
   if(app.isPackaged) app.setAsDefaultProtocolClient(license.PROTOCOL);
   else app.setAsDefaultProtocolClient(license.PROTOCOL,process.execPath,[path.resolve(process.argv[1]||'.')]);
 }

@@ -1,5 +1,14 @@
 # Có gì mới
 
+## 0.7.5
+
+- **Đổi credit ngay trên màn hình chặn website.** Trước đây gặp trang bị chặn thì phải đi tìm ứng dụng mới mở tạm được. Nay chọn số phút ngay tại chỗ là vào thẳng trang. Không luật nào được nới: đang khóa, đang trong phiên tập trung hay chưa đủ credit thì vẫn không đổi được — nhưng giờ màn hình chặn nói rõ lý do thay vì để bạn bấm rồi mới biết.
+- **Ứng dụng nói rõ khi bạn chạm trần bản Free.** Nhóm "Ứng dụng và game" trước đây biến mất hoàn toàn với người chưa mua; nay nó vẫn hiện kèm giải thích. Danh sách website ghi rõ đang dùng bao nhiêu trên bao nhiêu, và khi đầy thì nói trước chứ không để bạn gõ xong mới báo lỗi.
+- **Màn hình thống kê nói rõ đang tính trên bao nhiêu ngày,** và nhắc rằng dữ liệu của những ngày cũ hơn vẫn nằm trên máy bạn, không bị xóa.
+- **Kích hoạt bản Pro bằng một cú bấm.** Sau khi mua, bấm nút trong email là ứng dụng tự mở lên và tự kích hoạt — không phải gõ lại mã dài 36 ký tự. Nếu nút không chạy được, trang kích hoạt vẫn hiện mã ra để chép tay.
+- **Mục Bản quyền nói rõ tình trạng mã của bạn:** đang hoạt động, xác minh lần cuối ngày nào, còn bao nhiêu ngày dùng được nếu mất mạng. Gỡ mã khỏi máy này cũng trả lại một lượt kích hoạt để bạn dùng cho máy khác.
+- **Bắt đầu mở bán.** Vòng lặp cốt lõi — tập trung để kiếm credit, đổi credit để mở, chặn website qua tiện ích — vẫn miễn phí vĩnh viễn và không bao giờ nằm sau tường phí.
+
 ## 0.7.4
 
 - **Dán link nào cũng chặn được.** Trước đây dán `github.com/ai-đó/repo` thì ứng dụng báo lỗi và bắt bạn tự gõ lại tên miền. Nay dán cả đường link dài — có tham số, có cổng, có gì đi nữa — ứng dụng tự nhận ra tên miền gốc và chặn đúng nó.

@@ -79,9 +79,12 @@ const KEY='04C49813-1111-2222-3333-7CECA38820BB';
       const js=fs.readFileSync(path.resolve(__dirname,'../website/kich-hoat.js'),'utf8');
       assert.ok(js.includes(`'${L.PROTOCOL}'`),
         `website dùng giao thức khác với src/license.cjs (${L.PROTOCOL})`);
-      const pkg=require('../package.json');
-      assert.deepEqual(pkg.build.protocols?.[0]?.schemes,[L.PROTOCOL],
-        'trình cài đặt phải đăng ký đúng giao thức mà mã nguồn dùng');
+      // Giao thức được đăng ký lúc chạy trong main.cjs, không phải qua package.json:
+      // "protocols" của electron-builder chỉ có tác dụng trên macOS. tests/protocol.cjs
+      // kiểm việc đăng ký đó bằng chính registry của Windows.
+      const main=fs.readFileSync(path.resolve(__dirname,'../src/main.cjs'),'utf8');
+      assert.match(main,/setAsDefaultProtocolClient\(license\.PROTOCOL/,
+        'main.cjs phải tự đăng ký giao thức lúc chạy');
       assert.equal(L.keyFromUrl(`${L.PROTOCOL}://activate?key=${KEY}`),KEY,
         'ứng dụng phải đọc được đúng link mà website tạo ra');
       console.log('§5 giao thức khớp  ',L.PROTOCOL);
