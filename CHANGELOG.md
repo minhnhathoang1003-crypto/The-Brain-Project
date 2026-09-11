@@ -1,5 +1,12 @@
 # Có gì mới
 
+## 0.7.3
+
+- **Cài đặt chia thành bảy mục, không phải cuộn dài nữa.** Thanh mục bên trái đứng yên — Bộ chặn, Phiên, Chế độ khóa, Tiến bộ, Giao diện, Bản quyền, Ứng dụng — và chỉ phần nội dung bên phải cuộn. Trước đây mọi thứ nằm chung một cột nên phải kéo rất sâu mới tới mục cuối.
+- **Chữ trong ứng dụng to và rõ hơn.** Cỡ chữ nền tăng, phần mô tả trong Cài đặt tăng nhiều nhất vì đó là chỗ khó đọc nhất.
+- **Logo, tên sản phẩm và nút ⚙ trên thanh đầu đều to hơn**, và nút ⚙ chuyển sang màu đen cho dễ thấy.
+- **Ứng dụng và tiện ích nay dùng chung phông chữ với website.** Trang chặn trong trình duyệt cũng chuyển sang đơn sắc như phần còn lại của sản phẩm, và có chế độ tối lần đầu.
+
 ## 0.7.2
 
 - **Nút phản hồi ngay lúc bạn nhấn.** Trước đây nút chỉ đổi màu khi rê chuột, nhấn xuống thì không có gì xảy ra cho tới lúc nhả — nút có cảm giác chết. Nay nút co nhẹ ngay khi bạn nhấn.
