@@ -4,6 +4,11 @@
 // nếu hai nơi lệch nhau, nên không thể quên cập nhật chỗ này.
 // Chạy lại bằng: node scripts/changelog.cjs
 const CHANGELOG=[
+  {v:"0.7.7", items:[
+    "<b>Mục Bản quyền gọn lại.</b> Trước đây nó kể cả những thứ bạn không cần biết: lần xác minh gần nhất, bao lâu ứng dụng kiểm lại một lần, còn bao nhiêu ngày dùng được nếu mất mạng. Cái cuối cùng còn trông như đồng hồ đếm ngược tới lúc mất bản quyền, dù chẳng có gì sắp xảy ra. Nay chỉ còn ba dòng: bạn đang ở bản nào, mã nào, và đổi máy ở đâu.",
+    "<b>Cảnh báo chỉ hiện khi thật sự cần.</b> Nếu ứng dụng không kết nối được tới máy chủ bản quyền nhiều ngày liền và sắp hết thời gian dùng ngoại tuyến, lúc đó nó mới nói — kèm cách xử lý.",
+    "<b>Câu \"xóa dữ liệu không làm mất bản quyền\" chuyển xuống ngay cạnh nút Xóa toàn bộ,</b> đúng chỗ bạn cần đọc nó.",
+  ]},
   {v:"0.7.6", items:[
     "<b>Lịch sử tập trung không còn bị xóa nữa.</b> Từ trước tới nay ứng dụng âm thầm hủy dữ liệu của những ngày quá 180 ngày trước. Nay nó giữ lại tất cả, và bản Pro xem lại được từ ngày bạn cài. Lưu ý thẳng thắn: những ngày đã bị xóa ở các bản trước thì không lấy lại được — bản này chỉ ngăn chuyện đó xảy ra tiếp.",
     "<b>Màn hình Thống kê chọn được khoảng thời gian:</b> 7 ngày, 30 ngày, 90 ngày, hoặc toàn bộ. Bảng theo ngày trước đây cắt cứng ở 30 dòng, nay hiện đủ mọi ngày trong khoảng bạn chọn.",

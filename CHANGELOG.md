@@ -1,5 +1,11 @@
 # Có gì mới
 
+## 0.7.7
+
+- **Mục Bản quyền gọn lại.** Trước đây nó kể cả những thứ bạn không cần biết: lần xác minh gần nhất, bao lâu ứng dụng kiểm lại một lần, còn bao nhiêu ngày dùng được nếu mất mạng. Cái cuối cùng còn trông như đồng hồ đếm ngược tới lúc mất bản quyền, dù chẳng có gì sắp xảy ra. Nay chỉ còn ba dòng: bạn đang ở bản nào, mã nào, và đổi máy ở đâu.
+- **Cảnh báo chỉ hiện khi thật sự cần.** Nếu ứng dụng không kết nối được tới máy chủ bản quyền nhiều ngày liền và sắp hết thời gian dùng ngoại tuyến, lúc đó nó mới nói — kèm cách xử lý.
+- **Câu "xóa dữ liệu không làm mất bản quyền" chuyển xuống ngay cạnh nút Xóa toàn bộ,** đúng chỗ bạn cần đọc nó.
+
 ## 0.7.6
 
 - **Lịch sử tập trung không còn bị xóa nữa.** Từ trước tới nay ứng dụng âm thầm hủy dữ liệu của những ngày quá 180 ngày trước. Nay nó giữ lại tất cả, và bản Pro xem lại được từ ngày bạn cài. Lưu ý thẳng thắn: những ngày đã bị xóa ở các bản trước thì không lấy lại được — bản này chỉ ngăn chuyện đó xảy ra tiếp.
