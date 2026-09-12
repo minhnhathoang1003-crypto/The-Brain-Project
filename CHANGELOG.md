@@ -1,5 +1,14 @@
 # Có gì mới
 
+## 0.7.6
+
+- **Lịch sử tập trung không còn bị xóa nữa.** Từ trước tới nay ứng dụng âm thầm hủy dữ liệu của những ngày quá 180 ngày trước. Nay nó giữ lại tất cả, và bản Pro xem lại được từ ngày bạn cài. Lưu ý thẳng thắn: những ngày đã bị xóa ở các bản trước thì không lấy lại được — bản này chỉ ngăn chuyện đó xảy ra tiếp.
+- **Màn hình Thống kê chọn được khoảng thời gian:** 7 ngày, 30 ngày, 90 ngày, hoặc toàn bộ. Bảng theo ngày trước đây cắt cứng ở 30 dòng, nay hiện đủ mọi ngày trong khoảng bạn chọn.
+- **Lưới nhịp tập trung.** Mỗi ô là một ngày, ô càng đậm càng nhiều phút. Nó cho thấy thứ mà bảng số không nói ra: bạn đều đặn hay bùng nổ rồi bỏ.
+- **Chuỗi ngày liên tiếp,** cả chuỗi hiện tại lẫn chuỗi dài nhất. Hôm nay chưa kịp tập trung thì chuỗi vẫn được tính là còn — ngày vẫn còn dài.
+- **So sánh với kỳ trước, và ngày nhiều nhất.** Tổng thời gian quá một giờ thì hiện thành giờ và phút thay vì một con số phút dài loằng ngoằng.
+- **Nút gỡ mã bản quyền bớt chắn đường.** Nó từng là một nút đỏ nằm ngay dưới dòng trạng thái, nên mỗi lần mở ra chỉ để xem còn hạn không thì bạn lại nhìn thẳng vào nút xóa bản quyền. Nay là một dòng nhỏ ở cuối mục, và có hỏi lại trước khi gỡ.
+
 ## 0.7.5
 
 - **Đổi credit ngay trên màn hình chặn website.** Trước đây gặp trang bị chặn thì phải đi tìm ứng dụng mới mở tạm được. Nay chọn số phút ngay tại chỗ là vào thẳng trang. Không luật nào được nới: đang khóa, đang trong phiên tập trung hay chưa đủ credit thì vẫn không đổi được — nhưng giờ màn hình chặn nói rõ lý do thay vì để bạn bấm rồi mới biết.
