@@ -236,10 +236,12 @@ function licenseView(){
       dán lại để thử kích hoạt một lần nữa.`;
   return `<div class="set-row col"><div><b>Bản quyền</b>
     <p>${than}</p></div>
-    ${l.hasKey
-      ? `<div class="actions start"><button class="ghost danger" data-system="licenseRemove">Gỡ mã khỏi máy này</button></div>`
-      : `<form class="preset-add" data-form="licenseActivate"><input class="field" name="key" type="text" spellcheck="false" autocomplete="off" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" aria-label="Mã bản quyền" required><button class="primary small">Kích hoạt</button></form>`}
-    <p class="small-note">Mã được lưu mã hóa trong một file riêng, <b>không nằm chung với dữ liệu</b> — nên “Xóa toàn bộ dữ liệu” không làm mất bản quyền bạn đã mua.${l.hasKey?' Gỡ mã ở đây cũng trả lại một lượt kích hoạt, để bạn dùng mã đó cho máy khác.':''}</p></div>`;
+    ${l.hasKey?'':`<form class="preset-add" data-form="licenseActivate"><input class="field" name="key" type="text" spellcheck="false" autocomplete="off" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" aria-label="Mã bản quyền" required><button class="primary small">Kích hoạt</button></form>`}
+    <p class="small-note">Mã được lưu mã hóa trong một file riêng, <b>không nằm chung với dữ liệu</b> — nên “Xóa toàn bộ dữ liệu” không làm mất bản quyền bạn đã mua.</p>
+    ${l.hasKey?`<p class="small-note quiet-row">Đổi sang máy khác?
+      <button class="link" data-system="licenseRemove"
+        data-ask="Gỡ mã bản quyền khỏi máy này?"
+        data-ask-text="Máy này sẽ trở lại bản Free. Một lượt kích hoạt được trả lại để bạn dùng mã đó cho máy khác, và bạn dán lại mã ở đây bất cứ lúc nào. Credit và danh sách chặn không bị ảnh hưởng.">Gỡ mã khỏi máy này</button></p>`:''}</div>`;
 }
 
 // ── Cài đặt: bảy mục, mỗi mục một tab ──────────────────────────────
@@ -298,33 +300,164 @@ function tabLicense(){ return licenseView()+plansView(); }
 
 // Thống kê tách hẳn khỏi Cài đặt: nó là thứ người ta xem thường xuyên, không
 // phải thứ chỉnh một lần rồi thôi. Mở bằng cách bấm vào dải bảy ngày.
-function statsView(){
-  const rows=state.history.filter(d=>d.minutes||d.interrupted);
-  const tong=rows.reduce((a,d)=>({phut:a.phut+d.minutes,xong:a.xong+(d.completed||0),do_:a.do_+(d.interrupted||0),credit:a.credit+(d.earned||0)}),
-    {phut:0,xong:0,do_:0,credit:0});
-  const ngay=rows.length;
-  const tb=ngay?Math.round(tong.phut/ngay):0;
-  const dai=lastDays(7),dinh=Math.max(25,...dai.map(d=>d.minutes));
-  return `<p class="stat-range">Tính trên ${state.historyDays} ngày gần nhất</p>
-  <div class="stat-grid">
-    <div><span class="label">Tổng thời gian</span><b>${tong.phut} phút</b></div>
-    <div><span class="label">Phiên hoàn tất</span><b>${tong.xong}</b></div>
-    <div><span class="label">Phiên bỏ dở</span><b>${tong.do_}</b></div>
-    <div><span class="label">Credit đã kiếm</span><b>${num(Number(tong.credit.toFixed(2)))}</b></div>
-    <div><span class="label">Số ngày tập trung</span><b>${ngay}</b></div>
-    <div><span class="label">Trung bình mỗi ngày</span><b>${tb} phút</b></div>
-  </div>
-  <div class="set-row col"><div><b>Bảy ngày gần nhất</b></div>
-    <div class="week-bars big">${dai.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
-      <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/dinh*100)):0}%"></i></div>
-      <span>${d.label}</span></div>`).join('')}</div></div>
-  <div class="set-row col"><div><b>Theo ngày</b><p>Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
-    ${proNote(`Bản Free xem lại được <b>${state.historyDays} ngày</b> gần nhất. Bản Pro xem lại được ${proValue('historyDays')||'lâu hơn'} — dữ liệu của những ngày trước đó vẫn nằm trên máy bạn và không bị xóa.`)
-      ||`<p class="small-note">Lưu ${state.historyDays} ngày gần nhất.</p>`}
-    <div class="ratio">${'<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(rows.length
-      ? rows.slice(0,30).map(d=>`<div><span>${d.day.slice(8)}/${d.day.slice(5,7)}${d.day===lastDays(1)[0].day?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
-      : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>')}</div></div>`;
+// Khoảng thời gian đang xem trong màn hình Thống kê. Giữ ngoài render để chuyển
+// khoảng không làm mất chỗ cuộn.
+let statsRange = 7;
+const STATS_RANGES = [
+  { n: 7,   ten: '7 ngày'   },
+  { n: 30,  ten: '30 ngày'  },
+  { n: 90,  ten: '90 ngày'  },
+  { n: 0,   ten: 'Tất cả'   },   // 0 = mọi thứ engine còn giữ
+];
+
+// Lấy đúng n ngày gần nhất, kể cả ngày không tập trung — chuỗi ngày và lưới nhiệt
+// cần biết cả những ngày trống, nếu không thì "nghỉ một hôm" trông như không tồn tại.
+function daysBack(n){
+  const by=new Map(state.history.map(d=>[d.day,d]));
+  const co=state.history.length?state.history[state.history.length-1].day:null;
+  const out=[];
+  const dem=n||Math.max(1,ngayTu(co));
+  for(let i=dem-1;i>=0;i--){
+    const d=new Date(state.now);d.setDate(d.getDate()-i);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    out.push({...(by.get(key)||{day:key,minutes:0,completed:0,interrupted:0,earned:0}),
+      dow:d.getDay(), today:i===0});
+  }
+  return out;
 }
+// Bao nhiêu ngày tính từ ngày cũ nhất còn lưu tới hôm nay.
+function ngayTu(day){
+  if(!day)return 1;
+  const a=new Date(day+'T00:00:00'), b=new Date(state.now);
+  return Math.floor((b-a)/86400000)+1;
+}
+
+const congDon=rows=>rows.reduce((a,d)=>({
+  phut:a.phut+(d.minutes||0), xong:a.xong+(d.completed||0),
+  do_:a.do_+(d.interrupted||0), credit:a.credit+(d.earned||0),
+  ngay:a.ngay+(d.minutes?1:0),
+}),{phut:0,xong:0,do_:0,credit:0,ngay:0});
+
+// Chuỗi ngày liên tiếp có tập trung. Hôm nay chưa tập trung thì chuỗi vẫn còn sống
+// nếu hôm qua có — người ta hay mở ứng dụng buổi sáng, và báo "chuỗi đã đứt" lúc
+// 9 giờ sáng trong khi ngày còn dài là vừa sai vừa làm nản lòng.
+function chuoi(rows){
+  let dai=0,tam=0;
+  for(const d of rows){ if(d.minutes){tam++;dai=Math.max(dai,tam);} else tam=0; }
+  let nay=0;
+  for(let i=rows.length-1;i>=0;i--){
+    const d=rows[i];
+    if(d.minutes){nay++;continue;}
+    if(d.today&&nay===0)continue;   // hôm nay chưa kịp tập trung, chưa tính là đứt
+    break;
+  }
+  return {nay,dai};
+}
+
+// Lưới nhiệt kiểu bảng đóng góp: mỗi cột một tuần, mỗi ô một ngày. Đây là thứ mà
+// mọi ứng dụng theo dõi thói quen được yêu thích đều có, vì nó cho thấy NHỊP —
+// bạn đều đặn hay bùng nổ rồi bỏ — thứ mà bảng số không bao giờ nói ra.
+function luoiNhiet(rows){
+  const dinh=Math.max(25,...rows.map(d=>d.minutes));
+  const tuan=[];
+  let cot=[];
+  // Đệm đầu để ngày đầu tiên rơi đúng thứ của nó trong cột.
+  for(let i=0;i<rows[0].dow;i++) cot.push(null);
+  for(const d of rows){
+    cot.push(d);
+    if(cot.length===7){tuan.push(cot);cot=[];}
+  }
+  if(cot.length) tuan.push(cot);
+
+  const muc=m=>!m?0:m>=dinh*.75?4:m>=dinh*.5?3:m>=dinh*.25?2:1;
+  const thang=[];
+  for(const c of tuan){
+    const dau=c.find(Boolean);
+    const t=dau?dau.day.slice(5,7):'';
+    thang.push(t!==thang.at(-1)?.t?{t,nhan:['','Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'][Number(t)]}:{t,nhan:''});
+  }
+  return `<div class="heat-wrap"><div class="heat">
+    <div class="heat-dow"><span></span><span>T2</span><span></span><span>T4</span><span></span><span>T6</span><span></span></div>
+    <div class="heat-grid">${tuan.map((c,i)=>`<div class="heat-col">
+      <span class="heat-month">${thang[i].nhan}</span>
+      ${Array.from({length:7},(_,j)=>{const d=c[j];
+        return d?`<i class="heat-cell lv${muc(d.minutes)} ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút"></i>`
+                : '<i class="heat-cell empty"></i>';}).join('')}
+    </div>`).join('')}</div>
+  </div></div>
+  <div class="heat-key"><span>Ít</span>${[0,1,2,3,4].map(l=>`<i class="heat-cell lv${l}"></i>`).join('')}<span>Nhiều</span></div>`;
+}
+
+function statsView(){
+  const toiDa=state.historyDays;                       // bậc license cho xem bao nhiêu
+  const range=STATS_RANGES.find(r=>r.n===statsRange)||STATS_RANGES[0];
+  const soNgay=range.n===0?0:Math.min(range.n,toiDa);
+  const rows=daysBack(soNgay);
+  const t=congDon(rows);
+  const tb=t.ngay?Math.round(t.phut/t.ngay):0;
+  const ks=chuoi(rows);
+  const nhat=rows.reduce((a,d)=>d.minutes>(a?.minutes||0)?d:a,null);
+
+  // So với kỳ trước: chỉ nói khi thật sự có kỳ trước để so.
+  let soSanh='';
+  if(range.n&&state.history.length>range.n){
+    const truoc=congDon(daysBack(range.n*2).slice(0,range.n));
+    if(truoc.phut>0){
+      const chenh=Math.round((t.phut-truoc.phut)/truoc.phut*100);
+      const huong=chenh>0?'len':chenh<0?'xuong':'ngang';
+      soSanh=`<span class="delta ${huong}">${chenh>0?'+':''}${chenh}%</span> so với ${range.n} ngày trước đó`;
+    }
+  }
+
+  const chips=STATS_RANGES.map(r=>{
+    const khoa=r.n===0?toiDa<365:r.n>toiDa;
+    return `<button class="chip-btn small ${statsRange===r.n?'on':''}" data-stats-range="${r.n}" ${khoa?'disabled title="Bản Pro xem lại được toàn bộ lịch sử"':''}>${r.ten}</button>`;
+  }).join('');
+
+  const coDuLieu=rows.some(d=>d.minutes||d.interrupted);
+
+  return `<div class="stats-head">
+    <div class="chips tight">${chips}</div>
+    <p class="stat-range">${range.n===0?`Toàn bộ lịch sử · ${rows.length} ngày`:`${soNgay} ngày gần nhất`}${soSanh?' · '+soSanh:''}</p>
+  </div>
+
+  <div class="stat-grid">
+    <div><span class="label">Tổng thời gian</span><b>${gioPhut(t.phut)}</b></div>
+    <div><span class="label">Trung bình mỗi ngày</span><b>${tb} phút</b></div>
+    <div><span class="label">Chuỗi hiện tại</span><b>${ks.nay} ngày</b></div>
+    <div><span class="label">Chuỗi dài nhất</span><b>${ks.dai} ngày</b></div>
+    <div><span class="label">Phiên hoàn tất</span><b>${t.xong}</b></div>
+    <div><span class="label">Phiên bỏ dở</span><b>${t.do_}</b></div>
+    <div><span class="label">Credit đã kiếm</span><b>${num(Number(t.credit.toFixed(2)))}</b></div>
+    <div><span class="label">Ngày nhiều nhất</span><b>${nhat&&nhat.minutes?`${nhat.minutes} phút`:'—'}</b>${nhat&&nhat.minutes?`<span class="sub">${ngayVn(nhat.day)}</span>`:''}</div>
+  </div>
+
+  ${!coDuLieu?`<div class="empty big">Chưa có ngày nào trong khoảng này. Hoàn tất một phiên tập trung để bắt đầu.</div>`:
+    soNgay&&soNgay<=7
+    ? `<div class="set-row col"><div><b>Từng ngày</b></div>
+        <div class="week-bars big">${(()=>{const dinh=Math.max(25,...rows.map(d=>d.minutes));
+          return rows.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
+            <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/dinh*100)):0}%"></i></div>
+            <span>${['CN','T2','T3','T4','T5','T6','T7'][d.dow]}</span></div>`).join('');})()}</div></div>`
+    : `<div class="set-row col"><div><b>Nhịp tập trung</b><p>Mỗi ô là một ngày. Ô càng đậm càng nhiều phút.</p></div>
+        ${luoiNhiet(rows)}</div>`}
+
+  <div class="set-row col"><div><b>Theo ngày</b><p>Chỉ đếm phiên hoàn tất trọn vẹn.</p></div>
+    ${proNote(`Bản Free xem lại được <b>${toiDa} ngày</b> gần nhất. Bản Pro xem lại được toàn bộ, từ ngày cài — dữ liệu những ngày trước đó vẫn nằm trên máy bạn và không bị xóa.`)||''}
+    <div class="ratio">${'<div><span>Ngày</span><span>Tập trung · nhận được</span></div>'+(()=>{
+      const co=rows.filter(d=>d.minutes||d.interrupted).reverse();
+      return co.length
+        ? co.map(d=>`<div><span>${ngayVn(d.day)}${d.today?' · hôm nay':''}</span><span>${d.minutes} phút · ${num(d.earned)} credit${d.interrupted?` · ${d.interrupted} phiên dở`:''}</span></div>`).join('')
+        : '<div><span>Chưa có ngày nào</span><span>Hoàn tất một phiên để bắt đầu</span></div>';})()}</div></div>`;
+}
+
+// 145 phút đọc khó hơn 2 giờ 25. Dưới một giờ thì giữ nguyên phút.
+function gioPhut(m){
+  if(m<60)return `${m} phút`;
+  const g=Math.floor(m/60),p=m%60;
+  return p?`${g} giờ ${p} phút`:`${g} giờ`;
+}
+const ngayVn=day=>`${day.slice(8)}/${day.slice(5,7)}`;
 
 // Giới thiệu, quyền riêng tư và lịch sử phiên bản — ba thứ người dùng cần để
 // hiểu họ đang chạy cái gì, thay vì phải lên website tìm.
@@ -415,9 +548,10 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='open-setup'||b.id==='warn-setup'){$('#setup-body').innerHTML=setupView();$('#setup').showModal();return;}
   if(b.id==='setup-close'){$('#setup').close();return;}
-  if(b.id==='open-stats'){$('#stats-body').innerHTML=statsView();$('#stats').showModal();return;}
+  if(b.id==='open-stats'){statsRange=7;$('#stats-body').innerHTML=statsView();$('#stats').showModal();return;}
   if(b.id==='stats-close'){$('#stats').close();return;}
   if(b.dataset.setupTab){setupTab=b.dataset.setupTab;$('#setup-body').innerHTML=setupView();$('.setup-panel').scrollTop=0;return;}
+  if(b.dataset.statsRange!==undefined){statsRange=Number(b.dataset.statsRange);$('#stats-body').innerHTML=statsView();return;}
   if(b.id==='add-app'){pickApp();return;}
   if(b.dataset.exe){
     $('#confirm').close();$('#confirm-yes').style.display='';
@@ -433,7 +567,12 @@ document.addEventListener('click',async e=>{
     return;
   }
   if(b.dataset.presetRemove){const gone=Number(b.dataset.presetRemove);act('settings',{presets:state.presets.filter(m=>m!==gone)});return;}
-  if(b.dataset.system){system(b.dataset.system);return;}
+  if(b.dataset.system){
+    const hoi=b.dataset.ask;
+    if(hoi)ask(hoi,b.dataset.askText||'',()=>system(b.dataset.system));
+    else system(b.dataset.system);
+    return;
+  }
   if(b.dataset.preset){custom=b.dataset.preset==='custom';if(!custom)minutes=Number(b.dataset.preset);render();$('#custom')?.focus();return;}
   const a=b.dataset.action,id=b.dataset.id;if(!a)return;
   if(a==='start')await act('start',{minutes});

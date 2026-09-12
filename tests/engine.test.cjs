@@ -1,5 +1,5 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
-const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES,VERSION}=require('../src/engine.cjs');
+const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES,VERSION,HISTORY_DAYS}=require('../src/engine.cjs');
 const {PLANS,tier,limits,load}=require('../src/license.cjs');
 // Từ ngày bật bán, không có bản quyền nghĩa là bậc 'free'. Phần lớn test trong file
 // này kiểm hành vi của engine chứ không kiểm ranh giới trả phí, nên đặt nền là 'pro'.
@@ -243,7 +243,24 @@ test('history records each day, survives a rollover and is capped by the licence
     assert.equal(free.e.snapshot().history.length,7,'bản Free chỉ xem được 7 ngày');
     assert.equal(free.e.snapshot().historyDays,7);
   } finally { if(before===undefined)delete process.env.BRAIN_TIER; else process.env.BRAIN_TIER=before; }
-  assert.equal(harness().e.snapshot().historyDays,180);
+  assert.equal(harness().e.snapshot().historyDays,HISTORY_DAYS,'bậc Pro xem lại được tất cả những gì engine còn giữ');
+});
+
+test('lịch sử không bao giờ bị xoá theo thời gian nữa',()=>{
+  // Trước 0.7.6 engine cắt cứng ở 180 ngày, tức là XOÁ VĨNH VIỄN ngày thứ 181.
+  // Người dùng Pro tưởng mình mua được lịch sử dài hơn, nhưng dữ liệu đã mất rồi.
+  assert.equal(PLANS.pro.historyDays,HISTORY_DAYS,
+    'hạn mức Pro phải bằng đúng số ngày engine giữ, nếu không là hứa thứ không có');
+  assert.ok(HISTORY_DAYS>=3650,'phải giữ được ít nhất mười năm');
+
+  const h=harness();
+  // Nhét vào 400 ngày rồi lăn sang ngày mới: ngày cũ nhất phải còn nguyên.
+  for(let i=1;i<=400;i++) h.e.s.history.push({day:`20${20+Math.floor(i/365)}-01-${String(i%28+1).padStart(2,'0')}-${i}`,minutes:i,completed:1,interrupted:0,earned:1});
+  const cuNhat=h.e.s.history[h.e.s.history.length-1];
+  h.e.s.history[0].day='2020-01-01';
+  h.complete(1);
+  assert.equal(h.e.s.history[h.e.s.history.length-1].day,cuNhat.day,'ngày cũ nhất bị xoá mất');
+  assert.ok(h.e.s.history.length>400,'lịch sử phải dài ra chứ không bị cắt');
 });
 test('app targets block by executable and never reach the browser extension',()=>{
   const h=harness();

@@ -30,15 +30,21 @@ const launch=extra=>{
     // So bằng SỐ chứ không bằng chuỗi: giữa lúc chuyển tiếp, transform là những giá
     // trị như matrix(0.999999,…) — vẫn khớp mọi biểu thức chính quy kiểu /^matrix\(0\.9/.
     const tiLe=t=>{const m=/^matrix\(([-\d.]+)/.exec(t);return m?Number(m[1]):1;};
-    // Đợi cho hiệu ứng dừng hẳn thay vì đoán một con số mili giây.
-    const yen=async()=>{let truoc=null;for(let i=0;i<40;i++){const nay=await at();if(nay===truoc)return nay;truoc=nay;await page.waitForTimeout(50);}return truoc;};
+    // Đợi tới khi ĐIỀU KIỆN thành thật, đừng đợi "giá trị thôi đổi": ngay sau khi
+    // nhả chuột, trình duyệt có thể chưa kịp xử lý, nên hai lần đọc liên tiếp vẫn ra
+    // giá trị đang nhấn và test tưởng là đã dừng. Đó là chỗ nó nhấp nháy 1 trong 4 lần.
+    const doiToi=async(dieu,han=3000)=>{
+      const het=Date.now()+han;let cuoi=null;
+      while(Date.now()<het){cuoi=await at();if(dieu(cuoi))return cuoi;await page.waitForTimeout(40);}
+      return cuoi;
+    };
 
-    const released=await yen();
+    const released=await doiToi(t=>tiLe(t)>0.995);
     assert.ok(tiLe(released)>0.995,`nhả ra là hết co lại, nhận được ${released}`);
     // Chuột vẫn nằm trên nút nên :hover còn nhấc nó lên 1px — chỗ này KHÔNG được
     // đòi 'none'. Phải rời chuột đi mới về đúng trạng thái nghỉ.
     await page.mouse.move(4,4);
-    assert.equal(await yen(),'none','rời chuột ra là trở lại như cũ');
+    assert.equal(await doiToi(t=>t==='none'),'none','rời chuột ra là trở lại như cũ');
     console.log('§1 phản hồi lúc nhấn   ',pressed);
 
     // §14 Ba thiết lập, đọc bằng chính media query của trình duyệt.

@@ -13,7 +13,14 @@ const WELCOME_CREDITS = 15;
 const MAX_PRESETS = 4;
 const LOCK_PACKS = [30, 60, 120, 240];   // số phút khóa có thể chọn
 const MAX_LOCK_MINUTES = 720;            // trần 12 tiếng: khóa lỡ tay không được biến thành thảm họa
-const HISTORY_DAYS = 180;                // số ngày lưu trên đĩa; bậc license quyết định xem được bao nhiêu
+// Giữ toàn bộ lịch sử, không xoá theo thời gian. Con số này KHÔNG phải một hạn mức
+// sản phẩm — nó là chốt chặn để một cái đồng hồ hệ thống hỏng không làm file phình
+// vô hạn. Mỗi ngày tốn khoảng 60 byte, nên 10 năm chưa tới 250 KB.
+//
+// Trước 0.7.6 chỗ này là 180 và engine XOÁ VĨNH VIỄN ngày thứ 181 trở đi. Người dùng
+// Pro tưởng mình mua được lịch sử dài hơn, nhưng dữ liệu đã bị huỷ mất rồi.
+// license.cjs giữ một bản sao của con số này; tests/engine.test.cjs canh hai nơi khớp nhau.
+const HISTORY_DAYS = 3700;
 const DEFAULT_SITES = ['youtube.com', 'facebook.com', 'tiktok.com', 'instagram.com'];
 const DAY = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const round = n => Math.round(n*100)/100;

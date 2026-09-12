@@ -341,12 +341,15 @@ button.week:not(:disabled):active{transform:none}
 #stats-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:6px 24px 10px}
 #stats .actions{flex:none;margin:0;padding:13px 24px 17px;border-top:1px solid var(--line)}
 
+/* Đường kẻ vẽ bằng box-shadow trên TỪNG ô, không phải bằng nền của khung. Số ô
+   không phải lúc nào cũng chia hết cho số cột, và nền khung sẽ lòi ra thành một
+   mảng xám trống ở hàng cuối. */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;
-  background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0 4px}
+  background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0 4px}
 /* space-between đẩy con số xuống đáy ô: nhãn dài xuống hai dòng thì con số của
    ô đó vẫn thẳng hàng với các ô bên cạnh, thay vì tụt thấp hơn. */
 .stat-grid>div{background:var(--bg);padding:13px 15px;display:flex;flex-direction:column;
-  justify-content:space-between;gap:6px;min-height:78px}
+  justify-content:space-between;gap:6px;min-height:78px;box-shadow:0 0 0 .5px var(--line)}
 .stat-grid b{font-size:20px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .week-bars.big .week-track{height:56px}
 
@@ -373,3 +376,61 @@ button.week:not(:disabled):active{transform:none}
 .stat-range{
   margin:0 0 14px; font-size:12.5px; color:var(--muted);
 }
+
+/* ── Thống kê ───────────────────────────────────────────── */
+
+.stats-head{margin:0 0 20px}
+.chips.tight{gap:6px;margin:0 0 10px;flex-wrap:wrap}
+.chip-btn.small{padding:7px 14px;font-size:13px}
+
+.delta{font-weight:600}
+.delta.len{color:var(--ink)}
+.delta.xuong{color:var(--ink-2)}
+.delta.ngang{color:var(--muted)}
+
+.stat-grid>div .sub{
+  display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:2px;
+}
+
+.empty.big{
+  padding:34px 20px; text-align:center; color:var(--muted); font-size:14px;
+  border:1px dashed var(--line-2); border-radius:14px; margin:6px 0 20px;
+}
+
+/* Lưới nhịp: mỗi cột một tuần, mỗi ô một ngày. Cuộn ngang khi khoảng dài —
+   KHÔNG được để nó làm cả hộp thoại cuộn ngang theo. */
+.heat-wrap{overflow-x:auto;padding-bottom:6px;margin-top:4px}
+.heat{display:flex;gap:6px;min-width:min-content}
+.heat-dow{
+  display:grid; grid-template-rows:repeat(7,11px); gap:3px;
+  padding-top:15px; font-size:9.5px; color:var(--muted);
+}
+.heat-dow span{line-height:11px}
+.heat-grid{display:flex;gap:3px}
+.heat-col{display:grid;grid-template-rows:14px repeat(7,11px);gap:3px}
+.heat-month{font-size:9.5px;color:var(--muted);line-height:14px;white-space:nowrap}
+.heat-cell{
+  width:11px; height:11px; border-radius:3px; display:block;
+  background:var(--shade); border:1px solid transparent;
+}
+.heat-cell.empty{background:transparent}
+/* Đơn sắc như phần còn lại của sản phẩm: đậm dần bằng độ xám, không đổi màu. */
+.heat-cell.lv0{background:var(--shade)}
+.heat-cell.lv1{background:color-mix(in srgb,var(--ink) 22%,var(--bg))}
+.heat-cell.lv2{background:color-mix(in srgb,var(--ink) 45%,var(--bg))}
+.heat-cell.lv3{background:color-mix(in srgb,var(--ink) 70%,var(--bg))}
+.heat-cell.lv4{background:var(--ink)}
+.heat-cell.now{border-color:var(--ink-2)}
+
+.heat-key{
+  display:flex; align-items:center; gap:4px; justify-content:flex-end;
+  margin-top:10px; font-size:11px; color:var(--muted);
+}
+.heat-key .heat-cell{width:10px;height:10px}
+
+/* Hàng "Đổi sang máy khác? Gỡ mã…" — hành động có thật nhưng hiếm dùng.
+   Các phần mềm khác đặt việc này trên trang tài khoản web, hoặc sau một link nhỏ;
+   không ai để một nút đỏ ngay chỗ người dùng vào chỉ để xem mình còn hạn không. */
+.quiet-row{margin-top:12px;color:var(--muted)}
+.quiet-row .link{margin-left:4px;font-size:12px;color:var(--ink-2)}
+.quiet-row .link:hover{color:var(--ink)}

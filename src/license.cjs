@@ -59,7 +59,10 @@ const PLANS = {
   },
   pro: {
     maxTargets: 50,
-    historyDays: 180,   // bằng đúng số ngày engine lưu trên đĩa
+    // Bằng đúng HISTORY_DAYS trong engine.cjs, tức là "tất cả những gì còn lưu".
+    // Engine không xoá gì theo thời gian nữa, nên bậc Pro xem lại được từ ngày cài.
+    // tests/engine.test.cjs canh hai con số này khớp nhau.
+    historyDays: 3700,
     appBlocking: true,
     lockedMode: true,
   },
@@ -71,7 +74,9 @@ const DIFFERENCES = [
   { key:'maxTargets', label:'Số mục chặn được',        free:`${PLANS.free.maxTargets} mục`,  pro:`${PLANS.pro.maxTargets} mục` },
   { key:'appBlocking',label:'Chặn ứng dụng và game Windows', free:false,                     pro:true },
   { key:'lockedMode', label:'Chế độ khóa không tự gỡ được',  free:false,                     pro:true },
-  { key:'historyDays',label:'Lịch sử xem lại được',    free:`${PLANS.free.historyDays} ngày`, pro:`${PLANS.pro.historyDays} ngày` },
+  // Không viết "3700 ngày" — đó là chốt chặn kỹ thuật, không phải lời hứa. Thứ người
+  // dùng thật sự nhận được là: tất cả, từ ngày cài.
+  { key:'historyDays',label:'Lịch sử xem lại được',    free:`${PLANS.free.historyDays} ngày`, pro:'Toàn bộ, từ ngày cài' },
 ];
 
 // Vòng lặp cốt lõi miễn phí vĩnh viễn. Nó là thứ khiến người ta kể cho bạn bè.

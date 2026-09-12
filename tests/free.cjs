@@ -126,7 +126,7 @@ const {WebSocket}=require('ws');
     await ghiChu.waitFor();
     const chu=await ghiChu.innerText();
     assert.match(chu,/7 ngày/);
-    assert.match(chu,/180 ngày/,`phải nói Pro xem được bao lâu, nhận được: ${chu}`);
+    assert.match(chu,/toàn bộ, từ ngày cài/i,`phải nói Pro xem được bao lâu, nhận được: ${chu}`);
     assert.match(chu,/không bị xóa/,'phải trấn an rằng dữ liệu cũ vẫn còn trên máy');
     console.log('§8 lịch sử       ',chu.split('\n')[0].slice(0,70)+'…');
 
