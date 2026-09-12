@@ -89,7 +89,7 @@ const {WebSocket}=require('ws');
     await page.locator('[data-setup-tab="license"]').click();
     // Người chưa mua phải thấy mình đang ở bậc nào, chứ không phải một bảng trống.
     await page.locator('.setup-panel').getByText(/Bạn đang dùng bản/).waitFor();
-    await page.locator('.setup-panel').getByText(/Chưa có mã nào trên máy này/).waitFor();
+    await page.locator('.setup-panel').getByText(/Chưa có mã/).waitFor();
     assert.equal(await page.locator('.plans').count(),1,'phải có bảng so sánh để biết Pro thêm gì');
     console.log('§6 giao diện     ','tab khóa bị ẩn, mục Bản quyền nói rõ đang dùng bản nào');
 

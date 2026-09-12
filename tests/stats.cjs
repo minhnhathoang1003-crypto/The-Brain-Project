@@ -109,6 +109,17 @@ async function moApp(dir,tier){
     assert.ok(await page.locator('[data-system="licenseRemove"]').getAttribute('data-ask'),
       'gỡ mã phải hỏi lại trước khi làm');
     console.log('§7 gỡ mã            link nhỏ, có hỏi lại');
+
+    // Mọi thứ đang ổn thì mục Bản quyền phải IM LẶNG về cơ chế. Ba câu dưới đây từng
+    // nằm đó và không câu nào người dùng cần: nó chỉ nói về ruột gan của phần kiểm
+    // tra bản quyền. Riêng cái đếm ngược ân hạn còn trông như đồng hồ đếm tới lúc
+    // mất thứ mình đã mua, trong khi chẳng có gì sắp xảy ra.
+    const mucBanQuyen=await page.locator('.setup-panel').innerText();
+    for(const thua of [/xác minh lần cuối/i,/kiểm lại mỗi/i,/còn \d+ ngày/i,/file riêng/i])
+      assert.ok(!thua.test(mucBanQuyen),`mục Bản quyền đang nói chi tiết kỹ thuật thừa: ${thua}`);
+    assert.match(mucBanQuyen,/Bản Pro đang hoạt động/,'vẫn phải trả lời được câu "tôi đang ở gói nào"');
+    assert.equal(await page.locator('.setup-panel .warn').count(),0,'đang ổn thì không được cảnh báo gì');
+    console.log('§7b mục Bản quyền   im lặng khi mọi thứ ổn');
     await app.close();app=null;
 
     // ── Bậc Free ─────────────────────────────────────────────────────────────

@@ -434,3 +434,8 @@ button.week:not(:disabled):active{transform:none}
 .quiet-row{margin-top:12px;color:var(--muted)}
 .quiet-row .link{margin-left:4px;font-size:12px;color:var(--ink-2)}
 .quiet-row .link:hover{color:var(--ink)}
+
+/* Mã bản quyền: có mặt để đối chiếu khi cần hỏi tác giả, không phải để đọc hằng
+   ngày. Nhạt và nhỏ, giống cách JetBrains hay Sublime hiện tên người mua. */
+.key-line{margin-top:10px}
+.key-line code{font-size:12px;letter-spacing:.02em}

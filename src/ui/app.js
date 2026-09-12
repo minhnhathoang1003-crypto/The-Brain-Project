@@ -218,26 +218,43 @@ function updateView(){
 // Bốn trạng thái, và mỗi trạng thái phải nói được hai điều: chuyện gì đang xảy ra,
 // và người dùng cần làm gì. Trạng thái 'active' trước đây không hiện gì cả — người
 // đã trả tiền mở màn hình này ra không thấy dấu hiệu nào rằng mình đang có bản Pro.
+// Ba thứ người dùng thật sự cần biết, giống hệt Spotify, Adobe, 1Password hay
+// JetBrains: đang ở gói nào, giấy phép nào, và khi nào có chuyện.
+//
+// KHÔNG nói: xác minh lần cuối ngày nào, bao lâu kiểm lại một lần, còn mấy ngày ân
+// hạn. Đó là ruột gan của cơ chế, người dùng không cần nghĩ tới bao giờ — và riêng
+// cái đếm ngược ân hạn còn trông như đồng hồ đếm tới lúc mất thứ mình đã mua, trong
+// khi chẳng có gì sắp xảy ra.
+//
+// Nguyên tắc: im lặng khi mọi thứ ổn, nói rõ khi có chuyện. Đồng hồ ân hạn chỉ hiện
+// khi nó thật sự sắp hết — lúc đó nó là cảnh báo có ích, không phải tiếng ồn.
+const CANH_BAO_AN_HAN = 7;   // còn dưới ngần này ngày thì mới nói
+
 function licenseView(){
   const l=state.license;
-  const ngay=t=>t?new Date(t).toLocaleDateString('vi-VN'):'chưa rõ';
-  let than;
+  let than, canh='';
   if(!l.hasKey)
-    than='Chưa có mã nào trên máy này. Khi mở bán, bạn dán mã nhận qua email vào đây.';
-  else if(l.status==='active')
-    than=`<b>Bản Pro đang hoạt động</b> trên máy này. Mã <code>${esc(l.maskedKey)}</code>, xác minh lần cuối
-      ngày ${ngay(l.checkedAt)}. Ứng dụng tự kiểm lại mỗi ${l.recheckDays} ngày; mất mạng thì bạn vẫn giữ
-      nguyên bản Pro thêm ${l.graceDays} ngày nữa${typeof l.graceDaysLeft==='number'?` (còn ${l.graceDaysLeft} ngày)`:''}.`;
+    than=l.selling
+      ? 'Chưa có mã trên máy này. Dán mã bạn nhận qua email để mở khóa bản Pro.'
+      : 'Chưa có mã nào trên máy này. Khi mở bán, bạn dán mã nhận qua email vào đây.';
+  else if(l.status==='active'){
+    than=`<b>Bản Pro đang hoạt động</b> trên máy này.`;
+    if(typeof l.graceDaysLeft==='number'&&l.graceDaysLeft<=CANH_BAO_AN_HAN)
+      canh=`<div class="warn">Đã ${l.graceDays-l.graceDaysLeft} ngày không kết nối được tới máy chủ bản quyền.
+        Máy này giữ bản Pro thêm <b>${l.graceDaysLeft} ngày</b> nữa. Nối mạng và mở lại ứng dụng là xong —
+        credit và danh sách chặn của bạn không bị ảnh hưởng dù có chuyện gì.</div>`;
+  }
   else if(l.status==='revoked')
-    than=`Mã <code>${esc(l.maskedKey)}</code> <b>đã bị thu hồi</b> — thường là do đơn hàng được hoàn tiền
-      hoặc bị hủy. Nếu bạn cho rằng đây là nhầm lẫn, gửi góp ý trong mục Ứng dụng kèm email bạn đã dùng để mua.`;
+    than=`<b>Mã này đã bị thu hồi</b> — thường là do đơn hàng được hoàn tiền hoặc bị hủy.
+      Nếu bạn cho rằng đây là nhầm lẫn, gửi góp ý trong mục Ứng dụng kèm email bạn đã dùng để mua.`;
   else
-    than=`Mã đã lưu trên máy này: <code>${esc(l.maskedKey)}</code>. <b>Chưa xác minh được</b> — gỡ mã rồi
-      dán lại để thử kích hoạt một lần nữa.`;
+    than=`<b>Chưa xác minh được mã này.</b> Gỡ mã rồi dán lại để thử kích hoạt một lần nữa.`;
+
   return `<div class="set-row col"><div><b>Bản quyền</b>
     <p>${than}</p></div>
-    ${l.hasKey?'':`<form class="preset-add" data-form="licenseActivate"><input class="field" name="key" type="text" spellcheck="false" autocomplete="off" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" aria-label="Mã bản quyền" required><button class="primary small">Kích hoạt</button></form>`}
-    <p class="small-note">Mã được lưu mã hóa trong một file riêng, <b>không nằm chung với dữ liệu</b> — nên “Xóa toàn bộ dữ liệu” không làm mất bản quyền bạn đã mua.</p>
+    ${canh}
+    ${l.hasKey?`<p class="small-note key-line"><code>${esc(l.maskedKey)}</code></p>`:
+      `<form class="preset-add" data-form="licenseActivate"><input class="field" name="key" type="text" spellcheck="false" autocomplete="off" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" aria-label="Mã bản quyền" required><button class="primary small">Kích hoạt</button></form>`}
     ${l.hasKey?`<p class="small-note quiet-row">Đổi sang máy khác?
       <button class="link" data-system="licenseRemove"
         data-ask="Gỡ mã bản quyền khỏi máy này?"
@@ -484,7 +501,7 @@ function tabApp(){
   return `${updateView()}
   <div class="set-row"><div><b>Góp ý</b><p>Kẹt ở đâu, thấy chỗ nào khó hiểu, hay muốn xin thêm tính năng — nói thẳng với tác giả. Ứng dụng không thu thập gì về bạn, nên đây là cách duy nhất tôi biết được điều gì đang không ổn.</p></div>
     <div class="actions start"><button class="ghost small" data-system="feedbackIssues">Mở GitHub</button><button class="primary small" data-system="feedbackEmail">Gửi email</button></div></div>
-  <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
+  <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.${state.license.hasKey?' Bản quyền nằm ở file riêng, nên xóa dữ liệu <b>không</b> làm mất mã bạn đã mua.':''}</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
 }
 
 function setupTabs(){
