@@ -86,47 +86,65 @@
   // xuống — đúng thứ mà Cumulative Layout Shift trừ điểm.
   var SHOTS = {
     main: {
-      src: 'images/main.webp', w: 1479, h: 1025,
+      src: 'images/main-932.webp', w: 932, h: 646,
+      srcset: 'images/main-466.webp 466w, images/main-932.webp 932w, images/main-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.',
       cap: 'Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.'
     },
     focus: {
-      src: 'images/focus.webp', w: 1479, h: 1025,
-      alt: 'Phiên tập trung đang chạy: đồng hồ đếm ngược 22:56 còn lại, ô "đang tích lũy" ghi 0,42 trên 5 credit, và nút Dừng phiên.',
+      src: 'images/focus-932.webp', w: 932, h: 646,
+      srcset: 'images/focus-466.webp 466w, images/focus-932.webp 932w, images/focus-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
+      alt: 'Phiên tập trung đang chạy: đồng hồ đếm ngược 22:54 còn lại, ô "đang tích lũy" ghi 0,42 trên 5 credit, và nút Dừng phiên.',
       cap: 'Trong lúc chạy phiên, hai cột biến mất — cả màn hình chỉ còn một thứ để nhìn. Số credit nhích lên từng giây, và ngay dưới là dòng nhắc bạn sẽ mất đúng chừng đó nếu dừng: cùng một con số, dùng cho cả động lực lẫn răn đe.'
     },
     blocked: {
-      src: 'images/browser-blocked.webp', w: 1280, h: 720,
+      src: 'images/browser-blocked-932.webp', w: 932, h: 524,
+      srcset: 'images/browser-blocked-466.webp 466w, images/browser-blocked-932.webp 932w, images/browser-blocked-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Trang chặn hiện trong trình duyệt với dòng chữ "Một khoảng dừng. Một lựa chọn tốt hơn."',
       cap: 'Trang chặn của tiện ích. Nó nói cho bạn biết cái giá — 5 phút tập trung đổi 1 phút — thay vì chỉ báo lỗi.'
     },
     overlay: {
-      src: 'images/overlay.webp', w: 1536, h: 960,
+      src: 'images/overlay-932.webp', w: 932, h: 583,
+      srcset: 'images/overlay-466.webp 466w, images/overlay-932.webp 932w, images/overlay-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Lớp phủ chặn ứng dụng che kín màn hình: chữ "Đang bị chặn", tên ứng dụng, ô chọn 5 phút · 5 credit, nút Đổi credit để mở và nút Đóng ứng dụng, quay lại làm việc.',
       cap: 'Khi ứng dụng bị chặn lên tiền cảnh, lớp phủ này che kín nó — không tiến trình nào bị giết, nên bạn không mất dữ liệu đang làm dở. Hai lựa chọn: trả credit để mở, hoặc đóng ứng dụng đó và quay lại làm việc.'
     },
     locked: {
-      src: 'images/locked.webp', w: 1479, h: 1025,
+      src: 'images/locked-932.webp', w: 932, h: 646,
+      srcset: 'images/locked-466.webp 466w, images/locked-932.webp 932w, images/locked-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Bảng cài đặt đang ở chế độ khóa, còn 30 phút, kèm bảng đối chiếu 25 phút đổi 5 credit.',
       cap: 'Chế độ khóa: không hủy, không rút ngắn — kể cả bằng cách xóa dữ liệu. Tiện ích tự giữ hạn khóa nên tắt ứng dụng cũng vô ích.'
     },
     gate: {
-      src: 'images/gate.webp', w: 1479, h: 1025,
+      src: 'images/gate-932.webp', w: 932, h: 646,
+      srcset: 'images/gate-466.webp 466w, images/gate-932.webp 932w, images/gate-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Màn hình mở đầu với tiêu đề "Còn một bước nữa: bật bộ chặn", khung tặng 15 credit, bốn bước ghép nối và dòng chờ tiện ích kết nối.',
       cap: 'Lần chạy đầu tiên dừng ở đây, chưa vào được màn hình chính — vì chưa ghép nối thì credit không có tác dụng gì. Chỉ chặn ở lần đầu; về sau rớt kết nối thì app chỉ cảnh báo chứ không nhốt bạn khỏi credit đã kiếm.'
     },
     settings: {
-      src: 'images/settings.webp', w: 1479, h: 1025,
+      src: 'images/settings-932.webp', w: 932, h: 646,
+      srcset: 'images/settings-466.webp 466w, images/settings-932.webp 932w, images/settings-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Bảng cài đặt: mục bộ chặn website với bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và hàng khung thời gian 15 / 25 / 90 phút.',
       cap: 'Toàn bộ cài đặt nằm trong một bảng: bốn bước ghép nối tiện ích, ba lựa chọn giao diện, và các mốc thời gian bạn tự đặt. Tiêu đề và hàng nút đứng yên, chỉ phần giữa cuộn.'
     },
     dark: {
-      src: 'images/dark.webp', w: 1479, h: 1025,
+      src: 'images/dark-932.webp', w: 932, h: 646,
+      srcset: 'images/dark-466.webp 466w, images/dark-932.webp 932w, images/dark-1864.webp 1864w',
+      sizes: '(min-width: 1024px) 932px, 86vw',
       alt: 'Ứng dụng ở chế độ tối với bảng cài đặt đang mở.',
       cap: 'Ba lựa chọn giao diện: theo hệ thống, sáng, tối. Mặc định đi theo cài đặt của Windows.'
     },
     narrow: {
-      src: 'images/narrow.webp', w: 780, h: 960,
+      src: 'images/narrow-780.webp', w: 780, h: 960,
+      srcset: 'images/narrow-390.webp 390w, images/narrow-780.webp 780w, images/narrow-1560.webp 1560w',
+      sizes: '(min-width: 1024px) 780px, 86vw',
       alt: 'Ứng dụng ở cửa sổ hẹp, hai cột xếp chồng thành một cột.',
       cap: 'Dưới 860 px, hai cột xếp chồng lại. Không khối nào bị cắt mất chữ — có bài kiểm thử riêng cho việc này.'
     }
@@ -147,7 +165,15 @@
       gImg.style.aspectRatio = s.w + ' / ' + s.h;
       gImg.width = s.w;
       gImg.height = s.h;
+      // Gỡ srcset trước khi đổi src: nếu để lại bộ cũ, trình duyệt vẫn chọn ứng viên
+      // của ảnh trước và src mới bị bỏ qua.
+      gImg.removeAttribute('srcset');
       gImg.src = s.src;
+      // sizes phải đặt trước srcset: ảnh cửa sổ hẹp chỉ rộng 780 CSS px thật, nếu vẫn
+      // khai 932 thì trình duyệt thấy ứng viên 780w không đủ và kéo bản 1560w về cho một
+      // ô chỉ cần 916 điểm ảnh.
+      gImg.sizes = s.sizes;
+      gImg.srcset = s.srcset;
       gImg.alt = s.alt;
       gCap.textContent = s.cap;
     });
@@ -219,6 +245,70 @@
         sending = false;
       });
     });
+  }
+
+  /* ── Đoạn phim ở hero ──
+     Thẻ <video> để preload="none": chưa có JS thì nó đứng yên ở poster, không tốn
+     một byte nào cho phần phim. Chỉ khi máy không bật "giảm chuyển động" và khung
+     phim thật sự lọt vào màn hình thì mới tải và chạy.
+     Phim lặp vô hạn nên theo WCAG 2.2.2 phải có cách dừng — nút Tạm dừng chỉ xuất
+     hiện khi phim thật sự chạy được. */
+
+  var hv = $('#hero-video'), hvBtn = $('#hero-video-toggle');
+
+  if (hv && hvBtn) {
+    var itMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    var nguoiDung = false;   // người xem đã tự bấm thì tôn trọng, đừng tự chạy lại
+
+    var doiNut = function () {
+      var dang = !hv.paused && !hv.ended;
+      hvBtn.textContent = dang ? 'Tạm dừng' : 'Phát';
+      hvBtn.setAttribute('aria-label', dang ? 'Tạm dừng đoạn phim' : 'Phát đoạn phim');
+    };
+
+    var chay = function () {
+      if (hv.preload === 'none') { hv.preload = 'auto'; hv.load(); }
+      var p = hv.play();
+      if (p && p.catch) p.catch(function () { doiNut(); });
+    };
+
+    hvBtn.hidden = false;
+    doiNut();
+
+    hvBtn.addEventListener('click', function () {
+      nguoiDung = true;
+      if (hv.paused) chay(); else hv.pause();
+      doiNut();   // đổi chữ ngay, đừng đợi sự kiện play/pause xếp hàng
+    });
+    hv.addEventListener('play', doiNut);
+    hv.addEventListener('pause', doiNut);
+
+    var tuChay = function () {
+      if (nguoiDung || (itMotion && itMotion.matches)) return;
+      chay();
+    };
+
+    if ('IntersectionObserver' in window) {
+      // Ngưỡng phải rất thấp. Trên màn hình thấp (900px chẳng hạn) đoạn phim nằm dưới
+      // tiêu đề và nút tải, nên lúc vào trang chỉ ló ra chừng 200px — đòi 25% là nó
+      // không bao giờ chạy cho tới khi người ta cuộn xuống.
+      var ioV = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting) tuChay();
+          else if (!hv.paused) hv.pause();   // khuất mắt thì thôi, đỡ tốn pin
+        });
+      }, { threshold: 0.01 });
+      ioV.observe(hv);
+    } else {
+      tuChay();
+    }
+
+    // Người xem đổi ý giữa chừng ở cài đặt hệ thống thì làm theo ngay.
+    if (itMotion && itMotion.addEventListener) {
+      itMotion.addEventListener('change', function (e) {
+        if (e.matches && !hv.paused) hv.pause();
+      });
+    }
   }
 
   /* ── Hiện dần khi cuộn tới ── */

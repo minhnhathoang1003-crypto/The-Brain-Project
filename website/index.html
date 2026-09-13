@@ -29,9 +29,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://the-brain-project.vercel.app/">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Poster của đoạn phim chính là thứ lớn nhất trên màn hình đầu tiên, nên xin đường trước. -->
+<link rel="preload" href="images/demo-poster.webp" as="image" type="image/webp" fetchpriority="high">
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-vietnamese.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 <script>/* Sơn chủ đề trước khi vẽ, tránh loé sai màu khi người dùng đã tự chọn. */
 try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -42,7 +43,7 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
 
 <header class="topbar">
   <a class="brand" href="#top">
-    <img src="images/logo.webp" alt="" class="brand-mark" width="28" height="28">
+    <img src="images/logo.webp" alt="" class="brand-mark" width="28" height="28" decoding="async">
     <span>The Brain Project</span>
   </a>
   <nav class="topnav">
@@ -84,7 +85,22 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
     </p>
 
     <figure class="shot shot-hero">
-      <img src="images/main.webp" alt="Màn hình chính của The Brain Project: bên trái là số dư credit và nút bắt đầu tập trung, bên phải là danh sách website đang bị chặn." width="1479" height="1025" fetchpriority="high" decoding="async">
+      <!-- Ảnh tĩnh không kể được thứ đáng kể nhất ở đây: credit nhích lên từng giây.
+           preload="none" nên máy nào bật "giảm chuyển động" chỉ tải đúng cái poster. -->
+      <div class="video-wrap">
+        <video id="hero-video" width="1472" height="1020"
+               poster="images/demo-poster.webp" muted loop playsinline preload="none"
+               disablepictureinpicture
+               aria-label="Quay từ ứng dụng thật: chọn mốc 50 phút rồi đổi lại 25 phút, bấm bắt đầu tập trung, sau đó số credit nhích dần lên trong lúc đồng hồ đếm ngược.">
+          <!-- mp4 đứng trước: trình duyệt lấy nguồn hợp lệ đầu tiên, và H.264 nén cảnh
+               giao diện tĩnh này tốt hơn hẳn VP8 — 261KB so với 2,5MB ở cùng chất lượng.
+               webm chỉ để dành cho vài bản Firefox không có H.264. -->
+          <source src="video/demo.mp4" type="video/mp4">
+          <source src="video/demo.webm" type="video/webm">
+        </video>
+        <button type="button" id="hero-video-toggle" class="video-toggle" hidden>Tạm dừng</button>
+      </div>
+      <figcaption>Quay từ ứng dụng thật. Quãng ngồi tập trung được tua nhanh 20 lần.</figcaption>
     </figure>
   </section>
 
@@ -175,7 +191,9 @@ try{var t=localStorage.getItem('brain-site-theme');if(t==='light'||t==='dark')do
       </div>
 
       <figure class="shot">
-        <img id="gallery-img" src="images/main.webp" width="1479" height="1025"
+        <img id="gallery-img" src="images/main-932.webp" width="932" height="646"
+             srcset="images/main-466.webp 466w, images/main-932.webp 932w, images/main-1864.webp 1864w"
+             sizes="(min-width: 1024px) 932px, 86vw"
              loading="lazy" decoding="async"
              alt="Màn hình chính: số dư 15 credit, các mốc 25 / 50 / 90 phút, dải quy đổi và danh sách bốn website đang bị chặn.">
         <figcaption id="gallery-cap">Hai cột: bên trái là nghi thức, bên phải là ranh giới. Cửa sổ hẹp thì hai cột xếp chồng thành một.</figcaption>

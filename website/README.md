@@ -11,6 +11,71 @@ Trang tĩnh, không build, không framework.
 Dùng chung `styles.css`, `config.js` và `theme.js` (công tắc sáng/tối). Ngoài ra có `robots.txt`,
 `sitemap.xml` và `vercel.json`.
 
+## Font, ảnh và đoạn phim
+
+Ba thứ này không gõ tay mà sinh ra từ script, vì chúng phải khớp với ứng dụng thật.
+
+### Font
+
+`fonts/` chứa Inter dạng biến thiên (400–800), cắt sẵn ba subset: `latin`, `vietnamese`, `latin-ext`.
+Trình duyệt chỉ tải subset nào trang thật sự dùng — hiện là latin + vietnamese, tổng 57KB. Trước đây
+kéo từ Google Fonts với năm file tĩnh, tổng 140KB, và **trang nhảy một cái khi font về: CLS 0,1834**.
+
+Ba thứ giữ cho con số đó bằng 0 và không được bỏ:
+
+- `font-display: optional` — quá 100ms là trình duyệt giữ luôn font dự phòng tới hết vòng đời của
+  trang, không tráo giữa chừng. Đổi lại `swap` là CLS quay lại ngay (`npm run test:site:font` bắt được).
+- Hai thẻ `<link rel="preload">` ở đầu mỗi trang HTML. Riêng `404.html` phải dùng đường dẫn tuyệt đối
+  vì nó được phục vụ cho **mọi** đường dẫn sai, kể cả `/a/b/c`.
+- Hai mặt chữ dự phòng `Inter dự phòng` / `Inter dự phòng 2` với `size-adjust` đã đo, để lần tải nguội
+  không giãn ra.
+
+Đổi font khác thì phải đo lại `size-adjust` — con số trong `styles.css` có ghi cách đo.
+
+### Ảnh
+
+```bash
+node scripts/shots.cjs                    # chụp lại 9 ảnh từ ứng dụng thật, ở 2×
+node scripts/webp.cjs <thư-mục-PNG-vừa-in-ra>   # đổi sang webp, mỗi ảnh hai cỡ
+```
+
+`shots.cjs` mở ứng dụng thật, tự ghép nối như tiện ích, đi qua từng màn hình rồi chụp. Nó **không**
+dùng `--force-device-scale-factor` (cờ đó làm cửa sổ co lại) mà ép metric qua CDP, nên bố cục giữ
+nguyên 1479 CSS px còn khung hình ra 2958px.
+
+Mỗi ảnh sinh ra **ba** file, tên mang luôn bề rộng: `tên-466.webp`, `tên-932.webp`,
+`tên-1864.webp` (riêng `narrow` là 390/780/1560 vì cửa sổ hẹp thật chỉ rộng 780 CSS px).
+Ba bậc đó phủ đúng bốn tình huống:
+
+| Thiết bị | Ô ảnh cần | Trình duyệt lấy |
+|---|---|---|
+| Điện thoại 390px, màn thường | 322 | 466 |
+| Điện thoại 390px, màn 2× | 644 | 932 |
+| Desktop, màn thường | 932 | 932 |
+| Desktop, màn 2× | 1864 | 1864 |
+
+`srcset` **và** `sizes` đều nằm trong `app.js` (bộ sưu tập) và `index.html` (ảnh đầu tiên).
+`sizes` phải đúng, không chỉ `srcset`: ảnh `narrow` khai 780px chứ không phải 932px, nếu khai
+sai thì trình duyệt thấy ứng viên 780w không đủ và kéo bản 1560w về cho một ô chỉ cần 916.
+
+`npm run test:site:media` đo lại toàn bộ: mỗi ảnh phải phủ ≥95% số điểm ảnh màn hình cần và
+không rộng quá 1,6 lần.
+
+### Đoạn phim ở hero
+
+```bash
+node scripts/demo-video.cjs               # mất khoảng ba phút
+```
+
+Quay màn hình ứng dụng thật bằng CDP screencast, rồi chọn khung theo kịch bản: đoạn bấm nút giữ tốc độ
+thật, quãng ngồi tập trung tua nhanh 20 lần. Ra `video/demo.webm` (VP8, ffmpeg của Playwright) và
+`video/demo.mp4` (H.264, MediaRecorder của Chromium), cùng `images/demo-poster.webp`.
+
+Cần ffmpeg của Playwright: `npx playwright install ffmpeg`.
+
+Phim tự chạy nhưng **không** chạy khi máy bật "giảm chuyển động", và luôn có nút tạm dừng — phim lặp
+vô hạn thì WCAG 2.2.2 bắt buộc phải dừng được.
+
 ## Sửa nội dung
 
 Chữ nằm thẳng trong file HTML, sửa trực tiếp. Riêng những giá trị lặp lại ở nhiều nơi thì nằm trong
