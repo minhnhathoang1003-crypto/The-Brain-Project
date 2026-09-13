@@ -45,6 +45,7 @@ function readyView(){
   // người dùng không thấy được ranh giới đó.
   const sites=state.targets.filter(t=>t.domain), apps=state.targets.filter(t=>t.exe);
   return `<section class="pane left">
+    ${uncoveredWarn()}
     ${state.system.extensionConnected?'':`<div class="warn"><b>Chưa chặn được website nào.</b> Tiện ích trình duyệt chưa kết nối, nên danh sách bên cạnh chưa có hiệu lực.<br>Nếu bạn vừa mở lại ứng dụng thì chỉ cần đợi vài giây — tiện ích tự kết nối lại, <b>không phải ghép nối lại</b>. Mã ghép nối không đổi. <button class="link" id="warn-setup">Kiểm tra kết nối</button></div>`}
     <div class="stack"><div class="label">Số dư</div><div class="figure">${num(state.credits)}</div><div class="unit">credit</div></div>
     ${openGrants().length?`
@@ -101,6 +102,22 @@ function proValue(key){
   return d?d.pro:null;
 }
 const proLimit=()=>proValue('maxTargets')||'nhiều hơn';
+
+// Tiện ích chặn là tiện ích Chromium. Mở Firefox ra là danh sách chặn mất tác dụng ở đó,
+// im lặng — đúng thứ phải nói thẳng thay vì để người dùng tự phát hiện rồi mất lòng tin.
+// Chỉ hiện khi người dùng THẬT SỰ mở trình duyệt đó, không dọa suông lúc chưa có gì xảy ra.
+function uncoveredWarn(){
+  const u=state.system.uncovered;
+  if(!u)return '';
+  const tên=esc(u.name);
+  const lối=state.appBlocking
+    ? `<button class="link" data-block-browser="${esc(u.exe)}" data-block-name="${tên}">Chặn ${tên} như một ứng dụng</button>`
+    : (state.license.selling?`<button class="link" data-system="openBuy">Bản Pro chặn được cả trình duyệt này</button>`:'');
+  return `<div class="warn"><b>${tên} đang mở, và bộ chặn không với tới được nó.</b>
+    Tiện ích chỉ chạy được trong Chrome và Edge, nên mọi website trong danh sách bên cạnh
+    vẫn mở bình thường ở ${tên}.
+    ${lối} <button class="link" data-system="dismissBrowserWarning">Bỏ qua</button></div>`;
+}
 
 function proNote(text){
   if(state.tier==='pro'||!state.license.selling)return '';
@@ -501,6 +518,10 @@ function tabApp(){
   return `${updateView()}
   <div class="set-row"><div><b>Góp ý</b><p>Kẹt ở đâu, thấy chỗ nào khó hiểu, hay muốn xin thêm tính năng — nói thẳng với tác giả. Ứng dụng không thu thập gì về bạn, nên đây là cách duy nhất tôi biết được điều gì đang không ổn.</p></div>
     <div class="actions start"><button class="ghost small" data-system="feedbackIssues">Mở GitHub</button><button class="primary small" data-system="feedbackEmail">Gửi email</button></div></div>
+  <div class="set-row"><div><b>Chạy cùng Windows</b><p>Lớp chặn ứng dụng và lớp phủ chỉ hoạt động khi ứng dụng đang chạy. Không bật mục này thì sau mỗi lần khởi động lại máy, chúng đơn giản là không bật cho tới khi bạn tự mở ứng dụng. <b>Chặn website thì không ảnh hưởng</b> — tiện ích tự giữ danh sách.${state.system.startup?' Khi Windows tự chạy, cửa sổ mở ra ở dạng thu nhỏ.':''}</p></div>
+    ${state.system.packaged
+      ? `<button class="ghost small" data-startup="${state.system.startup?'off':'on'}">${state.system.startup?'Đang bật · Tắt đi':'Bật'}</button>`
+      : `<span class="chip">Chỉ ở bản đã cài</span>`}</div>
   <div class="set-row"><div><b>Dữ liệu</b><p>Chỉ lưu trên máy này và mã hóa theo tài khoản Windows. Phiên bản ${esc(state.system.version)}.${state.license.hasKey?' Bản quyền nằm ở file riêng, nên xóa dữ liệu <b>không</b> làm mất mã bạn đã mua.':''}</p></div><button class="ghost danger" data-system="reset" ${locked()?'disabled':''}>Xóa toàn bộ</button></div>`;
 }
 
@@ -584,6 +605,14 @@ document.addEventListener('click',async e=>{
     return;
   }
   if(b.dataset.presetRemove){const gone=Number(b.dataset.presetRemove);act('settings',{presets:state.presets.filter(m=>m!==gone)});return;}
+  if(b.dataset.startup){system('startup',{on:b.dataset.startup==='on'});return;}
+  if(b.dataset.blockBrowser){
+    const exe=b.dataset.blockBrowser, ten=b.dataset.blockName||exe;
+    ask(`Chặn ${ten}?`,
+      `${ten} sẽ vào danh sách chặn như một ứng dụng: mỗi lần nó lên tiền cảnh, một lớp phủ che nó lại cho tới khi bạn đổi credit. Không tiến trình nào bị giết. Bỏ chặn bất cứ lúc nào ở cột bên phải.`,
+      async()=>{if(await act('appAdd',{exe,name:ten}))toast(`Đã chặn ${ten}.`);});
+    return;
+  }
   if(b.dataset.system){
     const hoi=b.dataset.ask;
     if(hoi)ask(hoi,b.dataset.askText||'',()=>system(b.dataset.system));

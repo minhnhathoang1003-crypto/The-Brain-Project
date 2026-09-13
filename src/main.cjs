@@ -1,7 +1,7 @@
 const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard,nativeTheme}=require('electron');
 const fs=require('node:fs'); const path=require('node:path'); const http=require('node:http'); const crypto=require('node:crypto');
 const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,VERSION,WELCOME_CREDITS}=require('./engine.cjs');
-const {ForegroundWatcher,listWindows}=require('./foreground.cjs');
+const {ForegroundWatcher,listWindows,uncoveredBrowser}=require('./foreground.cjs');
 const license=require('./license.cjs');
 const {createUpdater}=require('./updater.cjs');
 // Kênh góp ý. App cố ý không thu thập gì, nên đây là đường duy nhất để người dùng
@@ -16,6 +16,8 @@ if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR
 app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
 let win,overlay,watcher,engine,server,wss,interval,updater=null,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
+// Trình duyệt mà tiện ích không với tới được, ghi lại lần đầu thấy nó lên tiền cảnh.
+let uncovered=null, uncoveredBoQua=new Set();
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
 
 // Link kích hoạt: sau khi trả tiền, khách bấm một nút và Windows mở app kèm mã, để
@@ -87,7 +89,15 @@ app.whenReady().then(()=>{
 
   const windowBackground=()=>nativeTheme.shouldUseDarkColors?'#0b0b0b':'#ffffff';
   const extensionConnected=()=>!!wss&&[...wss.clients].some(ws=>ws.authed&&ws.readyState===WebSocket.OPEN&&Date.now()-(ws.appliedAt||0)<5000);
-  const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion(),update:updater?updater.snapshot():null}});
+  // Cảnh báo tự tắt khi người dùng đã xử lý: chặn hẳn trình duyệt đó, hoặc bảo bỏ qua.
+  // Tính lại mỗi lần chụp thay vì giữ một cờ riêng, để không bao giờ có chuyện danh sách
+  // chặn đã có nó mà cảnh báo vẫn còn treo.
+  const uncoveredNow=()=>uncovered&&!uncoveredBoQua.has(uncovered.exe)
+    &&!engine.s.targets.some(t=>t.exe===uncovered.exe) ? uncovered : null;
+  // Đọc thẳng từ Windows chứ không giữ một bản sao trong dữ liệu của app: người dùng có
+  // thể tắt mục này trong Task Manager, và lúc đó bản sao sẽ nói dối.
+  const khởiĐộngCùng=()=>{try{return !!app.getLoginItemSettings({path:process.execPath,args:['--hidden']}).openAtLogin;}catch{return false;}};
+  const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion(),update:updater?updater.snapshot():null,uncovered:uncoveredNow(),startup:khởiĐộngCùng(),packaged:app.isPackaged}});
   const broadcast=()=>{if(win&&!win.isDestroyed())win.webContents.send('state',snapshot());if(wss)for(const ws of wss.clients)if(ws.authed&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify(engine.rules()));};
 
   // Kiểm lại bản quyền với máy chủ hai tuần một lần. Chạy trễ và không chờ: khởi động
@@ -192,6 +202,24 @@ app.whenReady().then(()=>{
       await shell.openExternal(`mailto:${EMAIL}?subject=${encodeURIComponent('Góp ý The Brain Project '+app.getVersion())}&body=${encodeURIComponent(than)}`);
       return {ok:true,message:'Đang mở ứng dụng email của bạn…'};
     }
+    if(type==='startup'){
+      // Lớp chặn ứng dụng và lớp phủ chỉ tồn tại khi ứng dụng đang chạy. Sau mỗi lần
+      // khởi động lại máy, nếu không có mục này thì chúng đơn giản là không bật.
+      // Mặc định TẮT, và bật lên là quyết định của người dùng — tự ý ghi vào mục khởi
+      // động của Windows là kiểu hành xử khiến người ta mất lòng tin vào phần mềm.
+      const bật=!!payload?.on;
+      // Chạy từ mã nguồn thì process.execPath là electron.exe trong node_modules. Ghi cái
+      // đó vào mục khởi động của Windows là để lại một mục rác trỏ vào Electron trần, và
+      // nó sẽ còn đó sau khi thư mục dự án bị xoá. Chỉ bản đã cài mới được ghi.
+      if(!app.isPackaged) throw Error('Chỉ bản đã cài mới đặt được mục khởi động cùng Windows.');
+      app.setLoginItemSettings({openAtLogin:bật,path:process.execPath,args:['--hidden']});
+      broadcast();
+      return {ok:true,message:bật?'Sẽ tự chạy cùng Windows, mở ra ở dạng thu nhỏ.':'Sẽ không tự chạy cùng Windows nữa.'};
+    }
+    if(type==='dismissBrowserWarning'){
+      if(uncovered)uncoveredBoQua.add(uncovered.exe);
+      broadcast();return {ok:true};
+    }
     if(type==='openSite'){await shell.openExternal(SITE);return {ok:true};}
     if(type==='openRepo'){await shell.openExternal(REPO);return {ok:true};}
     // Mở trang giá chứ không mở thẳng trang thanh toán: ở đó có bảng so sánh, giá và
@@ -210,6 +238,10 @@ app.whenReady().then(()=>{
     throw Error('Thao tác không hợp lệ.');
   });
   win=new BrowserWindow({width:1000,height:720,minWidth:520,minHeight:600,icon:path.join(__dirname,'../assets/icon.png'),backgroundColor:windowBackground(),title:'The Brain Project',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  // Windows tự chạy app với --hidden (xem system 'startup'). Thu nhỏ chứ không ẩn hẳn:
+  // ứng dụng chưa có icon khay hệ thống, nên ẩn hẳn là một tiến trình vô hình — kiểu
+  // phần mềm mà chính người dùng cũng không biết mình đang chạy cái gì.
+  if(process.argv.includes('--hidden')) win.once('ready-to-show',()=>win.minimize());
   nativeTheme.on('updated',()=>{if(win&&!win.isDestroyed())win.setBackgroundColor(windowBackground());});
   win.loadFile(path.join(__dirname,'ui/index.html'));
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',e=>e.preventDefault());
@@ -255,6 +287,10 @@ app.whenReady().then(()=>{
   watcher.on('unavailable',message=>{bridgeError=bridgeError||`Không bật được chặn ứng dụng: ${message}`;broadcast();});
   const inGrace=exe=>closing.exe===exe&&closing.until>Date.now();
   watcher.on('change',({exe})=>{
+    // Thấy một trình duyệt ngoài tầm với của tiện ích thì ghi lại để báo, chứ không
+    // chặn gì cả — chặn nó hay không là quyết định của người dùng.
+    const tênTrìnhDuyệt=uncoveredBrowser(exe);
+    if(tênTrìnhDuyệt&&uncovered?.exe!==exe){uncovered={exe,name:tênTrìnhDuyệt};broadcast();}
     const target=inGrace(exe)?null:engine.blockedApp(exe);
     if(target){if(!blockedNow||blockedNow.id!==target.id)showOverlay(target);}
     else if(blockedNow&&exe&&exe!=='the brain project'&&exe!=='electron')hideOverlay();

@@ -50,6 +50,24 @@ Trong ⚙ có thể khóa cứng 30 phút, 1 giờ, 2 giờ hoặc 4 giờ. **Kh
 
 Tiện ích tự giữ hạn khóa nên tắt ứng dụng hay khởi động lại trình duyệt đều không mở khóa được. Hai thứ vẫn phá được khóa: gỡ tiện ích khỏi trình duyệt, và vặn đồng hồ hệ thống về sau.
 
+## Bộ chặn với tới đâu
+
+Nói thẳng để bạn biết mình đang mua gì:
+
+| | Có chặn | Ghi chú |
+|---|---|---|
+| Chrome, Edge | ✅ | qua tiện ích; chạy cả khi ứng dụng đã tắt |
+| Brave, Vivaldi, Opera | ✅ | cùng nhân Chromium, nạp tiện ích y hệt |
+| **Firefox và họ Gecko** | ❌ | Firefox không cho cài tiện ích chưa ký của AMO một cách vĩnh viễn |
+| Ứng dụng, game Windows | ✅ | bản Pro; cần ứng dụng đang chạy |
+| Điện thoại | ❌ | chưa có |
+
+Mở một trình duyệt ngoài tầm với là đi vòng qua toàn bộ danh sách chặn website. **Ứng dụng nói cho bạn biết ngay lúc đó** thay vì im lặng: khi một trình duyệt như vậy lên tiền cảnh, màn hình chính hiện cảnh báo, và bản Pro chặn được thẳng trình duyệt đó như một ứng dụng ngay từ trong cảnh báo.
+
+## Chạy cùng Windows
+
+Tắt mặc định. Bật trong ⚙ → Ứng dụng. Không bật thì sau mỗi lần khởi động lại máy, phần chặn ứng dụng và lớp phủ không hoạt động cho tới khi bạn tự mở ứng dụng — chặn website thì không ảnh hưởng, vì tiện ích tự giữ danh sách. Khi Windows tự chạy, cửa sổ mở ra ở dạng thu nhỏ.
+
 ## Chặn ứng dụng Windows
 
 Nhấn **＋ Chặn một ứng dụng đang mở** ở cột phải và chọn từ danh sách ứng dụng đang chạy. Khi ứng dụng đó lên tiền cảnh, một lớp phủ che nó lại: đổi credit để mở, hoặc **Đóng ứng dụng, quay lại làm việc** — ứng dụng sẽ được yêu cầu thoát như khi bạn bấm dấu X. Nếu nó không chịu thoát (ví dụ đang hỏi lưu file), lớp phủ quay lại sau vài giây.
@@ -58,7 +76,7 @@ Không giết tiến trình nào — bạn không mất dữ liệu đang làm d
 
 ## Tiến bộ
 
-Dải bảy ngày trên màn hình chính và bảng 14 ngày gần nhất trong ⚙. Chỉ đếm phiên hoàn tất trọn vẹn. Ứng dụng lưu 180 ngày.
+Dải bảy ngày trên màn hình chính, và một cửa sổ Thống kê riêng: chọn 7 / 30 / 90 ngày hoặc toàn bộ, lưới nhịp theo ngày, chuỗi ngày liên tiếp, so sánh với kỳ trước. Chỉ đếm phiên hoàn tất trọn vẹn. Ứng dụng **không xoá lịch sử theo thời gian** — bản Pro xem lại được từ ngày cài, bản Free xem lại 7 ngày gần nhất.
 
 ## Danh sách chặn
 
@@ -77,7 +95,7 @@ Chỉ phải làm một lần. Mã ghép nối được giữ lại, nên các l
 
 Xong bước 4, màn hình tự chuyển tiếp. Nếu sau này tiện ích rớt kết nối, app không nhốt bạn lại — chỉ báo rõ "Chưa chặn được website nào" ở thanh trên và chặn việc đổi credit.
 
-Website bị chặn cả ngoài phiên tập trung. Hết thời gian mở, tab đang mở cũng bị chuyển về trang chặn. Khi ứng dụng mất kết nối, tiện ích giữ danh sách chặn và thu hồi quyền mở tạm. Tiện ích đọc URL tab để áp dụng luật nhưng không gửi lịch sử duyệt web về ứng dụng. Chưa tách riêng Shorts trong YouTube, chưa chặn ứng dụng Windows và chưa chặn trên điện thoại.
+Website bị chặn cả ngoài phiên tập trung. Hết thời gian mở, tab đang mở cũng bị chuyển về trang chặn. Khi ứng dụng mất kết nối, tiện ích giữ danh sách chặn và thu hồi quyền mở tạm. Tiện ích đọc URL tab để áp dụng luật nhưng không gửi lịch sử duyệt web về ứng dụng. Chưa tách riêng Shorts trong YouTube và chưa chặn trên điện thoại.
 
 ## Giao diện
 
@@ -85,13 +103,13 @@ Website bị chặn cả ngoài phiên tập trung. Hết thời gian mở, tab 
 
 ## Dữ liệu
 
-Lưu trên máy, mã hóa bằng safeStorage theo tài khoản Windows. Ứng dụng chỉ giữ: mã ghép nối, số dư credit, số phút tập trung hôm nay, danh sách tên miền, chủ đề giao diện, khung thời gian, ngưỡng không hoạt động, phiên đang chạy và lượt mở đang chạy.
+Lưu trên máy, mã hóa bằng safeStorage theo tài khoản Windows. Ứng dụng chỉ giữ: mã ghép nối, số dư credit, lịch sử theo ngày, danh sách website và ứng dụng bị chặn, chủ đề giao diện, khung thời gian, ngưỡng không hoạt động, hạn chế độ khóa, phiên đang chạy và các lượt mở đang chạy.
 
-Dữ liệu v1/v2/v3/v4 được nâng lên v5 khi mở bản này: giữ mã ghép nối (không phải ghép lại), số dư, ngưỡng không hoạt động, website đang bật và lượt mở còn hiệu lực; hoàn phần thời gian chưa dùng của những lượt mở không còn hỗ trợ đúng một lần. Task, thói quen, lịch sử phiên, sổ credit và câu hỏi nhìn lại **không** được chuyển sang. Trước khi chuyển, ứng dụng lưu bản sao mã hóa `brain-data.enc.backup`; nút xóa toàn bộ dữ liệu sẽ xóa cả bản sao này.
+Dữ liệu của mọi bản cũ được nâng lên phiên bản hiện tại khi mở bản này: giữ mã ghép nối (không phải ghép lại), số dư, ngưỡng không hoạt động, website đang bật và lượt mở còn hiệu lực; hoàn phần thời gian chưa dùng của những lượt mở không còn hỗ trợ đúng một lần. Task, thói quen, lịch sử phiên, sổ credit và câu hỏi nhìn lại **không** được chuyển sang. Trước khi chuyển, ứng dụng lưu bản sao mã hóa `brain-data.enc.backup`; nút xóa toàn bộ dữ liệu sẽ xóa cả bản sao này.
 
 Khóa mã hóa nằm trong file `Local State` cùng thư mục dữ liệu, nên muốn sao lưu thì phải chép **cả thư mục** `%APPDATA%	he-brain-project`, không chép riêng `brain-data.enc`.
 
-Không có xuất JSON, không đồng bộ, không cập nhật tự động.
+Không có xuất JSON và không đồng bộ. Ứng dụng **có** tự kiểm tra bản mới (từ 0.7.0) nhưng không tự tải và không tự cài — xem mục Cài đặt ở trên.
 
 ## Kiểm thử
 

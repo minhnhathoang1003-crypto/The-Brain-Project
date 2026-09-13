@@ -162,12 +162,32 @@ Giao diện bỏ hẳn màn hình đếm ngược riêng. Khi có mục đang m�
 
 Giao thức gửi tiện ích không đổi hình dạng: `grants` vốn đã là mảng từ đầu, nay chỉ là có nhiều phần tử hơn một.
 
+## Thêm trong 0.7.8
+
+**Nói ra chỗ bộ chặn không với tới.** Tiện ích chặn là tiện ích Chromium. Nó chạy trong Chrome, Edge, Brave, Vivaldi, Opera — và không chạy trong Firefox cùng họ Gecko, vì Firefox không cho cài tiện ích chưa ký của AMO một cách vĩnh viễn. Nghĩa là từ trước tới nay, cài Firefox rồi mở YouTube ở đó là đi vòng qua toàn bộ danh sách chặn trong ba mươi giây, và ứng dụng im lặng.
+
+Không vá được bằng mã ở phía này. Thứ làm được là nói thẳng đúng lúc nó xảy ra: khi một trình duyệt như vậy lên tiền cảnh, màn hình chính hiện cảnh báo kèm lối đi tiếp — bản Pro chặn được thẳng trình duyệt đó như một ứng dụng. Cảnh báo chỉ hiện khi người dùng **thật sự** mở trình duyệt đó, không dọa suông; và bấm Bỏ qua thì im hẳn với trình duyệt đó.
+
+Bảng trình duyệt nằm ở `src/foreground.cjs` (`KHONG_VOI_TOI`), không rải rác trong giao diện.
+
+**Chạy cùng Windows,** tắt mặc định, bật trong ⚙ → Ứng dụng. Lý do cần: lớp chặn ứng dụng và lớp phủ chỉ tồn tại khi ứng dụng đang chạy, nên sau mỗi lần khởi động lại máy chúng đơn giản là không bật. Lý do **không** bật sẵn: tự ý ghi vào mục khởi động của Windows là kiểu hành xử khiến người ta mất lòng tin vào phần mềm.
+
+Hai chi tiết cố ý:
+- Trạng thái đọc thẳng từ Windows mỗi lần chụp, không giữ bản sao trong dữ liệu app — người dùng tắt mục này trong Task Manager thì bản sao sẽ nói dối.
+- Chạy từ mã nguồn thì bị **từ chối**, vì `process.execPath` lúc đó là `electron.exe` trong `node_modules`; ghi cái đó vào registry là để lại một mục rác trỏ vào Electron trần, còn nguyên sau khi xoá thư mục dự án.
+
+Windows tự chạy app với `--hidden` thì cửa sổ **thu nhỏ**, không ẩn hẳn: chưa có icon khay hệ thống, nên ẩn hẳn là một tiến trình vô hình mà chính người dùng cũng không biết mình đang chạy.
+
 ## Bán hàng
 
-Chưa bán. Chế độ khóa được đánh dấu là tính năng Pro trong `license.cjs` nhưng hiện `tier()` trả `pro` cho tất cả nên ai cũng dùng được. Đã dựng sẵn đường nối `src/license.cjs`: ranh giới Free/Pro đóng đinh ở một chỗ duy nhất, `tier()` hiện luôn trả `pro`. Quyết định, cách thu tiền và thứ tự việc còn lại ở [MONETIZATION.md](MONETIZATION.md).
+Đã mở bán từ 0.7.5. Ranh giới Free/Pro đóng đinh ở một chỗ duy nhất trong `src/license.cjs`; giao diện và bảng giá trên website đều đọc từ đó nên không bao giờ lệch khỏi thứ engine thật sự áp dụng. Cách thu tiền và phần còn lại ở [MONETIZATION.md](MONETIZATION.md).
+
+## So với đối thủ
+
+Đối chiếu với Cold Turkey, Freedom, RescueTime và nhóm tiện ích miễn phí, kèm thứ tự việc nên làm: [COMPETITORS.md](COMPETITORS.md).
 
 ## Chưa triển khai
 
-Chặn ứng dụng Windows — hướng đề nghị và các hướng đã loại nằm ở [APP_BLOCKING.md](APP_BLOCKING.md).
+Theo thứ tự đề nghị: ký số binary; đưa tiện ích lên Chrome Web Store; lịch khóa theo giờ; đóng cửa sổ thì thu về khay hệ thống; danh sách chặn dựng sẵn. Lý do và mức thiệt hại của từng mục ở [COMPETITORS.md](COMPETITORS.md).
 
-Đưa tiện ích lên Chrome Web Store (cách chữa tận gốc cho việc ghép nối; cần thời gian duyệt). Tiện ích tự xin mã, bỏ bước sao chép–dán. Tỉ lệ 1:1 và slider. Credit hết hạn lúc nửa đêm. Bỏ kiểm tra idle. Tách riêng Shorts. Đồng bộ. AI. Ký số binary.
+Đã loại hoặc chưa cần: tiện ích tự xin mã (bỏ bước chép–dán), tỉ lệ 1:1 và slider, credit hết hạn lúc nửa đêm, bỏ kiểm tra idle, tách riêng Shorts, đồng bộ, AI.

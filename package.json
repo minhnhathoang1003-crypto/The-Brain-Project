@@ -1,6 +1,6 @@
 {
   "name": "the-brain-project",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "The Brain Project — một màn hình: tập trung để kiếm credit, đổi credit để mở website gây nghiện.",
   "main": "src/main.cjs",
   "author": "The Brain Project",
@@ -17,6 +17,7 @@
     "test:migrate": "node tests/migrate.cjs",
     "test:restart": "node tests/restart.cjs",
     "test:appblock": "node tests/appblock.cjs",
+    "test:uncovered": "node tests/uncovered.cjs",
     "test:flows": "node --test tests/flows.cjs",
     "test:site": "node tests/site-theme.cjs",
     "test:site:mobile": "node tests/site-mobile.cjs",

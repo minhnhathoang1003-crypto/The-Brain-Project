@@ -1,5 +1,11 @@
 # Có gì mới
 
+## 0.7.8
+
+- **Ứng dụng nói cho bạn biết khi bộ chặn không với tới được trình duyệt bạn đang mở.** Tiện ích chặn chạy trong Chrome, Edge và các trình duyệt cùng nhân Chromium — nhưng không chạy được trong Firefox và họ Gecko, vì Firefox không cho cài tiện ích chưa ký một cách vĩnh viễn. Từ trước tới nay mở Firefox ra là đi vòng qua toàn bộ danh sách chặn, và ứng dụng im lặng. Nay khi một trình duyệt như vậy lên tiền cảnh, màn hình chính nói thẳng điều đó. Bản Pro chặn được luôn trình duyệt đó như một ứng dụng, ngay từ trong dòng cảnh báo. Bấm **Bỏ qua** thì nó im hẳn với trình duyệt đó.
+- **Chạy cùng Windows,** bật trong ⚙ → Ứng dụng. Mặc định tắt. Không bật thì sau mỗi lần khởi động lại máy, phần chặn ứng dụng và lớp phủ không hoạt động cho tới khi bạn tự mở ứng dụng — chặn website thì không ảnh hưởng vì tiện ích tự giữ danh sách. Khi Windows tự chạy, cửa sổ mở ra ở dạng thu nhỏ chứ không ẩn hẳn: một tiến trình vô hình mà chính bạn cũng không biết đang chạy thì không phải kiểu phần mềm này.
+- **README nói đúng lại.** Ba câu đã sai từ lâu: "ứng dụng lưu 180 ngày" (từ 0.7.6 nó không xoá lịch sử nữa), "không cập nhật tự động" (có từ 0.7.0), và "chưa chặn ứng dụng Windows" (có từ 0.5.0). Thêm một bảng nói thẳng bộ chặn với tới đâu và không với tới đâu.
+
 ## 0.7.7
 
 - **Mục Bản quyền gọn lại.** Trước đây nó kể cả những thứ bạn không cần biết: lần xác minh gần nhất, bao lâu ứng dụng kiểm lại một lần, còn bao nhiêu ngày dùng được nếu mất mạng. Cái cuối cùng còn trông như đồng hồ đếm ngược tới lúc mất bản quyền, dù chẳng có gì sắp xảy ra. Nay chỉ còn ba dòng: bạn đang ở bản nào, mã nào, và đổi máy ở đâu.

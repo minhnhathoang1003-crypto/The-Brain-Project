@@ -50,6 +50,20 @@ const SYSTEM_APPS = new Set(['explorer','applicationframehost','systemsettings',
   'shellexperiencehost','textinputhost','startmenuexperiencehost','lockapp','dwm','sihost',
   'the brain project','electron']);
 
+// Tiện ích chặn là tiện ích Chromium. Nó nạp được vào Chrome, Edge, Brave, Vivaldi,
+// Opera — nhưng KHÔNG nạp được vào họ Gecko, và Firefox thì không cho cài tiện ích
+// chưa ký của AMO một cách vĩnh viễn. Nghĩa là mở một trình duyệt trong danh sách này
+// ra là toàn bộ danh sách chặn website mất tác dụng ở đó, im lặng.
+// Ứng dụng phải nói ra điều đó thay vì để người dùng tự phát hiện.
+// Tor Browser chạy dưới tên firefox.exe nên đã nằm trong dòng đầu.
+const KHONG_VOI_TOI = new Map([
+  ['firefox','Firefox'], ['librewolf','LibreWolf'], ['waterfox','Waterfox'],
+  ['floorp','Floorp'], ['zen','Zen Browser'], ['mullvadbrowser','Mullvad Browser'],
+  ['palemoon','Pale Moon'], ['basilisk','Basilisk'],
+]);
+// Trả về tên hiển thị nếu đây là trình duyệt tiện ích không với tới được, không thì null.
+const uncoveredBrowser = exe => KHONG_VOI_TOI.get(String(exe||'').trim().toLowerCase()) || null;
+
 const powershell = args => spawn('powershell.exe',
   ['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-Command',...args],
   {windowsHide:true, stdio:['ignore','pipe','ignore']});
@@ -114,4 +128,4 @@ Get-Process -Name '${name}' | ForEach-Object { [void]$_.CloseMainWindow() }`]);
   stop() { if(this.child){ this.child.kill(); this.child=null; } }
 }
 
-module.exports = {ForegroundWatcher, listWindows, SYSTEM_APPS};
+module.exports = {ForegroundWatcher, listWindows, SYSTEM_APPS, uncoveredBrowser, KHONG_VOI_TOI};
