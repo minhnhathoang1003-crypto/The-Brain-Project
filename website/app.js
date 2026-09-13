@@ -258,6 +258,21 @@
     });
   }
 
+  /* ── Cài đặt: hai đường đi ──
+     Có link cửa hàng thì ba bước; không có thì giữ nguyên năm bước nạp thủ công.
+     Mặc định trong HTML là đường thủ công, nên không có JS vẫn ra hướng dẫn đúng. */
+
+  var oStore = $('[data-install="store"]'), oManual = $('[data-install="manual"]');
+
+  if (oStore && oManual && CFG.extensionUrl) {
+    var link = $('#ext-store');
+    link.href = CFG.extensionUrl;
+    oStore.hidden = false;
+    oManual.hidden = true;
+    var tieuDe = $('#install-title');
+    if (tieuDe) tieuDe.innerHTML = 'Ba bước. <span class="dim">Làm một lần duy nhất.</span>';
+  }
+
   /* ── Đoạn phim ở hero ──
      Thẻ <video> để preload="none": chưa có JS thì nó đứng yên ở poster, không tốn
      một byte nào cho phần phim. Chỉ khi máy không bật "giảm chuyển động" và khung

@@ -58,7 +58,11 @@ async function connect(){
   connecting=true;const {token}=await chrome.storage.local.get('token');
   if(!token){connecting=false;stopRetry();return;}
   const ws=new WebSocket('ws://127.0.0.1:47831/bridge');socket=ws;connecting=false;
-  ws.onopen=()=>{ws.send(JSON.stringify({token}));clearInterval(ping);ping=setInterval(()=>{if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({ping:true}));},10000);};
+  // Khai luôn phiên bản của chính mình. Cửa hàng Chrome tự cập nhật tiện ích, nhưng
+  // không tức thì — và một tiện ích cũ hơn ứng dụng thì thiếu tính năng một cách im
+  // lặng. Ứng dụng cần nói được "tiện ích của bạn là bản nào" thay vì để người dùng đoán.
+  // Trường này là tùy chọn ở phía ứng dụng: bản cũ không gửi thì vẫn ghép nối bình thường.
+  ws.onopen=()=>{ws.send(JSON.stringify({token,version:chrome.runtime.getManifest().version}));clearInterval(ping);ping=setInterval(()=>{if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({ping:true}));},10000);};
   ws.onmessage=async event=>{if(ws!==socket)return;try{const data=JSON.parse(event.data);if(data.redeemResult){
         const yc=cho.get(data.redeemResult.reqId);
         if(yc){

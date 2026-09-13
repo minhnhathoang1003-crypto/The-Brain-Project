@@ -10,6 +10,13 @@ const {createUpdater}=require('./updater.cjs');
 const EMAIL='minhnhat.hoang1003@gmail.com';
 const REPO='https://github.com/minhnhathoang1003-crypto/The-Brain-Project';
 const SITE='https://the-brain-project.vercel.app';
+// Trang tiện ích trên Chrome Web Store. Để trống thì ứng dụng quay về hướng dẫn nạp thủ
+// công (Developer mode → Load unpacked) — không bao giờ hiện một link chết.
+const EXTENSION_URL='';
+// Bản tiện ích thấp nhất còn đủ tính năng của ứng dụng này. 0.7.0 là bản đầu tiên đổi
+// được credit ngay trên màn hình chặn; bản cũ hơn vẫn chặn đúng và vẫn giữ hạn khóa,
+// chỉ là màn hình chặn bảo người dùng quay lại ứng dụng.
+const MIN_EXTENSION='0.7.0';
 if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR);
 // Windows ghép cửa sổ với shortcut đã ghim qua id này. Thiếu nó, taskbar coi app là một
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
@@ -97,7 +104,18 @@ app.whenReady().then(()=>{
   // Đọc thẳng từ Windows chứ không giữ một bản sao trong dữ liệu của app: người dùng có
   // thể tắt mục này trong Task Manager, và lúc đó bản sao sẽ nói dối.
   const khởiĐộngCùng=()=>{try{return !!app.getLoginItemSettings({path:process.execPath,args:['--hidden']}).openAtLogin;}catch{return false;}};
-  const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),bridgeError,platform:process.platform,version:app.getVersion(),update:updater?updater.snapshot():null,uncovered:uncoveredNow(),startup:khởiĐộngCùng(),packaged:app.isPackaged}});
+  // Bản tiện ích đang nối. null nghĩa là bản cũ tới mức chưa biết tự khai phiên bản.
+  const extensionVersion=()=>{
+    if(!wss)return null;
+    for(const ws of wss.clients) if(ws.authed&&ws.readyState===WebSocket.OPEN&&ws.appliedAt) return ws.extVersion||null;
+    return null;
+  };
+  // So sánh theo từng số, không so chuỗi: '0.10.0' phải lớn hơn '0.9.0'.
+  const cũHơn=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);
+    for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d<0;}return false;};
+  const snapshot=()=>({...engine.snapshot(),system:{extensionConnected:extensionConnected(),
+    extension:(()=>{const v=extensionVersion();
+      return extensionConnected()?{version:v,outdated:!v||cũHơn(v,MIN_EXTENSION),wanted:MIN_EXTENSION}:null;})(),bridgeError,platform:process.platform,version:app.getVersion(),update:updater?updater.snapshot():null,uncovered:uncoveredNow(),startup:khởiĐộngCùng(),packaged:app.isPackaged,extensionUrl:EXTENSION_URL}});
   const broadcast=()=>{if(win&&!win.isDestroyed())win.webContents.send('state',snapshot());if(wss)for(const ws of wss.clients)if(ws.authed&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify(engine.rules()));};
 
   // Kiểm lại bản quyền với máy chủ hai tuần một lần. Chạy trễ và không chờ: khởi động
@@ -133,7 +151,7 @@ app.whenReady().then(()=>{
   });
   wss.on('connection',ws=>{
     const deadline=setTimeout(()=>{if(!ws.authed)ws.close();},3000);
-    ws.on('message',raw=>{try {const m=JSON.parse(raw);if(!ws.authed){const a=Buffer.from(String(m.token||'')),b=Buffer.from(engine.s.token);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){ws.close();return;}ws.authed=true;clearTimeout(deadline);ws.send(JSON.stringify(engine.rules()));if(!engine.s.paired){engine.s.paired=true;engine.commit();}}else if(m.applied!==undefined){ws.appliedAt=m.applied===true?Date.now():0;}
+    ws.on('message',raw=>{try {const m=JSON.parse(raw);if(!ws.authed){const a=Buffer.from(String(m.token||'')),b=Buffer.from(engine.s.token);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){ws.close();return;}ws.authed=true;ws.extVersion=typeof m.version==='string'&&/^\d+(\.\d+){0,3}$/.test(m.version)?m.version:null;clearTimeout(deadline);ws.send(JSON.stringify(engine.rules()));if(!engine.s.paired){engine.s.paired=true;engine.commit();}}else if(m.applied!==undefined){ws.appliedAt=m.applied===true?Date.now():0;}
       else if(m.redeem&&typeof m.redeem==='object'){
         // Đổi credit ngay trên màn hình chặn của trình duyệt. Cùng một hình dạng
         // quyền với lớp phủ chặn ứng dụng ở ipcMain 'action': chỉ được mở đúng thứ
@@ -219,6 +237,10 @@ app.whenReady().then(()=>{
     if(type==='dismissBrowserWarning'){
       if(uncovered)uncoveredBoQua.add(uncovered.exe);
       broadcast();return {ok:true};
+    }
+    if(type==='openExtensionStore'){
+      if(!EXTENSION_URL)throw Error('Chưa có link cửa hàng. Dùng cách nạp thủ công bên dưới.');
+      await shell.openExternal(EXTENSION_URL);return {ok:true};
     }
     if(type==='openSite'){await shell.openExternal(SITE);return {ok:true};}
     if(type==='openRepo'){await shell.openExternal(REPO);return {ok:true};}

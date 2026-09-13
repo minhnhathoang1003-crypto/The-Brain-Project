@@ -84,12 +84,25 @@ Website nằm trong danh sách là bị chặn — không có công tắc bật/
 
 ## Ghép nối tiện ích
 
-Việc chặn do tiện ích Chrome / Edge thực hiện. Lần chạy đầu, app dừng ở màn hình hướng dẫn bốn bước và không cho vào màn hình chính — vì chưa ghép nối thì credit không có tác dụng gì:
+Việc chặn do tiện ích Chrome / Edge thực hiện. Lần chạy đầu, app dừng ở màn hình hướng dẫn và không cho vào màn hình chính — vì chưa ghép nối thì credit không có tác dụng gì.
+
+**Tiện ích đã có trên Chrome Web Store.** Khi `EXTENSION_URL` trong `src/main.cjs` và `extensionUrl` trong `website/config.js` được điền, cả app lẫn website tự đổi sang hai bước:
+
+1. Nhấn **Cài tiện ích** → **Add to Chrome**.
+2. **Sao chép mã ghép nối**, dán vào popup tiện ích rồi kết nối.
+
+Chưa điền link thì cả hai nơi giữ nguyên hướng dẫn nạp thủ công — không bao giờ hiện một nút trỏ vào chỗ chưa chắc có:
 
 1. Nhấn **Mở thư mục tiện ích**.
 2. Vào `chrome://extensions` (Edge: `edge://extensions`).
 3. Bật **Developer mode** → **Load unpacked** → chọn thư mục vừa mở.
 4. **Sao chép mã ghép nối**, dán vào popup tiện ích rồi kết nối.
+
+Cách thủ công vẫn cần khi chạy từ mã nguồn, nên nó không bị bỏ đi — chỉ gập lại.
+
+**Phiên bản tiện ích.** Tiện ích tự khai phiên bản khi ghép nối, và ⚙ → Bộ chặn hiện nó ra. Cần bản **0.7.0** trở lên: bản cũ hơn vẫn chặn đúng và vẫn giữ hạn chế độ khóa, chỉ là màn hình chặn chưa đổi credit được tại chỗ. Cài từ cửa hàng thì Chrome tự cập nhật.
+
+Đóng gói bản mới để nộp cửa hàng: `npm.cmd run extzip` — script tăng-phiên-bản-mới-cho-qua, và đối chiếu từng font mà `blocked.css` gọi với thứ thật sự nằm trong ZIP.
 
 Chỉ phải làm một lần. Mã ghép nối được giữ lại, nên các lần mở ứng dụng sau tiện ích tự kết nối lại sau khoảng hai giây — không phải ghép nối lại.
 

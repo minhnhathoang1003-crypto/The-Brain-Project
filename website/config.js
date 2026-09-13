@@ -18,6 +18,13 @@ window.SITE_CONFIG = {
   fileSize: '107 MB',
   sha256: '6580D0D99CE0D75016B6A5B00B0003D72C424310CBB7D44CEE9291D16BDF809D',
 
+  // Link trang tiện ích trên Chrome Web Store. Để trống thì phần Cài đặt giữ nguyên
+  // hướng dẫn nạp thủ công (Developer mode → Load unpacked); điền vào thì nó tự đổi
+  // sang ba bước và bỏ hẳn hai bước Developer mode.
+  // Dạng: https://chromewebstore.google.com/detail/<id-32-ký-tự>
+  // Nhớ điền cả EXTENSION_URL trong src/main.cjs — ứng dụng không đọc được file này.
+  extensionUrl: '',
+
   // Link tới mã nguồn. Để trống thì các link "mã nguồn" bị ẩn.
   repoUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project',
 

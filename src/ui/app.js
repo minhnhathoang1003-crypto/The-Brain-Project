@@ -151,15 +151,25 @@ function focusView(){
 function gateView(){
   return `<section class="pane gate">
     <h1>Còn một bước nữa: bật bộ chặn</h1>
-    <p class="lead">The Brain Project chặn website bằng một tiện ích trình duyệt. Chưa gắn tiện ích thì credit không có tác dụng gì, nên hãy làm bốn bước này một lần duy nhất.</p>
+    <p class="lead">The Brain Project chặn website bằng một tiện ích trình duyệt. Chưa gắn tiện ích thì credit không có tác dụng gì, nên hãy làm ${state.system.extensionUrl?'hai':'bốn'} bước này một lần duy nhất.</p>
     ${state.credits>0?`<div class="warn"><b>Bạn được tặng ${num(state.credits)} credit để bắt đầu.</b> Dùng được ngay sau khi ghép nối xong — để lúc cần gấp bạn vẫn có thời gian, chưa phải tập trung đủ một phiên.</div>`:''}
+    ${state.system.extensionUrl?`
+    <ol>
+      <li><span class="k">1</span><p>Nhấn <b>Cài tiện ích</b> bên dưới. Trang Chrome Web Store mở ra — bấm <b>Add to Chrome</b> rồi xác nhận.</p></li>
+      <li><span class="k">2</span><p>Nhấn <b>Sao chép mã ghép nối</b>, mở biểu tượng tiện ích trên thanh Chrome, dán mã vào rồi nhấn kết nối.</p></li>
+    </ol>
+    <div class="actions start"><button class="ghost" data-system="openExtensionStore">Cài tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>
+    <details class="thu-cong"><summary>Chạy từ mã nguồn? Nạp tiện ích thủ công</summary>
+      <ol class="steps"><li>Nhấn <b>Mở thư mục tiện ích</b>.</li><li>Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>).</li><li>Bật <b>Developer mode</b>, chọn <b>Load unpacked</b> và chọn thư mục vừa mở.</li><li>Dán mã ghép nối vào popup rồi kết nối.</li></ol>
+      <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button></div>
+    </details>`:`
     <ol>
       <li><span class="k">1</span><p>Nhấn <b>Mở thư mục tiện ích</b> bên dưới. Một cửa sổ Explorer sẽ hiện ra — cứ để nguyên đó.</p></li>
       <li><span class="k">2</span><p>Mở Chrome, gõ <code>chrome://extensions</code> vào thanh địa chỉ rồi Enter. Dùng Edge thì gõ <code>edge://extensions</code>.</p></li>
       <li><span class="k">3</span><p>Bật <b>Developer mode</b> ở góc phải trên, rồi nhấn <b>Load unpacked</b> và chọn đúng thư mục vừa mở ở bước 1.</p></li>
       <li><span class="k">4</span><p>Nhấn <b>Sao chép mã ghép nối</b>, mở biểu tượng tiện ích trên thanh Chrome, dán mã vào rồi nhấn kết nối.</p></li>
     </ol>
-    <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>
+    <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>`}
     <div class="waiting"><i></i> Đang chờ tiện ích kết nối… Màn hình này tự chuyển tiếp khi xong.</div>
   </section>`;
 }
@@ -297,12 +307,36 @@ const ICON={
 };
 const svgIcon=id=>`<svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[id]}</svg>`;
 
+// Bốn bước nạp thủ công. Vẫn cần cho người chạy từ mã nguồn, và cho lúc chưa có link
+// cửa hàng — nhưng không còn là đường đi mặc định.
+function cacBuocThuCong(){
+  return `<ol class="steps"><li>Nhấn <b>Mở thư mục tiện ích</b>.</li><li>Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>).</li><li>Bật <b>Developer mode</b>, chọn <b>Load unpacked</b> và chọn thư mục vừa mở.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
+  <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>`;
+}
+
+// Phiên bản tiện ích đang nối. Cửa hàng Chrome tự cập nhật nhưng không tức thì, và một
+// tiện ích cũ hơn thì thiếu tính năng một cách im lặng — nói ra thay vì để người dùng đoán.
+function dongPhienBanTienIch(){
+  const e=state.system.extension;
+  if(!e)return '';
+  if(!e.outdated)return `<p class="small-note">Tiện ích bản ${esc(e.version)} — khớp với ứng dụng.</p>`;
+  const ten=e.version?`bản ${esc(e.version)}`:'một bản cũ';
+  return `<div class="warn"><b>Tiện ích đang là ${ten}, cũ hơn ứng dụng.</b>
+    Nó vẫn chặn đúng và vẫn giữ hạn chế độ khóa — chỉ là màn hình chặn chưa đổi credit
+    được tại chỗ, bạn phải quay lại ứng dụng. Cài từ cửa hàng thì Chrome tự cập nhật;
+    nạp thủ công thì nạp lại thư mục tiện ích. Cần bản ${esc(e.wanted)} trở lên.</div>`;
+}
+
 function tabBlocker(){
   const connected=state.system.extensionConnected;
+  const store=state.system.extensionUrl;
   return `<div class="set-row"><div><b>Bộ chặn website</b><p>${connected?'Đang chặn '+state.targets.length+' website.':'Chưa chặn được website nào — tiện ích không kết nối.'}${state.system.bridgeError?'<br>'+esc(state.system.bridgeError):''}</p></div><span class="chip ${connected?'on':''}">${connected?'Đang chạy':'Chưa chạy'}</span></div>
+  ${dongPhienBanTienIch()}
   <p class="small-note">Chỉ phải làm một lần. Mã ghép nối được giữ lại, nên các lần mở ứng dụng sau tiện ích tự kết nối lại trong vài giây.</p>
-  <ol class="steps"><li>Nhấn <b>Mở thư mục tiện ích</b>.</li><li>Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>).</li><li>Bật <b>Developer mode</b>, chọn <b>Load unpacked</b> và chọn thư mục vừa mở.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
-  <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>`;
+  ${store?`<ol class="steps"><li>Nhấn <b>Cài tiện ích</b> — trang cửa hàng mở ra, bấm <b>Add to Chrome</b>.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
+  <div class="actions start"><button class="ghost" data-system="openExtensionStore">Cài tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>
+  <details class="thu-cong"><summary>Chạy từ mã nguồn? Nạp tiện ích thủ công</summary>${cacBuocThuCong()}</details>`
+  : cacBuocThuCong()}`;
 }
 
 function tabLook(){

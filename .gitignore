@@ -2,3 +2,6 @@ node_modules/
 release/
 test-results/
 *.log
+
+# Bản sao trùng nội dung của gói 0.6.0, tên do trình duyệt đặt lúc tải về.
+chrome-web-store/ziHCTAVK
