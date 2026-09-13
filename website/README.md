@@ -21,16 +21,27 @@ Ba thứ này không gõ tay mà sinh ra từ script, vì chúng phải khớp v
 Trình duyệt chỉ tải subset nào trang thật sự dùng — hiện là latin + vietnamese, tổng 57KB. Trước đây
 kéo từ Google Fonts với năm file tĩnh, tổng 140KB, và **trang nhảy một cái khi font về: CLS 0,1834**.
 
-Ba thứ giữ cho con số đó bằng 0 và không được bỏ:
+Bốn thứ giữ cho con số đó thấp, và không được bỏ:
 
+- **Thứ tự khai `@font-face`: latin-ext → vietnamese → latin.** Khi nhiều khối cùng phủ một ký tự,
+  khối khai **sau** thắng. Dải `U+0100-02BA` của latin-ext nuốt trọn ă đ ĩ ũ ơ ư, và `U+20A0-20AB`
+  nuốt cả dấu ₫ — nên xếp latin-ext sau vietnamese (đúng như Google Fonts vẫn làm) là mọi trang
+  tiếng Việt kéo về file 85KB thay cho file 10KB. Đã dính đúng cái bẫy này ở lần deploy đầu: đo
+  trên bản live ra 140KB font cho một trang không dùng một ký tự latin-ext nào.
 - `font-display: optional` — quá 100ms là trình duyệt giữ luôn font dự phòng tới hết vòng đời của
-  trang, không tráo giữa chừng. Đổi lại `swap` là CLS quay lại ngay (`npm run test:site:font` bắt được).
+  trang, không tráo giữa chừng. Đổi lại `swap` là CLS quay lại ngay.
 - Hai thẻ `<link rel="preload">` ở đầu mỗi trang HTML. Riêng `404.html` phải dùng đường dẫn tuyệt đối
   vì nó được phục vụ cho **mọi** đường dẫn sai, kể cả `/a/b/c`.
 - Hai mặt chữ dự phòng `Inter dự phòng` / `Inter dự phòng 2` với `size-adjust` đã đo, để lần tải nguội
-  không giãn ra.
+  không giãn ra. Đổi font khác thì phải đo lại — con số trong `styles.css` có ghi cách đo.
 
-Đổi font khác thì phải đo lại `size-adjust` — con số trong `styles.css` có ghi cách đo.
+**Nói thẳng về giới hạn:** ở tốc độ Slow 3G (400Kbps) `optional` không cứu được. Đo được lần vẽ đầu
+ở 3676ms còn font về ở 3780ms — chỉ sau 96ms, nên Chrome vẫn tráo và CLS lên 0,0939 (`swap` cho
+0,0979, tức gần như nhau). Ở đó thứ ăn tiền là tự host và preload, không phải `optional`.
+`npm run test:site:font` vì vậy đòi ba mức khác nhau cho ba tình huống, xem ghi chú đầu file.
+
+`npm run test:site:live` đo lại toàn bộ trên bản đã deploy — kiểu MIME, header cache, subset nào
+thật sự được tải về, và CLS thật.
 
 ### Ảnh
 
