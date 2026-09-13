@@ -107,10 +107,15 @@ app.whenReady().then(()=>{
   // thể tắt mục này trong Task Manager, và lúc đó bản sao sẽ nói dối.
   const khởiĐộngCùng=()=>{try{return !!app.getLoginItemSettings({path:process.execPath,args:['--hidden']}).openAtLogin;}catch{return false;}};
   // Bản tiện ích đang nối. null nghĩa là bản cũ tới mức chưa biết tự khai phiên bản.
+  // Lấy kết nối MỚI NHẤT, không phải cái đầu tiên gặp. Lúc tiện ích nối lại (cập nhật
+  // xong, bật lại trình duyệt), dây cũ còn thoi thóp trong wss.clients thêm một nhịp —
+  // trả về nó là ứng dụng báo số bản cũ trong khi bản mới đã nối xong.
   const extensionVersion=()=>{
     if(!wss)return null;
-    for(const ws of wss.clients) if(ws.authed&&ws.readyState===WebSocket.OPEN&&ws.appliedAt) return ws.extVersion||null;
-    return null;
+    let mới=null;
+    for(const ws of wss.clients)
+      if(ws.authed&&ws.readyState===WebSocket.OPEN&&ws.appliedAt&&(!mới||ws.authedAt>mới.authedAt)) mới=ws;
+    return mới?mới.extVersion||null:null;
   };
   // So sánh theo từng số, không so chuỗi: '0.10.0' phải lớn hơn '0.9.0'.
   const cũHơn=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);
@@ -153,7 +158,7 @@ app.whenReady().then(()=>{
   });
   wss.on('connection',ws=>{
     const deadline=setTimeout(()=>{if(!ws.authed)ws.close();},3000);
-    ws.on('message',raw=>{try {const m=JSON.parse(raw);if(!ws.authed){const a=Buffer.from(String(m.token||'')),b=Buffer.from(engine.s.token);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){ws.close();return;}ws.authed=true;ws.extVersion=typeof m.version==='string'&&/^\d+(\.\d+){0,3}$/.test(m.version)?m.version:null;clearTimeout(deadline);ws.send(JSON.stringify(engine.rules()));if(!engine.s.paired){engine.s.paired=true;engine.commit();}}else if(m.applied!==undefined){ws.appliedAt=m.applied===true?Date.now():0;}
+    ws.on('message',raw=>{try {const m=JSON.parse(raw);if(!ws.authed){const a=Buffer.from(String(m.token||'')),b=Buffer.from(engine.s.token);if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){ws.close();return;}ws.authed=true;ws.authedAt=Date.now();ws.extVersion=typeof m.version==='string'&&/^\d+(\.\d+){0,3}$/.test(m.version)?m.version:null;clearTimeout(deadline);ws.send(JSON.stringify(engine.rules()));if(!engine.s.paired){engine.s.paired=true;engine.commit();}}else if(m.applied!==undefined){ws.appliedAt=m.applied===true?Date.now():0;}
       else if(m.redeem&&typeof m.redeem==='object'){
         // Đổi credit ngay trên màn hình chặn của trình duyệt. Cùng một hình dạng
         // quyền với lớp phủ chặn ứng dụng ở ipcMain 'action': chỉ được mở đúng thứ

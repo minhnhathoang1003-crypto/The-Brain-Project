@@ -1,5 +1,11 @@
 # Có gì mới
 
+## 0.7.9
+
+- **Mục Bộ chặn im lặng khi mọi thứ đang chạy.** Trước đây mở ⚙ → Bộ chặn ra là bị dạy lại cách cài tiện ích — kèm nút đen "Sao chép mã ghép nối" to nhất màn hình — dù tiện ích đã chạy ngon từ lâu. Nay khi đang chạy, mục này chỉ còn một dòng: đang chặn bao nhiêu website và tiện ích bản nào. Các bước cài gập lại sau dòng *Cài tiện ích trên trình duyệt khác, hoặc ghép nối lại* — vẫn ở đó vì hai việc ấy có thật, chỉ là hiếm. Rớt kết nối thì các bước hiện ra ngay, không bắt bạn đi tìm.
+- **Bỏ một nút bấm thừa.** Khi chưa kết nối, phần nạp tiện ích thủ công lặp lại đúng nút *Sao chép mã ghép nối* đã có ngay phía trên. Hai nút y hệt trên cùng một bảng chỉ làm người ta phân vân không biết chúng có khác nhau không.
+- **Ứng dụng lấy đúng kết nối mới nhất khi đọc phiên bản tiện ích.** Lúc tiện ích nối lại sau khi cập nhật, dây cũ còn thoi thóp thêm một nhịp; trước đây ứng dụng có thể đọc nhầm nó và báo số bản cũ trong khi bản mới đã nối xong.
+
 ## 0.7.8
 
 - **Ứng dụng nói cho bạn biết khi bộ chặn không với tới được trình duyệt bạn đang mở.** Tiện ích chặn chạy trong Chrome, Edge và các trình duyệt cùng nhân Chromium — nhưng không chạy được trong Firefox và họ Gecko, vì Firefox không cho cài tiện ích chưa ký một cách vĩnh viễn. Từ trước tới nay mở Firefox ra là đi vòng qua toàn bộ danh sách chặn, và ứng dụng im lặng. Nay khi một trình duyệt như vậy lên tiền cảnh, màn hình chính nói thẳng điều đó. Bản Pro chặn được luôn trình duyệt đó như một ứng dụng, ngay từ trong dòng cảnh báo. Bấm **Bỏ qua** thì nó im hẳn với trình duyệt đó.

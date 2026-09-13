@@ -57,8 +57,10 @@ const ORIGIN='chrome-extension://'+'a'.repeat(32);
       });
       ws.on('message',()=>ws.send(JSON.stringify({applied:true})));
       ws.send(JSON.stringify({applied:true}));
-      await page.waitForFunction(()=>window.brain.get().then(s=>s.system.extensionConnected));
-      await page.waitForTimeout(250);
+      // Chờ đúng lời khai vừa gửi, không chờ theo đồng hồ: dây cũ còn thoi thóp thêm một
+      // nhịp thì ứng dụng vẫn đang báo số bản của lượt trước.
+      await page.waitForFunction(mong=>window.brain.get().then(s=>
+        s.system.extensionConnected&&s.system.extension?.version===mong),khai.version??null,{timeout:10000});
       return (await page.evaluate(()=>window.brain.get())).system.extension;
     };
 
@@ -72,6 +74,31 @@ const ORIGIN='chrome-extension://'+'a'.repeat(32);
     // Bản đúng bằng mức tối thiểu: không phải cảnh báo.
     assert.deepEqual(await nối({version:'0.7.0'}),{version:'0.7.0',outdated:false,wanted:'0.7.0'});
     console.log('khai 0.7.0     → đạt mức tối thiểu, không cảnh báo');
+
+    // Mọi thứ đang chạy thì tab Bộ chặn phải im: không dạy cách cài thứ đã cài xong,
+    // và nhất là không để cái nút đen to nhất màn hình là "Sao chép mã ghép nối".
+    {
+      await page.locator('#open-setup').click();await page.locator('#setup').waitFor();
+      await page.locator('[data-setup-tab="blocker"]').click();
+      const panel=page.locator('.setup-panel');
+      // Giao diện vẽ từ state được đẩy xuống, không phải từ lần brain.get() vừa rồi —
+      // nhịp đẩy kế tiếp cách đó tới một giây. Chờ đúng dòng chữ cần đọc.
+      await panel.getByText(/tiện ích bản 0\.7\.0/).waitFor({timeout:10000});
+      const chữ=await panel.innerText();
+      for(const cấm of ['Developer mode','Load unpacked','chrome://extensions'])
+        assert(!chữ.includes(cấm),`đang chạy ngon mà vẫn hiện "${cấm}"`);
+      assert.equal(await panel.locator('[data-system="copyPairing"]').isVisible(),false,
+        'đang chạy mà nút sao chép mã ghép nối vẫn chềnh ềnh');
+      assert.equal(await panel.locator('[data-system="openExtensionStore"]').isVisible(),false);
+      assert.equal(await panel.locator('.warn').count(),0,'không có gì hỏng thì đừng hiện cảnh báo');
+      // Nhưng vẫn phải mở ra được: cài trên máy khác và ghép nối lại là việc có thật.
+      await panel.locator('details.thu-cong summary').click();
+      await panel.locator('[data-system="copyPairing"]').waitFor();
+      await panel.locator('[data-system="openExtensionStore"]').waitFor();
+      await panel.locator('[data-system="extensionFolder"]').waitFor();
+      console.log('đang chạy ngon → tab im lặng, mở ra mới thấy các bước');
+      await page.locator('#setup-close').click();
+    }
 
     // Bản mới hơn ứng dụng: cũng không phải cảnh báo.
     assert.equal((await nối({version:'0.7.1'})).outdated,false);
@@ -93,6 +120,21 @@ const ORIGIN='chrome-extension://'+'a'.repeat(32);
     assert.match(await cảnh.innerText(),/vẫn chặn đúng/,'phải nói rõ cái gì CÒN chạy, không chỉ cái hỏng');
     await page.locator('#setup-close').click();
     console.log('khai 0.6.0     → cảnh báo nói đúng số bản, và nói rõ cái gì vẫn chạy');
+
+    // Rớt kết nối thì các bước phải hiện ra ngay, không bắt người dùng đi tìm.
+    {
+      const cũ=ws; ws=null; cũ.close();
+      await page.waitForFunction(()=>window.brain.get().then(s=>!s.system.extensionConnected));
+      await page.locator('#open-setup').click();await page.locator('#setup').waitFor();
+      await page.locator('[data-setup-tab="blocker"]').click();
+      const panel=page.locator('.setup-panel');
+      await panel.getByText('Chưa chặn được website nào').first().waitFor();
+      assert.equal(await panel.locator('[data-system="copyPairing"]').isVisible(),true,
+        'chưa kết nối thì các bước phải hiện sẵn');
+      assert.equal(await panel.locator('[data-system="openExtensionStore"]').isVisible(),true);
+      console.log('rớt kết nối    → các bước hiện ra ngay');
+      await page.locator('#setup-close').click();
+    }
 
     // Lời khai bậy không được tin, nhưng cũng không được làm hỏng việc ghép nối.
     const bậy=await nối({version:'<script>alert(1)</script>'});

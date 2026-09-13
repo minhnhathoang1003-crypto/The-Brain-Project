@@ -309,17 +309,19 @@ const svgIcon=id=>`<svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="
 
 // Bốn bước nạp thủ công. Vẫn cần cho người chạy từ mã nguồn, và cho lúc chưa có link
 // cửa hàng — nhưng không còn là đường đi mặc định.
-function cacBuocThuCong(){
-  return `<ol class="steps"><li>Nhấn <b>Mở thư mục tiện ích</b>.</li><li>Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>).</li><li>Bật <b>Developer mode</b>, chọn <b>Load unpacked</b> và chọn thư mục vừa mở.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
-  <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>`;
+// kemMaGhepNoi: chỉ kèm nút sao chép mã khi đây là đường đi duy nhất. Nếu các bước cài
+// từ cửa hàng đang hiện ngay phía trên thì nút đó đã có rồi — lặp lại hai nút y hệt trên
+// cùng một bảng chỉ làm người ta phân vân không biết hai cái có khác nhau không.
+function cacBuocThuCong(kemMaGhepNoi=true){
+  return `<ol class="steps"><li>Nhấn <b>Mở thư mục tiện ích</b>.</li><li>Vào <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>).</li><li>Bật <b>Developer mode</b>, chọn <b>Load unpacked</b> và chọn thư mục vừa mở.</li><li>${kemMaGhepNoi?'Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.':'Dán mã ghép nối ở trên vào popup tiện ích rồi kết nối.'}</li></ol>
+  <div class="actions start"><button class="ghost" data-system="extensionFolder">Mở thư mục tiện ích</button>${kemMaGhepNoi?'<button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button>':''}</div>`;
 }
 
 // Phiên bản tiện ích đang nối. Cửa hàng Chrome tự cập nhật nhưng không tức thì, và một
 // tiện ích cũ hơn thì thiếu tính năng một cách im lặng — nói ra thay vì để người dùng đoán.
-function dongPhienBanTienIch(){
+function tienIchCu(){
   const e=state.system.extension;
-  if(!e)return '';
-  if(!e.outdated)return `<p class="small-note">Tiện ích bản ${esc(e.version)} — khớp với ứng dụng.</p>`;
+  if(!e||!e.outdated)return '';
   const ten=e.version?`bản ${esc(e.version)}`:'một bản cũ';
   return `<div class="warn"><b>Tiện ích đang là ${ten}, cũ hơn ứng dụng.</b>
     Nó vẫn chặn đúng và vẫn giữ hạn chế độ khóa — chỉ là màn hình chặn chưa đổi credit
@@ -327,16 +329,36 @@ function dongPhienBanTienIch(){
     nạp thủ công thì nạp lại thư mục tiện ích. Cần bản ${esc(e.wanted)} trở lên.</div>`;
 }
 
+// Các bước ghép nối. Dùng ở hai chỗ: mở sẵn khi chưa kết nối, và gập trong <details>
+// khi đã chạy rồi.
+function cacBuocGhepNoi(){
+  if(!state.system.extensionUrl) return cacBuocThuCong();
+  return `<ol class="steps"><li>Nhấn <b>Cài tiện ích</b> — trang cửa hàng mở ra, bấm <b>Add to Chrome</b>.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
+  <div class="actions start"><button class="ghost" data-system="openExtensionStore">Cài tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>`;
+}
+
 function tabBlocker(){
   const connected=state.system.extensionConnected;
   const store=state.system.extensionUrl;
-  return `<div class="set-row"><div><b>Bộ chặn website</b><p>${connected?'Đang chặn '+state.targets.length+' website.':'Chưa chặn được website nào — tiện ích không kết nối.'}${state.system.bridgeError?'<br>'+esc(state.system.bridgeError):''}</p></div><span class="chip ${connected?'on':''}">${connected?'Đang chạy':'Chưa chạy'}</span></div>
-  ${dongPhienBanTienIch()}
+
+  // Đang chạy thì tab này im lặng. Người ta mở nó ra để xem còn chạy không, chứ không
+  // phải để được dạy cách cài thứ mình đã cài xong — cùng một lý do mục Bản quyền đã
+  // gọn lại ở 0.7.6. Các bước vẫn ở đây, chỉ gập lại: cài trên máy khác hay ghép nối
+  // lại đều là việc có thật, chỉ là hiếm.
+  if(connected){
+    return `<div class="set-row"><div><b>Bộ chặn website</b><p>Đang chặn ${state.targets.length} website${state.system.extension?.version?` · tiện ích bản ${esc(state.system.extension.version)}`:''}.${state.system.bridgeError?'<br>'+esc(state.system.bridgeError):''}</p></div><span class="chip on">Đang chạy</span></div>
+    ${tienIchCu()}
+    <details class="thu-cong"><summary>Cài tiện ích trên trình duyệt khác, hoặc ghép nối lại</summary>
+      ${cacBuocGhepNoi()}
+      ${store?`<p class="small-note">Chạy từ mã nguồn thì nạp thủ công: mở thư mục tiện ích, vào <code>chrome://extensions</code>, bật Developer mode rồi Load unpacked.</p>
+      <div class="actions start"><button class="ghost small" data-system="extensionFolder">Mở thư mục tiện ích</button></div>`:''}
+    </details>`;
+  }
+
+  return `<div class="set-row"><div><b>Bộ chặn website</b><p>Chưa chặn được website nào — tiện ích không kết nối.${state.system.bridgeError?'<br>'+esc(state.system.bridgeError):''}</p></div><span class="chip">Chưa chạy</span></div>
   <p class="small-note">Chỉ phải làm một lần. Mã ghép nối được giữ lại, nên các lần mở ứng dụng sau tiện ích tự kết nối lại trong vài giây.</p>
-  ${store?`<ol class="steps"><li>Nhấn <b>Cài tiện ích</b> — trang cửa hàng mở ra, bấm <b>Add to Chrome</b>.</li><li>Sao chép mã ghép nối, dán vào popup tiện ích rồi kết nối.</li></ol>
-  <div class="actions start"><button class="ghost" data-system="openExtensionStore">Cài tiện ích</button><button class="primary" data-system="copyPairing">Sao chép mã ghép nối</button></div>
-  <details class="thu-cong"><summary>Chạy từ mã nguồn? Nạp tiện ích thủ công</summary>${cacBuocThuCong()}</details>`
-  : cacBuocThuCong()}`;
+  ${cacBuocGhepNoi()}
+  ${store?`<details class="thu-cong"><summary>Chạy từ mã nguồn? Nạp tiện ích thủ công</summary>${cacBuocThuCong(false)}</details>`:''}`;
 }
 
 function tabLook(){

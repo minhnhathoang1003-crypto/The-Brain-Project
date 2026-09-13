@@ -4,6 +4,11 @@
 // nếu hai nơi lệch nhau, nên không thể quên cập nhật chỗ này.
 // Chạy lại bằng: node scripts/changelog.cjs
 const CHANGELOG=[
+  {v:"0.7.9", items:[
+    "<b>Mục Bộ chặn im lặng khi mọi thứ đang chạy.</b> Trước đây mở ⚙ → Bộ chặn ra là bị dạy lại cách cài tiện ích — kèm nút đen \"Sao chép mã ghép nối\" to nhất màn hình — dù tiện ích đã chạy ngon từ lâu. Nay khi đang chạy, mục này chỉ còn một dòng: đang chặn bao nhiêu website và tiện ích bản nào. Các bước cài gập lại sau dòng *Cài tiện ích trên trình duyệt khác, hoặc ghép nối lại* — vẫn ở đó vì hai việc ấy có thật, chỉ là hiếm. Rớt kết nối thì các bước hiện ra ngay, không bắt bạn đi tìm.",
+    "<b>Bỏ một nút bấm thừa.</b> Khi chưa kết nối, phần nạp tiện ích thủ công lặp lại đúng nút *Sao chép mã ghép nối* đã có ngay phía trên. Hai nút y hệt trên cùng một bảng chỉ làm người ta phân vân không biết chúng có khác nhau không.",
+    "<b>Ứng dụng lấy đúng kết nối mới nhất khi đọc phiên bản tiện ích.</b> Lúc tiện ích nối lại sau khi cập nhật, dây cũ còn thoi thóp thêm một nhịp; trước đây ứng dụng có thể đọc nhầm nó và báo số bản cũ trong khi bản mới đã nối xong.",
+  ]},
   {v:"0.7.8", items:[
     "<b>Ứng dụng nói cho bạn biết khi bộ chặn không với tới được trình duyệt bạn đang mở.</b> Tiện ích chặn chạy trong Chrome, Edge và các trình duyệt cùng nhân Chromium — nhưng không chạy được trong Firefox và họ Gecko, vì Firefox không cho cài tiện ích chưa ký một cách vĩnh viễn. Từ trước tới nay mở Firefox ra là đi vòng qua toàn bộ danh sách chặn, và ứng dụng im lặng. Nay khi một trình duyệt như vậy lên tiền cảnh, màn hình chính nói thẳng điều đó. Bản Pro chặn được luôn trình duyệt đó như một ứng dụng, ngay từ trong dòng cảnh báo. Bấm <b>Bỏ qua</b> thì nó im hẳn với trình duyệt đó.",
     "<b>Chạy cùng Windows,</b> bật trong ⚙ → Ứng dụng. Mặc định tắt. Không bật thì sau mỗi lần khởi động lại máy, phần chặn ứng dụng và lớp phủ không hoạt động cho tới khi bạn tự mở ứng dụng — chặn website thì không ảnh hưởng vì tiện ích tự giữ danh sách. Khi Windows tự chạy, cửa sổ mở ra ở dạng thu nhỏ chứ không ẩn hẳn: một tiến trình vô hình mà chính bạn cũng không biết đang chạy thì không phải kiểu phần mềm này.",
