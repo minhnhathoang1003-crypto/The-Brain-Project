@@ -86,12 +86,12 @@ Website nằm trong danh sách là bị chặn — không có công tắc bật/
 
 Việc chặn do tiện ích Chrome / Edge thực hiện. Lần chạy đầu, app dừng ở màn hình hướng dẫn và không cho vào màn hình chính — vì chưa ghép nối thì credit không có tác dụng gì.
 
-**Tiện ích đã có trên Chrome Web Store.** Khi `EXTENSION_URL` trong `src/main.cjs` và `extensionUrl` trong `website/config.js` được điền, cả app lẫn website tự đổi sang hai bước:
+**Tiện ích đã có trên [Chrome Web Store](https://chromewebstore.google.com/detail/coiphhfihfbpecbbmlacejgjbcgikhhn)**, nên cài chỉ còn hai bước:
 
 1. Nhấn **Cài tiện ích** → **Add to Chrome**.
 2. **Sao chép mã ghép nối**, dán vào popup tiện ích rồi kết nối.
 
-Chưa điền link thì cả hai nơi giữ nguyên hướng dẫn nạp thủ công — không bao giờ hiện một nút trỏ vào chỗ chưa chắc có:
+Link cửa hàng nằm ở hai chỗ vì app và website không đọc được file của nhau: `EXTENSION_URL` trong `src/main.cjs` và `extensionUrl` trong `website/config.js`. `npm.cmd run test:site:install` canh hai bản sao đó bằng nhau. Để trống cả hai thì quay về hướng dẫn nạp thủ công — không bao giờ hiện một nút trỏ vào chỗ chưa chắc có:
 
 1. Nhấn **Mở thư mục tiện ích**.
 2. Vào `chrome://extensions` (Edge: `edge://extensions`).

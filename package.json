@@ -25,6 +25,7 @@
     "test:site:a11y": "node tests/site-a11y.cjs",
     "test:site:font": "node tests/site-font.cjs",
     "test:site:media": "node tests/site-media.cjs",
+    "test:site:install": "node tests/site-install.cjs",
     "test:site:live": "node tests/site-live.cjs",
     "test:site:activate": "node tests/site-activate.cjs",
     "test:site:404": "node tests/site-404.cjs",

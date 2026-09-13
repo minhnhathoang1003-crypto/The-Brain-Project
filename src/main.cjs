@@ -12,7 +12,9 @@ const REPO='https://github.com/minhnhathoang1003-crypto/The-Brain-Project';
 const SITE='https://the-brain-project.vercel.app';
 // Trang tiện ích trên Chrome Web Store. Để trống thì ứng dụng quay về hướng dẫn nạp thủ
 // công (Developer mode → Load unpacked) — không bao giờ hiện một link chết.
-const EXTENSION_URL='';
+// Dùng dạng chỉ có ID, không kèm slug tên: slug đổi theo tên tiện ích, còn ID thì không.
+// Google tự chuyển tiếp 301 sang địa chỉ đầy đủ.
+const EXTENSION_URL='https://chromewebstore.google.com/detail/coiphhfihfbpecbbmlacejgjbcgikhhn';
 // Bản tiện ích thấp nhất còn đủ tính năng của ứng dụng này. 0.7.0 là bản đầu tiên đổi
 // được credit ngay trên màn hình chặn; bản cũ hơn vẫn chặn đúng và vẫn giữ hạn khóa,
 // chỉ là màn hình chặn bảo người dùng quay lại ứng dụng.

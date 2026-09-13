@@ -1,4 +1,39 @@
-# Checklist nộp Chrome Web Store — việc Nhat phải tự làm
+# Chrome Web Store
+
+## ✅ Đã nộp và đã được duyệt
+
+- **ID tiện ích:** `coiphhfihfbpecbbmlacejgjbcgikhhn`
+- **Trang:** https://chromewebstore.google.com/detail/coiphhfihfbpecbbmlacejgjbcgikhhn
+- **Bản đang công khai:** 0.6.0 — cũ hơn mã nguồn.
+
+Link này đã điền vào hai chỗ: `EXTENSION_URL` trong `src/main.cjs` và `extensionUrl`
+trong `website/config.js`. `npm.cmd run test:site:install` canh hai bản sao đó bằng nhau
+và canh link còn sống.
+
+Dùng dạng **chỉ-ID**, không kèm slug tên tiện ích: slug đổi theo tên, ID thì không.
+
+## Nộp một bản cập nhật
+
+1. Tăng `version` trong `extension/manifest.json`.
+2. `npm.cmd run extzip` — script từ chối nếu phiên bản không tăng, và đối chiếu từng
+   `url(fonts/…)` trong `blocked.css` với thứ thật sự nằm trong ZIP (cả hai chiều: thiếu
+   font thì trang chặn đổi mặt chữ mà không báo lỗi, thừa font thì gửi byte chết).
+3. `npm.cmd run test:browser` và `npm.cmd run test:browser:redeem` — nạp tiện ích thật
+   vào Chromium thật.
+4. Developer Dashboard → item → **Package** → Upload new package → chọn ZIP vừa tạo →
+   **Submit for review**.
+
+**Không thêm quyền mới thì Chrome không hỏi lại người dùng** và bản cập nhật tự về trong
+vài giờ tới vài ngày. Bản 0.7.1 xin đúng ba quyền như 0.6.0: `declarativeNetRequest`,
+`storage`, `alarms`.
+
+Sau khi bản mới lên, `⚙ → Bộ chặn` trong ứng dụng sẽ hiện đúng số bản đang chạy — đó là
+thứ đáng lẽ phải có từ đầu, vì chính nó là lý do bản 0.6.0 nằm trên cửa hàng suốt mà
+không ai thấy.
+
+---
+
+# Checklist nộp lần đầu (giữ lại để đối chiếu) — việc Nhat phải tự làm
 
 Mọi thứ chuẩn bị được đã xong. Dưới đây là những bước **chỉ bạn làm được** (tài khoản, tiền, upload, bấm nút).
 

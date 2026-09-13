@@ -21,9 +21,10 @@ window.SITE_CONFIG = {
   // Link trang tiện ích trên Chrome Web Store. Để trống thì phần Cài đặt giữ nguyên
   // hướng dẫn nạp thủ công (Developer mode → Load unpacked); điền vào thì nó tự đổi
   // sang ba bước và bỏ hẳn hai bước Developer mode.
-  // Dạng: https://chromewebstore.google.com/detail/<id-32-ký-tự>
+  // Dạng chỉ-ID: https://chromewebstore.google.com/detail/<id-32-ký-tự>
+  // Đừng kèm slug tên tiện ích — slug đổi theo tên, ID thì không.
   // Nhớ điền cả EXTENSION_URL trong src/main.cjs — ứng dụng không đọc được file này.
-  extensionUrl: '',
+  extensionUrl: 'https://chromewebstore.google.com/detail/coiphhfihfbpecbbmlacejgjbcgikhhn',
 
   // Link tới mã nguồn. Để trống thì các link "mã nguồn" bị ẩn.
   repoUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project',

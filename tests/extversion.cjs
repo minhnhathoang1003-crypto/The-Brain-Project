@@ -24,6 +24,26 @@ const ORIGIN='chrome-extension://'+'a'.repeat(32);
   try{
     await page.locator('.gate').waitFor();
     await app.evaluate(()=>global.__brainWatcher.stop());
+
+    // Có link cửa hàng thì màn hình mở đầu phải là HAI bước, và cách nạp thủ công gập
+    // lại chứ không biến mất — người chạy từ mã nguồn vẫn cần nó.
+    const url=(await page.evaluate(()=>window.brain.get())).system.extensionUrl;
+    if(url){
+      assert.match(url,/^https:\/\/chromewebstore\.google\.com\/detail\/[a-p]{32}$/,'link cửa hàng sai dạng');
+      await page.getByRole('button',{name:'Cài tiện ích'}).waitFor();
+      assert.equal(await page.locator('.gate > ol > li').count(),2,'có cửa hàng thì phải còn hai bước');
+      assert.match(await page.locator('.gate .lead').innerText(),/hai bước/);
+      const thủCông=page.locator('.gate details.thu-cong');
+      assert.equal(await thủCông.count(),1,'cách nạp thủ công phải còn, chỉ gập lại');
+      assert.equal(await page.locator('.gate details.thu-cong [data-system="extensionFolder"]').isVisible(),false,
+        'chưa mở ra thì nút nạp thủ công phải đang ẩn');
+      await thủCông.locator('summary').click();
+      await page.locator('.gate details.thu-cong [data-system="extensionFolder"]').waitFor();
+      console.log('màn hình mở đầu → hai bước, cách thủ công gập lại mà vẫn mở ra được');
+    } else {
+      assert.equal(await page.locator('.gate > ol > li').count(),4,'chưa có cửa hàng thì giữ bốn bước');
+      console.log('màn hình mở đầu → bốn bước thủ công (chưa có link cửa hàng)');
+    }
     const secret=await app.evaluate(({safeStorage},b)=>JSON.parse(safeStorage.decryptString(Buffer.from(b))).token,
       Array.from(fs.readFileSync(path.join(dir,'brain-data.enc'))));
 
