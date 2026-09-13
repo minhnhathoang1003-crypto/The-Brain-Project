@@ -1,6 +1,7 @@
 # Bán hàng — quyết định và trạng thái
 
-Đã chốt hướng. Chưa bán, và chưa có tính năng nào bị khóa.
+**Đã mở bán từ 0.7.5.** `SELLING = true`, `PRODUCT_ID = 1353919`, thanh toán qua Lemon Squeezy.
+Bốn khác biệt Free/Pro dưới đây đều đã có hiệu lực thật trong `src/license.cjs`.
 
 ## Sự thật phải chấp nhận trước
 
@@ -35,9 +36,9 @@ Ba quy tắc đóng đinh, vì đây là app kỷ luật chứ không phải app
 | Trọn vòng lặp credit: tập trung → credit → mở khóa | Chặn tối đa 50 website |
 | Chặn tối đa 5 website | Chặn ứng dụng và game Windows |
 | Lịch sử 7 ngày | Chế độ khóa không tự gỡ được |
-| Tỉ lệ 5:1 cố định | Lịch sử đầy đủ 180 ngày |
+| Tỉ lệ 5:1 cố định | Lịch sử toàn bộ, từ ngày cài |
 
-Bốn dòng bên cột Pro là **toàn bộ** những gì Pro có, và cả bốn đều đã tồn tại trong mã. Bảng này từng
+Bốn dòng bên cột Pro là **toàn bộ** những gì Pro có, và cả bốn đều đang chạy thật. Bảng này từng
 liệt kê thêm "báo cáo tuần", "tỉ lệ tùy chỉnh", "sao lưu, đồng bộ" — không thứ nào trong đó được xây,
 và `customRatio` cùng `sync` nằm trong `PLANS` mà không dòng nào trong `src/` đọc tới. Đã gỡ cả ba khỏi
 đây lẫn khỏi mã. Từ nay: **không đưa gì vào bảng giá trước khi nó chạy được.**

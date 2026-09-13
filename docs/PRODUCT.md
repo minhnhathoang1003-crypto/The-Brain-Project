@@ -186,6 +186,10 @@ Windows tự chạy app với `--hidden` thì cửa sổ **thu nhỏ**, không �
 
 Đối chiếu với Cold Turkey, Freedom, RescueTime và nhóm tiện ích miễn phí, kèm thứ tự việc nên làm: [COMPETITORS.md](COMPETITORS.md).
 
+## Đường tới 1.0
+
+Ba cột mốc và điều kiện của từng cột: [ROADMAP.md](ROADMAP.md).
+
 ## Chưa triển khai
 
 Theo thứ tự đề nghị: ký số binary; đưa tiện ích lên Chrome Web Store; lịch khóa theo giờ; đóng cửa sổ thì thu về khay hệ thống; danh sách chặn dựng sẵn. Lý do và mức thiệt hại của từng mục ở [COMPETITORS.md](COMPETITORS.md).
