@@ -325,9 +325,13 @@ h1 {
    tỉ lệ suy ra từ thuộc tính width/height, và khung ảnh giữ nguyên tỉ lệ của ảnh
    cũ cho tới khi ảnh mới tải xong — đúng lúc bố cục bị xô. */
 .shot img { filter: var(--shot-shade); width: 100%; height: auto; border-radius: 12px; display: block; }
-/* Ảnh cửa sổ hẹp chỉ rộng 780 CSS px thật. Kéo nó ra cho đầy ô 916px là tự làm nó mờ,
-   nên để ảnh giữ đúng bề rộng của mình và đứng giữa. Ảnh nào đủ rộng thì max-width lo nốt. */
-#gallery-img { width: auto; max-width: 100%; margin-inline: auto; }
+/* Ảnh cửa sổ hẹp chỉ rộng 780 CSS px thật, kéo ra cho đầy ô 916px là tự làm nó mờ — nên
+   app.js đặt max-width riêng cho từng ảnh và ảnh đứng giữa ô.
+   Vẫn phải giữ width: 100%: đặt width: auto thì trước khi ảnh (lazy) tải xong, CSS này
+   đè mất thuộc tính width="932" của thẻ và khung co về 0 — đo được đúng 0px trên cả bốn
+   cỡ điện thoại — rồi bung ra khi ảnh về, tức là đúng thứ dịch chuyển mà aspect-ratio
+   trong app.js sinh ra để chặn. */
+#gallery-img { width: 100%; max-width: 932px; margin-inline: auto; }
 
 /* Đoạn phim ở hero. Nó nằm đúng chỗ ảnh cũ và chiếm đúng chỗ đó ngay từ đầu nhờ
    width/height trên thẻ, nên không có cú dịch chuyển nào khi phim tải xong. */
@@ -348,6 +352,15 @@ h1 {
 .video-toggle:hover { opacity: 1; }
 .video-toggle:active { transform: scale(.97); }
 .video-wrap:focus-within .video-toggle { opacity: 1; }
+/* Trên màn cảm ứng nút phải đủ to cho ngón tay: đo trên iPhone SE bản trước là 60×37px.
+   Apple đòi tối thiểu 44×44. */
+@media (pointer: coarse) {
+  .video-toggle {
+    min-height: 44px; min-width: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0 18px; font-size: 14px; opacity: .9;
+  }
+}
 .shot-hero { margin-top: clamp(56px, 8vw, 96px); }
 
 .shot figcaption {

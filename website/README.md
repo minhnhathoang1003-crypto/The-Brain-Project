@@ -85,7 +85,22 @@ thật, quãng ngồi tập trung tua nhanh 20 lần. Ra `video/demo.webm` (VP8,
 Cần ffmpeg của Playwright: `npx playwright install ffmpeg`.
 
 Phim tự chạy nhưng **không** chạy khi máy bật "giảm chuyển động", và luôn có nút tạm dừng — phim lặp
-vô hạn thì WCAG 2.2.2 bắt buộc phải dừng được.
+vô hạn thì WCAG 2.2.2 bắt buộc phải dừng được. Trên màn cảm ứng nút được phóng lên 44×44 qua
+`@media (pointer: coarse)`; ở màn hình thấp như iPhone SE, phim nằm dưới nếp gấp nên nó chỉ chạy khi
+bạn cuộn tới — đúng ý đồ, đỡ tốn pin và dữ liệu.
+
+## Rà điện thoại
+
+```bash
+node tests/site-mobile.cjs --local     # rà thư mục website/ ngay tại máy
+node tests/site-mobile.cjs             # rà bản đã deploy
+```
+
+Năm cỡ máy, ba trang, cộng một mục riêng cho hero: phim và nút có thò ra ngoài không, nút có đủ
+44×44 không, phim có chạy khi cuộn tới không, và **khung ảnh bộ sưu tập có chiếm chỗ ngay từ đầu
+không**. Cái cuối cùng không thừa: đặt `width: auto` cho `#gallery-img` làm khung co về đúng 0px
+trên cả năm cỡ máy rồi bung ra khi ảnh lazy tải xong — nhìn ở desktop thì không thấy gì vì ảnh về
+quá nhanh.
 
 ## Sửa nội dung
 

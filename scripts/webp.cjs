@@ -78,6 +78,27 @@ const TEN={blocked:'browser-blocked'};
       console.log(`logo.webp        → 64×64 (${Math.round(fs.statSync(logo).size/1024)}KB)`);
     } else console.log('logo.webp        đã 64px rồi, để nguyên');
   }
+  // Favicon: bản gốc là PNG 256×256 nặng 58KB — nặng hơn mọi ảnh minh hoạ trên trang,
+  // mà lại được tải ở MỌI lần vào trang, kể cả trên 3G. Trình duyệt vẽ favicon ở 16–32
+  // CSS px nên 64px đã dư. Thêm một bản WebP đứng trước trong HTML: trình duyệt lấy định
+  // dạng đầu tiên nó hiểu, và WebP nén hình đơn sắc này nhẹ hơn PNG nhiều lần.
+  const icon=path.join(ra,'icon.png');
+  if(fs.existsSync(icon)){
+    const cũ=fs.statSync(icon).size;
+    const ra2=await page.evaluate(async b64=>{
+      const img=new Image();img.src='data:image/png;base64,'+b64;await img.decode();
+      const vẽ=()=>{const cv=document.createElement('canvas');cv.width=cv.height=64;
+        const g=cv.getContext('2d');g.imageSmoothingQuality='high';
+        g.clearRect(0,0,64,64);g.drawImage(img,0,0,64,64);return cv;};
+      return {goc:img.naturalWidth,
+        png:img.naturalWidth<=64?null:vẽ().toDataURL('image/png').split(',')[1],
+        webp:vẽ().toDataURL('image/webp',0.92).split(',')[1]};
+    },fs.readFileSync(icon).toString('base64'));
+    if(ra2.png) fs.writeFileSync(icon,Buffer.from(ra2.png,'base64'));
+    fs.writeFileSync(path.join(ra,'icon.webp'),Buffer.from(ra2.webp,'base64'));
+    const k=f=>Math.round(fs.statSync(f).size/1024*10)/10;
+    console.log(`icon             ${ra2.goc}px ${Math.round(cũ/1024)}KB → png 64px ${k(icon)}KB, webp 64px ${k(path.join(ra,'icon.webp'))}KB`);
+  }
   console.log(`Tổng ảnh minh hoạ: ${(tong/1024).toFixed(0)}KB`);
   await br.close();
 })().catch(e=>{console.error(e);process.exit(1)});
