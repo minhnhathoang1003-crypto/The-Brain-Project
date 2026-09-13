@@ -22,8 +22,11 @@ Hôm nay câu đó sai, vì đúng một lý do.
 | Mua thử một lượt thật | Nhat | Chưa ai đi trọn đường mua → nhận key → kích hoạt trên một máy sạch. `tests/license.test.cjs` kiểm logic, không kiểm được cái đường tiền đi. |
 
 **Ký số là việc có tỉ lệ đổi tiền cao nhất trong toàn bộ tài liệu này**, và nó không phải
-việc viết mã. Azure Trusted Signing khoảng 10 USD/tháng, cần danh tính đã xác minh; chứng
-chỉ OV 200–400 USD/năm.
+việc viết mã. Giá và vì sao Việt Nam không dùng được Azure Artifact Signing:
+[COMPETITORS.md](COMPETITORS.md#1-binary-chưa-ký-số).
+
+Lưu ý khi đặt kỳ vọng: ký số **bắt đầu đồng hồ xây uy tín**, không bấm một công tắc. Phần
+mềm mới vẫn có thể bị Smart App Control chặn cho tới khi đủ người cài an toàn.
 
 Không có nó thì mọi thứ phía dưới đều là tô điểm cho một sản phẩm không ai cài nổi.
 

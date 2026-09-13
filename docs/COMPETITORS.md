@@ -17,9 +17,30 @@ Máy nào không bật SAC thì SmartScreen vẫn hiện cảnh báo đỏ ở l
 Cold Turkey, Freedom, RescueTime đều ký số. Không ai trả 390.000₫ cho phần mềm mà Windows nói là
 nguy hiểm.
 
-Cách chữa: Azure Trusted Signing (khoảng 10 USD/tháng, cần danh tính đã xác minh) hoặc chứng chỉ OV
-(200–400 USD/năm). **Đây là việc có tỉ lệ đổi tiền cao nhất trong toàn bộ danh sách này**, và nó
-không phải việc viết mã.
+**Azure Artifact Signing (Trusted Signing) — rẻ nhất nhưng Việt Nam không dùng được.** Tài liệu
+Microsoft nói thẳng: chứng chỉ Public Trust chỉ cấp cho *tổ chức* ở Mỹ, Canada, EU, Anh, Úc, New
+Zealand, Nhật, Hàn, Singapore, Thụy Sĩ, Na Uy, Israel — và *cá nhân* thì **bắt buộc ở Mỹ hoặc
+Canada**. Không có Việt Nam ở cả hai danh sách.
+
+Còn lại là mua chứng chỉ thương mại, giá qua đại lý (tháng 9/2026):
+
+| | Giá | Ghi chú |
+|---|---|---|
+| OV / IV (cá nhân hoặc doanh nghiệp) | ~219–385 USD | Sectigo/Comodo rẻ nhất, DigiCert đắt nhất |
+| EV | ~290–507 USD | xác minh danh tính chặt hơn, xây uy tín nhanh hơn |
+
+Cộng thêm hai thứ hay bị quên:
+- Từ 6/2023 khoá riêng **bắt buộc** nằm trên phần cứng FIPS 140-2: hoặc USB token gửi về Việt Nam,
+  hoặc dịch vụ ký trên cloud HSM (SSL.com eSigner chẳng hạn).
+- Từ 3/2026 chứng chỉ ký mã tối đa còn **460 ngày** (~15 tháng), nên "một năm" thật ra là 15 tháng.
+
+**Và phải nói thẳng: ký số không gỡ SmartScreen ngay lập tức.** EV từng bỏ qua SmartScreen mặc định
+nhưng Microsoft đã bỏ cách hoạt động đó. Smart App Control chấm điểm bằng uy tín đám mây; phần mềm
+mới hoặc ít lượt tải vẫn bị chặn cho tới khi đủ người cài an toàn. EV chỉ **rút ngắn** quãng xây uy
+tín đó, không xoá nó.
+
+Nghĩa là: ký số vẫn là việc phải làm và vẫn là việc có tỉ lệ đổi tiền cao nhất — nhưng nó là *bắt
+đầu đồng hồ*, không phải *bấm công tắc*.
 
 ### 2. Tiện ích chưa lên Chrome Web Store
 
