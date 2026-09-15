@@ -250,7 +250,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .ratio div:first-child{border-top:0;background:var(--shade);color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
 
 @media (max-width:860px){
-  main.split{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto}
+  /* Hai cột xếp chồng thành hai hàng. Lúc đó .pane KHÔNG được tự cuộn nữa.
+     main cao cố định (flex:1), nên để mỗi pane giữ overflow-y:auto thì mỗi hàng bị ép
+     còn nửa chiều cao và tự cuộn riêng — người dùng thấy hai vùng cuộn tí hon, cắt
+     ngang nhau đúng chỗ giáp ranh. Đây là lỗi thật, gặp khi kéo cửa sổ về nửa màn hình.
+     Ở bố cục một cột chỉ nên có MỘT vùng cuộn: chính main. */
+  main.split{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;overflow-y:auto}
+  main.split .pane{overflow:visible}
   .right{border-left:0;border-top:1px solid var(--line)}
   .pane{padding:26px 22px}
   .figure{font-size:54px}

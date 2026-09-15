@@ -110,6 +110,44 @@ const coCua=(app,w,h)=>app.evaluate(({BrowserWindow},b)=>{
     assert.ok(tt.title&&tt.title.length>10,'nhưng nội dung phải còn trong tooltip, không được biến mất');
     console.log('§8 cửa sổ hẹp       một cột, nhãn thu về chấm, nội dung giữ trong tooltip');
 
+    // §8b MỘT vùng cuộn, không phải hai.
+    //
+    // Lỗi thật gặp khi kéo cửa sổ về nửa màn hình: hai cột xếp chồng nhưng mỗi cột
+    // vẫn giữ overflow-y:auto, mà main thì cao cố định — nên mỗi hàng bị ép còn nửa
+    // chiều cao và tự cuộn riêng, cắt ngang nhau đúng chỗ giáp ranh.
+    //
+    // §8 ở trên đếm số cột nên vẫn xanh trong lúc lỗi đang tồn tại. Đếm số cột không
+    // nói được gì về việc cuộn.
+    for(const w of [560,669,860]){
+      await coCua(app,w,760);
+      await page.waitForTimeout(350);
+      const cuon=await page.evaluate(()=>{
+        const m=document.querySelector('main.split');
+        const panes=[...document.querySelectorAll('main.split .pane')];
+        return {
+          main:getComputedStyle(m).overflowY,
+          panes:panes.map(p=>getComputedStyle(p).overflowY),
+          paneTuCuon:panes.filter(p=>p.scrollHeight>p.clientHeight+1).length,
+        };
+      });
+      assert.equal(cuon.main,'auto',`cửa sổ ${w}px: main phải là vùng cuộn duy nhất`);
+      assert.deepEqual([...new Set(cuon.panes)],['visible'],
+        `cửa sổ ${w}px: pane không được tự cuộn, đang là ${cuon.panes.join(', ')}`);
+      assert.equal(cuon.paneTuCuon,0,`cửa sổ ${w}px: có ${cuon.paneTuCuon} pane đang bị cắt nội dung`);
+    }
+    console.log('§8b vùng cuộn        một vùng duy nhất ở 560/669/860px, không cột nào bị cắt');
+
+    // Rộng trở lại: hai cột, mỗi cột tự cuộn như cũ.
+    await coCua(app,1280,760);
+    await page.waitForTimeout(350);
+    const rong2=await page.evaluate(()=>{
+      const panes=[...document.querySelectorAll('main.split .pane')];
+      return {main:getComputedStyle(document.querySelector('main.split')).overflowY,
+        panes:[...new Set(panes.map(p=>getComputedStyle(p).overflowY))]};
+    });
+    assert.deepEqual(rong2.panes,['auto'],'cửa sổ rộng thì mỗi cột tự cuộn như cũ');
+    console.log('§8c cửa sổ rộng      hai cột, mỗi cột tự cuộn');
+
     // §9 Bán kính bo góc đã gom về một thang, không còn mười hai giá trị rời rạc.
     const css=fs.readFileSync(path.join(root,'src/ui/style.css'),'utf8');
     const thoi=[...css.matchAll(/border-radius:\s*(\d+)px/g)].map(m=>m[1]);
