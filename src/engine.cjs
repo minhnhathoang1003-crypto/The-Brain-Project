@@ -21,6 +21,16 @@ const IDLE_GRACE_MS = 60000;
 // phải nằm ở LÚC BẮT ĐẦU, trước khi biết mình sẽ thèm gì.
 const SESSION_MODES = ['onscreen', 'away'];
 
+// Bấm X thì làm gì. CỐ Ý không có giá trị mặc định:
+//   undefined — chưa hỏi bao giờ. Lần đóng đầu tiên sẽ hỏi.
+//   'tray'    — thu nhỏ xuống khay, ứng dụng vẫn chạy.
+//   'quit'    — thoát hẳn.
+//
+// Dùng chính sự VẮNG MẶT của giá trị làm trạng thái "chưa hỏi" nên không phải nâng
+// VERSION của dữ liệu: người đang dùng bản cũ nâng cấp lên sẽ được hỏi ở lần đóng đầu,
+// đúng như người mới cài.
+const CLOSE_ACTIONS = ['tray', 'quit'];
+
 // Bắt đầu phiên ngoài máy rồi có ngần này thời gian để khoá màn hình (Win+L).
 // Không khoá thì phiên huỷ — nếu không, "ngoài máy" lại thành lời khai suông.
 const AWAY_ARM_MS = 60000;
@@ -86,6 +96,7 @@ function migrate(state, now=Date.now()) {
   else if(Number.isInteger(state.version)&&state.version>=3&&state.version<VERSION) next=structuredClone(state);
   else throw new Error('Phiên bản dữ liệu không tương thích');
   if(!THEMES.includes(next.theme)) next.theme='system';
+  if(!CLOSE_ACTIONS.includes(next.closeAction)) delete next.closeAction;
   if(!validPresets(next.presets)) next.presets=[...DEFAULT_PRESETS];
   if(typeof next.lockUntil!=='number'||next.lockUntil<=now) next.lockUntil=null;
   if(!Array.isArray(next.grants)) {
@@ -272,6 +283,10 @@ class Engine {
           requireThat(new Set(presets).size===presets.length,'Khung thời gian này đã có.');
           s.presets=[...presets].sort((a,b)=>a-b); changed=true;
         }
+        if(p.closeAction!==undefined) {
+          requireThat(CLOSE_ACTIONS.includes(p.closeAction),'Lựa chọn không hợp lệ.');
+          s.closeAction=p.closeAction; changed=true;
+        }
         if(p.idleSeconds!==undefined) {
           requireThat(!s.session,'Hãy kết thúc phiên trước khi đổi ngưỡng.');
           requireThat(IDLE_CHOICES.includes(Number(p.idleSeconds)),'Ngưỡng không hợp lệ.');
@@ -293,7 +308,7 @@ class Engine {
   }
   snapshot() {
     const s=this.s;
-    return { credits:s.credits, idleSeconds:s.idleSeconds, theme:s.theme, presets:[...s.presets], paired:!!s.paired, targets:structuredClone(s.targets),
+    return { credits:s.credits, idleSeconds:s.idleSeconds, theme:s.theme, closeAction:s.closeAction||null, presets:[...s.presets], paired:!!s.paired, targets:structuredClone(s.targets),
       session:s.session?{...s.session}:null, grants:s.grants.filter(g=>g.until>this.clock()).map(g=>({...g})), lastSession:s.lastSession?{...s.lastSession}:null,
       todayMinutes:s.history[0]?.day===DAY()?s.history[0].minutes:0,
       history:s.history.slice(0,limits().historyDays).map(d=>({...d})), historyDays:limits().historyDays,
@@ -324,4 +339,4 @@ class Engine {
       lockUntil, now, credits:this.s.credits, packs:PACKS, session:!!this.s.session };
   }
 }
-module.exports={Engine,initial,migrate,hostOf,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS,IDLE_GRACE_MS,AWAY_ARM_MS,SESSION_MODES};
+module.exports={Engine,initial,migrate,hostOf,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS,IDLE_GRACE_MS,AWAY_ARM_MS,SESSION_MODES,CLOSE_ACTIONS};

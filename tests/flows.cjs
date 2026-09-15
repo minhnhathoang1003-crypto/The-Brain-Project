@@ -57,6 +57,11 @@ async function showOverlay(app){
 }
 async function visible(app){return app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().some(w=>w.webContents.getURL().includes('overlay.html')&&w.isVisible()));}
 async function closeMain(app){
+  // Từ 0.8.1, bấm X có HAI nghĩa và người dùng tự chọn. Bài này kiểm nhánh "Thoát hẳn":
+  // thoát thật, mã thoát 0, dữ liệu còn nguyên khi mở lại. Nhánh "Thu nhỏ xuống khay"
+  // nằm ở tests/tray.cjs. Phải chọn trước, vì nếu chưa chọn thì ứng dụng sẽ hỏi — và
+  // một hộp thoại thật sẽ treo tiến trình chính cho tới khi có người bấm.
+  await app.evaluate(()=>{global.__brainEngine.action('settings',{closeAction:'quit'});});
   const child=app.process();
   const exit=new Promise((resolve,reject)=>{
     const timeout=setTimeout(()=>reject(Error('Ứng dụng chưa thoát sau khi đóng cửa sổ chính')),5000);

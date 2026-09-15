@@ -39,7 +39,6 @@ function ruleStrip(m){
 }
 
 function readyView(){
-  const idleMinutes=state.idleSeconds/60;
   // Website và ứng dụng là hai loại khác nhau: một cái do tiện ích chặn và sống
   // sót khi app tắt, một cái cần app đang chạy. Trộn chung một danh sách thì
   // người dùng không thấy được ranh giới đó.
@@ -53,19 +52,19 @@ function readyView(){
       <div class="label">Đang mở</div>
       ${openGrants().map(g=>`<div class="open-row"><span class="domain">${esc(g.name||g.domain||g.targetId)}</span><b class="open-left" data-left="${esc(g.targetId)}">${mmss(g.until-state.now)}</b><button class="ghost small" data-action="endGrant" data-id="${esc(g.targetId)}">Kết thúc</button></div>`).join('')}
       <button class="ghost big" data-action="endAll">Kết thúc tất cả</button>
-      <p class="note">Vẫn đổi được credit cho mục khác ở cột bên — ví dụ mở trình duyệt rồi mở tiếp website bên trong. Hết giờ là chặn lại. Không tập trung được khi còn mục đang mở.</p>
+
     </div>`:`
     <div class="chips">${state.presets.map(m=>`<button class="chip-btn ${!custom&&minutes===m?'on':''}" data-preset="${m}">${m} phút</button>`).join('')}<button class="chip-btn ${custom?'on':''}" data-preset="custom">Khác</button>${custom?`<input id="custom" class="field narrow" type="number" min="1" max="180" value="${minutes}" aria-label="Số phút tập trung">`:''}</div>
     ${ruleStrip(minutes)}
     <div class="mode-pick">
-      <button class="mode-btn ${sessionMode==='onscreen'?'on':''}" data-mode="onscreen">Trên máy</button>
-      <button class="mode-btn ${sessionMode==='away'?'on':''}" data-mode="away">Ngoài máy</button>
+      <button class="mode-btn ${sessionMode==='onscreen'?'on':''}" data-mode="onscreen"
+        title="Tính giờ khi bạn đang dùng máy. Rời máy quá lâu thì ứng dụng hỏi lại trước khi huỷ.">Trên máy</button>
+      <button class="mode-btn ${sessionMode==='away'?'on':''}" data-mode="away"
+        title="Cho việc không cần máy tính. Tính giờ bằng thời gian màn hình bị khoá — bắt đầu xong, nhấn Win+L.">Ngoài máy</button>
     </div>
-    ${sessionMode==='away'
-      ? '<p class="mode-note">Tính giờ bằng thời gian <b>màn hình bị khoá</b>. Bắt đầu xong, nhấn <b>Win+L</b>.</p>'
-      : ''}
+
     <button class="primary big" data-action="start">Bắt đầu tập trung<b id="start-label">${minutes} phút</b></button>
-    <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>`}
+`}
     <button class="week" id="open-stats" aria-label="Xem thống kê đầy đủ" title="Thống kê (Ctrl+Shift+T)">
       <div class="week-bars">${(()=>{const days=lastDays(7),peak=Math.max(25,...days.map(d=>d.minutes));
         return days.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
@@ -150,8 +149,7 @@ function focusView(){
     const con=Math.max(0,Math.ceil((s.armedUntil-state.now)/1000));
     return `<section class="pane left">
       <div class="stack"><div class="label">Chờ bạn khoá máy</div><div class="figure" id="timer">${con}</div><div class="unit">giây nữa là huỷ</div></div>
-      <div class="warn"><b>Nhấn Win+L để khoá màn hình.</b><br>Phiên ngoài máy tính giờ bằng thời gian máy bị khoá — đó là thứ ứng dụng kiểm chứng được, thay vì tin lời khai.</div>
-      <p class="note">Khoá xong, đồng hồ bắt đầu chạy. Mở khoá trước khi hết giờ là mất toàn bộ credit của phiên.</p>
+      <div class="warn"><b>Nhấn Win+L để khoá màn hình.</b><br>Mở khoá trước khi hết giờ là mất toàn bộ credit của phiên.</div>
       <button class="ghost big" data-action="cancel">Dừng phiên</button>
     </section>`;
   }
@@ -605,6 +603,11 @@ function tabApp(){
   return `${updateView()}
   <div class="set-row"><div><b>Góp ý</b><p>Kẹt ở đâu, thấy chỗ nào khó hiểu, hay muốn xin thêm tính năng — nói thẳng với tác giả. Ứng dụng không thu thập gì về bạn, nên đây là cách duy nhất tôi biết được điều gì đang không ổn.</p></div>
     <div class="actions start"><button class="ghost small" data-system="feedbackIssues">Mở GitHub</button><button class="primary small" data-system="feedbackEmail">Gửi email</button></div></div>
+  <div class="set-row"><div><b>Khi bấm dấu X</b><p>Chặn ứng dụng và game chỉ hoạt động khi ứng dụng còn chạy. Thu nhỏ xuống khay thì nó vẫn chặn; thoát hẳn thì không. <b>Chặn website không bị ảnh hưởng</b> — tiện ích tự giữ danh sách.</p></div>
+    ${state.system.packaged||state.closeAction?`<div class="seg">
+      <button data-close-action="tray" class="${state.closeAction==='tray'?'on':''}">Thu nhỏ xuống khay</button>
+      <button data-close-action="quit" class="${state.closeAction==='quit'?'on':''}">Thoát hẳn</button>
+    </div>`:`<span class="chip">Sẽ hỏi lần đầu bạn đóng</span>`}</div>
   <div class="set-row"><div><b>Chạy cùng Windows</b><p>Lớp chặn ứng dụng và lớp phủ chỉ hoạt động khi ứng dụng đang chạy. Không bật mục này thì sau mỗi lần khởi động lại máy, chúng đơn giản là không bật cho tới khi bạn tự mở ứng dụng. <b>Chặn website thì không ảnh hưởng</b> — tiện ích tự giữ danh sách.${state.system.startup?' Khi Windows tự chạy, cửa sổ mở ra ở dạng thu nhỏ.':''}</p></div>
     ${state.system.packaged
       ? `<button class="ghost small" data-startup="${state.system.startup?'off':'on'}">${state.system.startup?'Đang bật · Tắt đi':'Bật'}</button>`
@@ -708,6 +711,7 @@ document.addEventListener('click',async e=>{
   }
   if(b.dataset.presetRemove){const gone=Number(b.dataset.presetRemove);act('settings',{presets:state.presets.filter(m=>m!==gone)});return;}
   if(b.dataset.startup){system('startup',{on:b.dataset.startup==='on'});return;}
+  if(b.dataset.closeAction){act('settings',{closeAction:b.dataset.closeAction});return;}
   if(b.dataset.blockBrowser){
     const exe=b.dataset.blockBrowser, ten=b.dataset.blockName||exe;
     ask(`Chặn ${ten}?`,

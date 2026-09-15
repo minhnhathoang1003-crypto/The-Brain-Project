@@ -1,4 +1,4 @@
-const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard,nativeTheme,Menu}=require('electron');
+const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard,nativeTheme,Menu,Tray}=require('electron');
 const fs=require('node:fs'); const path=require('node:path'); const http=require('node:http'); const crypto=require('node:crypto');
 const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,VERSION,WELCOME_CREDITS}=require('./engine.cjs');
 const {ForegroundWatcher,listWindows,uncoveredBrowser}=require('./foreground.cjs');
@@ -24,7 +24,7 @@ if(process.env.BRAIN_TEST_DIR) app.setPath('userData',process.env.BRAIN_TEST_DIR
 // chương trình lạ và hiện icon mặc định thay vì icon của shortcut.
 app.setAppUserModelId('com.humanos.brain');
 if(!app.requestSingleInstanceLock()) {app.quit();} else {
-let win,overlay,watcher,engine,server,wss,interval,updater=null,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
+let win,overlay,watcher,engine,server,wss,interval,tray=null,updater=null,bridgeError=null,quitting=false,blockedNow=null,closing={exe:'',until:0};
 // Trình duyệt mà tiện ích không với tới được, ghi lại lần đầu thấy nó lên tiền cảnh.
 let uncovered=null, uncoveredBoQua=new Set();
 const PORT=process.env.BRAIN_TEST_DIR?Number(process.env.BRAIN_TEST_PORT||47831):47831;
@@ -308,7 +308,30 @@ app.whenReady().then(()=>{
   // Windows tự chạy app với --hidden (xem system 'startup'). Thu nhỏ chứ không ẩn hẳn:
   // ứng dụng chưa có icon khay hệ thống, nên ẩn hẳn là một tiến trình vô hình — kiểu
   // phần mềm mà chính người dùng cũng không biết mình đang chạy cái gì.
-  if(process.argv.includes('--hidden')) win.once('ready-to-show',()=>win.minimize());
+  // ── Khay hệ thống ──────────────────────────────────────────────────────────
+  // Phần chặn ứng dụng và game CHỈ chạy khi ứng dụng còn chạy. Trước 0.8.1, bấm X là
+  // thoát hẳn — tức là vô hiệu hoá một tính năng Pro mà người dùng không hề biết.
+  // Có khay rồi thì đóng cửa sổ không còn đồng nghĩa với tắt bộ chặn.
+  function dungKhay(){
+    if(tray)return;
+    try{ tray=new Tray(path.join(__dirname,'../assets/icon.ico')); }
+    catch{ tray=null; return; }           // không dựng được khay thì thôi, đừng làm app chết
+    tray.setToolTip('The Brain Project');
+    const hien=()=>{if(win&&!win.isDestroyed()){win.show();if(win.isMinimized())win.restore();win.focus();}};
+    tray.on('click',hien);
+    tray.on('double-click',hien);
+    tray.setContextMenu(Menu.buildFromTemplate([
+      {label:'Mở The Brain Project',click:hien},
+      {type:'separator'},
+      // Thoát từ khay là lối ra thật, không phải lối tắt trốn phiên tập trung: nó đi
+      // qua đúng cửa sổ close nên vẫn hỏi lại nếu đang có phiên đang chạy.
+      {label:'Thoát',click:()=>{if(win&&!win.isDestroyed())win.close();else app.quit();}},
+    ]));
+  }
+  dungKhay();
+  // Có khay rồi thì ẩn hẳn mới là đúng: ứng dụng vẫn nhìn thấy được ở khay, không phải
+  // một tiến trình vô hình. Trước đây phải thu nhỏ vì chưa có chỗ nào để tìm lại nó.
+  if(process.argv.includes('--hidden')) win.once('ready-to-show',()=>win.hide());
   nativeTheme.on('updated',()=>{if(win&&!win.isDestroyed()){
     win.setBackgroundColor(windowBackground());
     // Ba nút cửa sổ do Windows vẽ, nên chính ứng dụng phải báo màu mới cho nó —
@@ -317,7 +340,30 @@ app.whenReady().then(()=>{
   }});
   win.loadFile(path.join(__dirname,'ui/index.html'));
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',e=>e.preventDefault());
-  win.on('close',e=>{if(engine.s.session&&!quitting){const choice=dialog.showMessageBoxSync(win,{type:'question',buttons:['Tiếp tục tập trung','Đóng và hủy phiên'],defaultId:0,cancelId:0,message:'Đóng ứng dụng sẽ hủy phiên và không cộng credit.'});if(choice===0)e.preventDefault();else{engine.stop('Đóng ứng dụng');quitting=true;}}});
+  win.on('close',e=>{
+    // Bước 1: đang có phiên thì hỏi trước, y như cũ. Thu nhỏ xuống khay KHÔNG hỏi —
+    // phiên vẫn chạy bình thường, không mất gì.
+    const xuongKhay=()=>tray&&engine.s.closeAction==='tray';
+    if(engine.s.session&&!quitting&&!xuongKhay()){
+      const choice=dialog.showMessageBoxSync(win,{type:'question',buttons:['Tiếp tục tập trung','Đóng và hủy phiên'],defaultId:0,cancelId:0,message:'Đóng ứng dụng sẽ hủy phiên và không cộng credit.'});
+      if(choice===0){e.preventDefault();return;}
+      engine.stop('Đóng ứng dụng');quitting=true;
+    }
+    if(quitting||!tray)return;
+
+    // Bước 2: chưa từng chọn thì hỏi một lần, rồi nhớ. Không hỏi lại mỗi lần đóng —
+    // hỏi đi hỏi lại một câu người dùng đã trả lời là cách nhanh nhất để họ bực.
+    if(!engine.s.closeAction){
+      const chon=dialog.showMessageBoxSync(win,{type:'question',
+        buttons:['Thu nhỏ xuống khay','Thoát hẳn'],defaultId:0,cancelId:0,
+        title:'Khi bấm dấu X thì làm gì?',
+        message:'Bấm X thì thu nhỏ xuống khay hay thoát hẳn?',
+        detail:'Chặn ứng dụng và game chỉ hoạt động khi The Brain Project còn chạy. Thu nhỏ xuống khay thì nó vẫn chặn; thoát hẳn thì không.\n\nChặn website không bị ảnh hưởng — tiện ích trình duyệt tự giữ danh sách.\n\nĐổi lại bất cứ lúc nào trong ⚙ → Ứng dụng.'});
+      engine.action('settings',{closeAction:chon===0?'tray':'quit'});
+      broadcast();
+    }
+    if(engine.s.closeAction==='tray'){e.preventDefault();win.hide();}
+  });
   // Chỉ thoát sau khi cửa sổ chính thực sự đóng: lựa chọn tiếp tục tập trung vẫn được tôn trọng.
   win.on('closed',()=>{win=null;app.quit();});
   // Khoá màn hình và máy ngủ có Ý NGHĨA NGƯỢC NHAU ở hai loại phiên.
@@ -398,5 +444,5 @@ app.whenReady().then(()=>{
   },1000);
 });
 app.on('window-all-closed',()=>app.quit());
-app.on('before-quit',()=>{quitting=true;clearInterval(interval);watcher?.stop();if(engine)engine.stop('Ứng dụng đã thoát');if(wss)for(const ws of wss.clients)ws.close();server?.close();});
+app.on('before-quit',()=>{quitting=true;tray?.destroy();tray=null;clearInterval(interval);watcher?.stop();if(engine)engine.stop('Ứng dụng đã thoát');if(wss)for(const ws of wss.clients)ws.close();server?.close();});
 }

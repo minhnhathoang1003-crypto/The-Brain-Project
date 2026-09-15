@@ -98,7 +98,11 @@ async function doiChinh(app,dieu,han=10000){
 
     // ── §4 Phiên ngoài máy: chưa khoá thì chưa tính giờ ────────────────────
     await page.locator('[data-mode="away"]').click();
-    await page.getByText(/màn hình bị khoá/).waitFor();
+    await page.locator('[data-mode="away"].on').waitFor();
+    // Lời giải thích nằm ở tooltip chứ không còn là một dòng chữ thường trực: màn hình
+    // sau khi bắt đầu đã nói đúng việc cần làm, ngay lúc cần làm. Nhưng nó phải CÒN ở
+    // đâu đó — người lần đầu thấy hai nút này cần biết chúng khác nhau chỗ nào.
+    assert.match(await page.locator('[data-mode="away"]').getAttribute('title'),/màn hình bị khoá/);
     await page.getByRole('button',{name:/Bắt đầu tập trung/}).click();
     await page.getByText(/Nhấn Win\+L/).waitFor();
     s=(await doc(page)).session;
