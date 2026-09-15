@@ -1,4 +1,4 @@
-const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard,nativeTheme}=require('electron');
+const {app,BrowserWindow,ipcMain,powerMonitor,safeStorage,dialog,shell,clipboard,nativeTheme,Menu}=require('electron');
 const fs=require('node:fs'); const path=require('node:path'); const http=require('node:http'); const crypto=require('node:crypto');
 const {WebSocketServer,WebSocket}=require('ws'); const {Engine,initial,migrate,VERSION,WELCOME_CREDITS}=require('./engine.cjs');
 const {ForegroundWatcher,listWindows,uncoveredBrowser}=require('./foreground.cjs');
@@ -188,6 +188,35 @@ app.whenReady().then(()=>{
   function verify(event){if(!fromWindow(event,win))throw Error('Không được phép.');}
   ipcMain.handle('state',e=>{verify(e);return snapshot();});
   ipcMain.handle('listApps',async e=>{verify(e);return listWindows();});
+  // Menu chuột phải do CHÍNH WINDOWS vẽ, không phải một cái div giả trong HTML.
+  //
+  // Menu tự vẽ bằng HTML luôn sai một thứ gì đó: không tràn ra ngoài cửa sổ được, không
+  // theo chủ đề hệ thống, không nghe phím mũi tên, và ở chế độ tương phản cao thì trông
+  // như một hộp lạ. Menu.popup() là thứ người dùng Windows đã quen từ mọi ứng dụng khác.
+  //
+  // Mọi mục ở đây chỉ là lối tắt tới lệnh ĐÃ CÓ. Không có lệnh nào chỉ tồn tại trong
+  // menu chuột phải — giấu tính năng sau chuột phải là tối giản sai chỗ.
+  ipcMain.handle('contextMenu',(e,kind,payload)=>{
+    verify(e);
+    if(kind!=='target')return;
+    const id=String(payload?.id||'');
+    const t=engine.s.targets.find(x=>x.id===id);
+    if(!t)return;
+    const ten=t.domain||t.name||t.exe;
+    const khoa=!!engine.s.lockUntil&&engine.s.lockUntil>Date.now();
+    const dangMo=engine.s.grants.some(g=>g.targetId===id&&g.until>Date.now());
+    const chay=(type,p)=>{try{engine.action(type,p);broadcast();}
+      catch(err){if(win&&!win.isDestroyed())win.webContents.send('activation',{ok:false,message:err.message});}};
+
+    const muc=[];
+    for(const phut of engine.snapshot().packs.slice(0,3))
+      muc.push({label:`Mở ${phut} phút`,enabled:!khoa&&!engine.s.session&&!dangMo&&engine.s.credits>=phut,
+        click:()=>chay('redeem',{id,minutes:phut})});
+    if(dangMo)muc.push({type:'separator'},{label:'Kết thúc lượt mở',click:()=>chay('endGrant',{id})});
+    muc.push({type:'separator'},
+      {label:`Bỏ chặn ${ten}`,enabled:!khoa,click:()=>chay('targetDelete',{id})});
+    Menu.buildFromTemplate(muc).popup({window:win});
+  });
   ipcMain.handle('action',(e,type,p)=>{try{
     // Lớp phủ chỉ được đổi credit cho đúng ứng dụng đang che, không có quyền của cửa sổ chính.
     const fromOverlay=fromWindow(e,overlay);
@@ -199,7 +228,7 @@ app.whenReady().then(()=>{
       throw Error('Kết nối tiện ích trình duyệt trước khi đổi credit.');
     engine.action(type,p);
     if(fromOverlay)hideOverlay();
-    if(type==='settings'&&p.theme!==undefined){nativeTheme.themeSource=engine.s.theme;if(win&&!win.isDestroyed())win.setBackgroundColor(windowBackground());}
+    if(type==='settings'&&p.theme!==undefined){nativeTheme.themeSource=engine.s.theme;if(win&&!win.isDestroyed()){win.setBackgroundColor(windowBackground());try{win.setTitleBarOverlay(titleBarOverlay());}catch{}}}
     broadcast();return {ok:true,state:snapshot()};
   }catch(err){return {ok:false,error:err.message};}});
   ipcMain.handle('system',async(e,type,payload)=>{verify(e);
@@ -266,12 +295,26 @@ app.whenReady().then(()=>{
       const result=await dialog.showMessageBox(win,{type:'warning',buttons:['Giữ dữ liệu','Xóa toàn bộ'],defaultId:0,cancelId:0,message:'Xóa credit, danh sách chặn và mã ghép nối?',detail:'Không thể hoàn tác. Tiện ích sẽ ngắt ghép nối và bỏ chặn; bạn cần ghép lại nếu muốn sử dụng tiếp.'});if(result.response===1){if(wss)for(const ws of wss.clients){if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({reset:true,targets:[],grants:[]}));ws.close();}engine.s=initial();save(engine.s);for(const suffix of ['.backup','.tmp'])fs.rmSync(dataFile+suffix,{force:true});broadcast();return {ok:true,message:'Đã xóa dữ liệu.'};}return {ok:true};}
     throw Error('Thao tác không hợp lệ.');
   });
-  win=new BrowserWindow({width:1000,height:720,minWidth:520,minHeight:600,icon:path.join(__dirname,'../assets/icon.png'),backgroundColor:windowBackground(),title:'The Brain Project',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  // Thanh tiêu đề gộp vào nội dung. Trước 0.8.0 có HAI thanh chồng nhau: thanh của
+  // Windows (tên + nút cửa sổ) và thanh .bar của ứng dụng (logo + tên + trạng thái +
+  // nút ⚙). Cùng một cái tên hiện hai lần, và mất 90px chiều cao cho phần trang trí.
+  //
+  // titleBarOverlay để CHÍNH WINDOWS vẽ ba nút thu nhỏ/phóng to/đóng — không tự vẽ
+  // lại bằng HTML. Nút tự vẽ luôn sai một thứ gì đó: vùng snap khi kéo lên mép trên,
+  // menu chuột phải của cửa sổ, hành vi ở chế độ tương phản cao, kích thước theo DPI.
+  const titleBarOverlay=()=>({color:windowBackground(),
+    symbolColor:nativeTheme.shouldUseDarkColors?'#f2f2f2':'#0b0b0b',height:48});
+  win=new BrowserWindow({width:1000,height:720,minWidth:520,minHeight:600,icon:path.join(__dirname,'../assets/icon.png'),backgroundColor:windowBackground(),title:'The Brain Project',autoHideMenuBar:true,titleBarStyle:'hidden',titleBarOverlay:titleBarOverlay(),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   // Windows tự chạy app với --hidden (xem system 'startup'). Thu nhỏ chứ không ẩn hẳn:
   // ứng dụng chưa có icon khay hệ thống, nên ẩn hẳn là một tiến trình vô hình — kiểu
   // phần mềm mà chính người dùng cũng không biết mình đang chạy cái gì.
   if(process.argv.includes('--hidden')) win.once('ready-to-show',()=>win.minimize());
-  nativeTheme.on('updated',()=>{if(win&&!win.isDestroyed())win.setBackgroundColor(windowBackground());});
+  nativeTheme.on('updated',()=>{if(win&&!win.isDestroyed()){
+    win.setBackgroundColor(windowBackground());
+    // Ba nút cửa sổ do Windows vẽ, nên chính ứng dụng phải báo màu mới cho nó —
+    // thiếu dòng này thì sang chủ đề tối là nút đen nằm trên nền đen.
+    try{win.setTitleBarOverlay(titleBarOverlay());}catch{}
+  }});
   win.loadFile(path.join(__dirname,'ui/index.html'));
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',e=>e.preventDefault());
   win.on('close',e=>{if(engine.s.session&&!quitting){const choice=dialog.showMessageBoxSync(win,{type:'question',buttons:['Tiếp tục tập trung','Đóng và hủy phiên'],defaultId:0,cancelId:0,message:'Đóng ứng dụng sẽ hủy phiên và không cộng credit.'});if(choice===0)e.preventDefault();else{engine.stop('Đóng ứng dụng');quitting=true;}}});

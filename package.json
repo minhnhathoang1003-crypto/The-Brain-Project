@@ -12,6 +12,7 @@
     "test:free": "node tests/free.cjs",
     "test:stats": "node tests/stats.cjs",
     "test:away": "node tests/away.cjs",
+    "test:shell": "node tests/shell.cjs",
     "test:protocol": "node tests/protocol.cjs",
     "test:browser": "node tests/browser.cjs",
     "test:browser:redeem": "node tests/browser-redeem.cjs",

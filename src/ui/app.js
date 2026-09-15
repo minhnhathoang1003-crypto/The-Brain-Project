@@ -66,7 +66,7 @@ function readyView(){
       : ''}
     <button class="primary big" data-action="start">Bắt đầu tập trung<b id="start-label">${minutes} phút</b></button>
     <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>`}
-    <button class="week" id="open-stats" aria-label="Xem thống kê đầy đủ">
+    <button class="week" id="open-stats" aria-label="Xem thống kê đầy đủ" title="Thống kê (Ctrl+Shift+T)">
       <div class="week-bars">${(()=>{const days=lastDays(7),peak=Math.max(25,...days.map(d=>d.minutes));
         return days.map(d=>`<div class="week-day ${d.today?'now':''}" title="${d.day}: ${d.minutes} phút">
           <div class="week-track"><i style="height:${d.minutes?Math.max(6,Math.round(d.minutes/peak*100)):0}%"></i></div>
@@ -134,7 +134,7 @@ function proNote(text){
 
 function siteRow(t){
   const label=t.domain||t.name||t.exe;
-  return `<div class="row"><span class="mark">${t.exe?'▣':esc(label[0].toUpperCase())}</span><span class="domain" title="${esc(t.exe?t.exe+'.exe':label)}">${esc(label)}</span>
+  return `<div class="row" data-target-id="${esc(t.id)}"><span class="mark">${t.exe?'▣':esc(label[0].toUpperCase())}</span><span class="domain" title="${esc(t.exe?t.exe+'.exe':label)}">${esc(label)}</span>
   ${grantFor(t.id)
     ? `<b class="open-left" data-left="${esc(t.id)}">${mmss(grantFor(t.id).until-state.now)}</b><button class="ghost small" data-action="endGrant" data-id="${esc(t.id)}">Kết thúc</button>`
     : `<select class="field mins" id="m-${esc(t.id)}" aria-label="Số phút mở ${esc(t.domain||t.name)}">${state.packs.map(n=>`<option value="${n}" ${n===5?'selected':''}>${n} phút</option>`).join('')}</select>
@@ -643,7 +643,12 @@ function render(){
   else document.documentElement.dataset.theme=state.theme;
   if(!custom&&!state.presets.includes(minutes))minutes=state.presets[0];
   const connected=state.system.extensionConnected;
-  $('#status').textContent=connected?`Đang chặn ${state.targets.length} website`:'Chưa chặn được website nào';
+  // Cửa sổ hẹp giấu chữ đi, chỉ còn chấm trạng thái — title giữ lại nội dung đầy đủ
+  // cho cả người rê chuột lẫn trình đọc màn hình. Giấu mà không có cách nào biết là
+  // tối giản sai chỗ.
+  const trangThai=connected?`Đang chặn ${state.targets.length} website`:'Chưa chặn được website nào';
+  $('#status').textContent=trangThai;
+  $('#status').title=trangThai;
   $('#status').classList.toggle('on',connected);
   const gate=!state.paired;
   $('#main').className=gate||state.session?'stage':'split';
@@ -758,6 +763,40 @@ window.brain.onState(s=>{
 });
 // Kích hoạt bằng link: mở thẳng mục Bản quyền để người dùng nhìn thấy kết quả,
 // thay vì một dòng toast trôi qua rồi thôi.
+// ── Phím tắt ────────────────────────────────────────────────────────────────
+// Chỉ ba phím, và cả ba đều là lối tắt tới thứ ĐÃ CÓ nút. Không thêm phím cho vui:
+// phím tắt không ai biết là phím tắt không tồn tại, nên mỗi phím ở đây đều được ghi
+// trong tooltip của chính cái nút mà nó thay thế.
+//
+//   Ctrl+,        Cài đặt        — quy ước chung của ứng dụng trên Windows
+//   Ctrl+Shift+T  Thống kê
+//   Escape        đóng hộp thoại — <dialog> của trình duyệt lo sẵn, không cần viết
+document.addEventListener('keydown',e=>{
+  if(!e.ctrlKey||e.altKey)return;
+  const dang=document.querySelector('dialog[open]');
+  if(e.key===','&&!e.shiftKey){
+    e.preventDefault();
+    if(dang&&dang.id==='setup')return;
+    dang?.close();
+    $('#setup-body').innerHTML=setupView();$('#setup').showModal();
+    return;
+  }
+  if(e.shiftKey&&(e.key==='T'||e.key==='t')){
+    e.preventDefault();
+    if(dang&&dang.id==='stats')return;
+    dang?.close();
+    statsRange=7;$('#stats-body').innerHTML=statsView();$('#stats').showModal();
+  }
+});
+
+// ── Menu chuột phải trên từng mục bị chặn ───────────────────────────────────
+document.addEventListener('contextmenu',e=>{
+  const row=e.target.closest('.row[data-target-id]');
+  if(!row)return;
+  e.preventDefault();
+  window.brain.contextMenu('target',{id:row.dataset.targetId});
+});
+
 window.brain.onActivation(r=>{
   toast(r.message);
   if(!r.ok)return;
