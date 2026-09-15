@@ -4,6 +4,16 @@
 // nếu hai nơi lệch nhau, nên không thể quên cập nhật chỗ này.
 // Chạy lại bằng: node scripts/changelog.cjs
 const CHANGELOG=[
+  {v:"0.8.0", items:[
+    "<b>Rời máy quá lâu không còn bị huỷ phiên ngay lập tức.</b> Trước đây chạm ngưỡng là mất phiên, không báo trước — đọc một bài dài trên màn hình năm phút không chạm chuột cũng đủ mất sạch. Nay ứng dụng hỏi *\"Bạn còn ở đó không?\"* và đếm ngược 60 giây. Chạm phím hoặc chuột là tiếp tục; không có nút nào phải bấm.",
+    "<b>Phiên ngoài máy — tập trung cho việc không cần máy tính.</b> Chọn *Ngoài máy* trước khi bắt đầu, rồi khoá màn hình bằng <code>Win+L</code>. Ứng dụng tính giờ bằng <b>thời gian máy bị khoá</b>, nên đọc sách hay học bài cũng kiếm được credit đúng tỉ lệ 5 phút = 1 credit như mọi phiên khác. Mở khoá trước khi hết giờ là mất toàn bộ credit của phiên. Máy ngủ giữa chừng thì không sao — máy ngủ là bằng chứng rõ hơn rằng bạn không dùng nó.",
+    "<b>Một thanh tiêu đề thay vì hai.</b> Trước đây thanh của Windows và thanh của ứng dụng chồng lên nhau, cùng hiện logo và tên, chiếm mất gần 90 điểm ảnh chiều cao cho phần trang trí. Ba nút thu nhỏ, phóng to, đóng vẫn do chính Windows vẽ như mọi ứng dụng khác.",
+    "<b>Ba phím tắt:</b> <code>Ctrl+,</code> mở Cài đặt, <code>Ctrl+Shift+T</code> mở Thống kê, <code>Esc</code> đóng hộp thoại. Phím được ghi ngay trong chú thích của nút tương ứng.",
+    "<b>Bấm chuột phải vào một mục bị chặn</b> để mở nhanh, kết thúc lượt mở, hoặc bỏ chặn. Menu do Windows vẽ, không phải hộp giả trong ứng dụng.",
+    "<b>Đi bằng bàn phím thấy rõ mình đang ở đâu.</b> Trước đây gần như không có viền báo vị trí; nay mọi thứ bấm được đều có.",
+    "<b>Sửa: cửa sổ nửa màn hình bị cắt ngang.</b> Kéo ứng dụng về nửa màn hình thì hai cột xếp chồng nhau nhưng mỗi cột lại tự cuộn riêng, cắt đôi nội dung đúng chỗ giáp ranh. Nay cuộn liền một mạch.",
+    "<b>Cửa sổ rất rộng không kéo dài chữ hết cỡ nữa,</b> và cửa sổ hẹp thì nhãn trạng thái thu gọn về một chấm — nội dung đầy đủ vẫn còn khi rê chuột.",
+  ]},
   {v:"0.7.9", items:[
     "<b>Mục Bộ chặn im lặng khi mọi thứ đang chạy.</b> Trước đây mở ⚙ → Bộ chặn ra là bị dạy lại cách cài tiện ích — kèm nút đen \"Sao chép mã ghép nối\" to nhất màn hình — dù tiện ích đã chạy ngon từ lâu. Nay khi đang chạy, mục này chỉ còn một dòng: đang chặn bao nhiêu website và tiện ích bản nào. Các bước cài gập lại sau dòng *Cài tiện ích trên trình duyệt khác, hoặc ghép nối lại* — vẫn ở đó vì hai việc ấy có thật, chỉ là hiếm. Rớt kết nối thì các bước hiện ra ngay, không bắt bạn đi tìm.",
     "<b>Bỏ một nút bấm thừa.</b> Khi chưa kết nối, phần nạp tiện ích thủ công lặp lại đúng nút *Sao chép mã ghép nối* đã có ngay phía trên. Hai nút y hệt trên cùng một bảng chỉ làm người ta phân vân không biết chúng có khác nhau không.",

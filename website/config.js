@@ -5,8 +5,8 @@ window.SITE_CONFIG = {
   // Link tải file cài đặt. Để trống thì nút Tải về biến thành nút cuộn xuống
   // phần hướng dẫn cài từ mã nguồn — trang không bao giờ có link chết.
   // Sau khi tạo GitHub Release, dán link dạng:
-  // https://github.com/<tên-bạn>/the-brain-project/releases/download/v0.7.8/The-Brain-Project-Setup-0.7.8.exe
-  downloadUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project/releases/download/v0.7.8/The-Brain-Project-Setup-0.7.8.exe',
+  // https://github.com/<tên-bạn>/the-brain-project/releases/download/v0.8.0/The-Brain-Project-Setup-0.8.0.exe
+  downloadUrl: 'https://github.com/minhnhathoang1003-crypto/The-Brain-Project/releases/download/v0.8.0/The-Brain-Project-Setup-0.8.0.exe',
 
   // Endpoint nhận email danh sách chờ (Formspree, Getform, Basin...).
   // Để trống thì cả khối đăng ký email được ẩn đi.
@@ -14,9 +14,9 @@ window.SITE_CONFIG = {
   // Link có dạng: https://formspree.io/f/xxxxxxxx
   formEndpoint: 'https://formspree.io/f/mljeokde',
 
-  version: '0.7.8',
+  version: '0.8.0',
   fileSize: '107 MB',
-  sha256: '35A8E91036826ACE1E11224CBF57C798B7ED324F790C10341F0F96836E658946',
+  sha256: 'B89435679F800576CB5423D153153CEA657A78C566D5DDD465C49B80408A5797',
 
   // Link trang tiện ích trên Chrome Web Store. Để trống thì phần Cài đặt giữ nguyên
   // hướng dẫn nạp thủ công (Developer mode → Load unpacked); điền vào thì nó tự đổi
