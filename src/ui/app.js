@@ -57,6 +57,13 @@ function readyView(){
     </div>`:`
     <div class="chips">${state.presets.map(m=>`<button class="chip-btn ${!custom&&minutes===m?'on':''}" data-preset="${m}">${m} phút</button>`).join('')}<button class="chip-btn ${custom?'on':''}" data-preset="custom">Khác</button>${custom?`<input id="custom" class="field narrow" type="number" min="1" max="180" value="${minutes}" aria-label="Số phút tập trung">`:''}</div>
     ${ruleStrip(minutes)}
+    <div class="mode-pick">
+      <button class="mode-btn ${sessionMode==='onscreen'?'on':''}" data-mode="onscreen">Trên máy</button>
+      <button class="mode-btn ${sessionMode==='away'?'on':''}" data-mode="away">Ngoài máy</button>
+    </div>
+    ${sessionMode==='away'
+      ? '<p class="mode-note">Tính giờ bằng thời gian <b>màn hình bị khoá</b>. Bắt đầu xong, nhấn <b>Win+L</b>.</p>'
+      : ''}
     <button class="primary big" data-action="start">Bắt đầu tập trung<b id="start-label">${minutes} phút</b></button>
     <p class="note">Chỉ nhận credit khi hoàn tất trọn phiên. Dừng giữa chừng, đóng ứng dụng, khóa máy hoặc rời máy quá ${idleMinutes} phút thì mất toàn bộ credit của phiên.</p>`}
     <button class="week" id="open-stats" aria-label="Xem thống kê đầy đủ">
@@ -136,8 +143,27 @@ function siteRow(t){
 }
 function focusView(){
   const s=state.session,goal=creditsFor(s.durationMs/60000);
+  const away=s.mode==='away';
+
+  // Phiên ngoài máy chưa khoá màn hình: chưa có gì để đếm ngược. Nói thẳng việc cần làm.
+  if(away&&!s.lockedAt){
+    const con=Math.max(0,Math.ceil((s.armedUntil-state.now)/1000));
+    return `<section class="pane left">
+      <div class="stack"><div class="label">Chờ bạn khoá máy</div><div class="figure" id="timer">${con}</div><div class="unit">giây nữa là huỷ</div></div>
+      <div class="warn"><b>Nhấn Win+L để khoá màn hình.</b><br>Phiên ngoài máy tính giờ bằng thời gian máy bị khoá — đó là thứ ứng dụng kiểm chứng được, thay vì tin lời khai.</div>
+      <p class="note">Khoá xong, đồng hồ bắt đầu chạy. Mở khoá trước khi hết giờ là mất toàn bộ credit của phiên.</p>
+      <button class="ghost big" data-action="cancel">Dừng phiên</button>
+    </section>`;
+  }
+
+  // Cảnh báo vắng mặt: đếm ngược tới lúc huỷ. Chạm phím bất kỳ là tự tắt.
+  const canhBao=!away&&s.warnUntil
+    ? `<div class="warn"><b>Bạn còn ở đó không?</b> Phiên sẽ huỷ sau <b id="idle-left">${Math.max(0,Math.ceil((s.warnUntil-state.now)/1000))}</b> giây nếu không có thao tác nào.<br>Chạm phím hoặc chuột là tiếp tục — không cần bấm gì ở đây.</div>`
+    : '';
+
   return `<section class="pane left">
-    <div class="stack"><div class="label">Đang tập trung</div><div class="figure" id="timer">${mmss(s.durationMs-s.elapsedMs)}</div><div class="unit">còn lại</div></div>
+    <div class="stack"><div class="label">${away?'Đang tập trung ngoài máy':'Đang tập trung'}</div><div class="figure" id="timer">${mmss(s.durationMs-s.elapsedMs)}</div><div class="unit">còn lại</div></div>
+    ${canhBao}
     <div class="progress"><i id="bar"></i></div>
     <div class="earning">
       <div class="earning-top"><span class="earning-now" id="earning">${earned(s)}</span><span class="earning-goal">/ ${goal} credit</span></div>
@@ -392,6 +418,11 @@ function tabLicense(){ return licenseView()+plansView(); }
 // phải thứ chỉnh một lần rồi thôi. Mở bằng cách bấm vào dải bảy ngày.
 // Khoảng thời gian đang xem trong màn hình Thống kê. Giữ ngoài render để chuyển
 // khoảng không làm mất chỗ cuộn.
+// Loại phiên sắp bắt đầu. Cố ý chọn TRƯỚC khi bấm bắt đầu, không phải giữa phiên:
+// một nút "tôi đang làm việc ngoài máy" xuất hiện giữa lúc bị cám dỗ chính là bề mặt
+// hợp lý hoá mà phần mềm này tồn tại để dẹp bỏ.
+let sessionMode = 'onscreen';
+
 let statsRange = 7;
 const STATS_RANGES = [
   { n: 7,   ten: '7 ngày'   },
@@ -624,13 +655,22 @@ function render(){
 }
 function live(){
   if(!state)return;
-  const timer=$('#timer');
-  if(state.session&&timer){
-    timer.textContent=mmss(state.session.durationMs-state.session.elapsedMs);
-    const bar=$('#bar');if(bar)bar.style.width=Math.min(100,state.session.elapsedMs/state.session.durationMs*100)+'%';
-    const now=earned(state.session);
-    $('#earning').textContent=now;$('#earning-risk').textContent=now;
+  const timer=$('#timer'), ss=state.session;
+  // Phiên ngoài máy chưa khoá màn hình: đồng hồ đang đếm ngược tới lúc huỷ, không phải
+  // đếm thời gian tập trung. Ghi đè bằng mmss() ở đây là hiện sai hoàn toàn.
+  if(ss&&ss.mode==='away'&&!ss.lockedAt){
+    if(timer)timer.textContent=Math.max(0,Math.ceil((ss.armedUntil-state.now)/1000));
+  } else if(ss&&timer){
+    timer.textContent=mmss(ss.durationMs-ss.elapsedMs);
+    const bar=$('#bar');if(bar)bar.style.width=Math.min(100,ss.elapsedMs/ss.durationMs*100)+'%';
+    const now=earned(ss);
+    // Hai ô này không tồn tại ở mọi trạng thái — đừng cho rằng chúng luôn có.
+    const e1=$('#earning'),e2=$('#earning-risk');
+    if(e1)e1.textContent=now; if(e2)e2.textContent=now;
   }
+  // Đếm ngược của cảnh báo vắng mặt.
+  const il=$('#idle-left');
+  if(il&&ss&&ss.warnUntil)il.textContent=Math.max(0,Math.ceil((ss.warnUntil-state.now)/1000));
   for(const el of document.querySelectorAll('[data-left]')){
     const g=grantFor(el.dataset.left);
     if(g)el.textContent=mmss(g.until-state.now);
@@ -646,6 +686,7 @@ document.addEventListener('click',async e=>{
   if(b.id==='stats-close'){$('#stats').close();return;}
   if(b.dataset.setupTab){setupTab=b.dataset.setupTab;$('#setup-body').innerHTML=setupView();$('.setup-panel').scrollTop=0;return;}
   if(b.dataset.statsRange!==undefined){statsRange=Number(b.dataset.statsRange);$('#stats-body').innerHTML=statsView();return;}
+  if(b.dataset.mode){sessionMode=b.dataset.mode;render();return;}
   if(b.id==='add-app'){pickApp();return;}
   if(b.dataset.exe){
     $('#confirm').close();$('#confirm-yes').style.display='';
@@ -677,7 +718,7 @@ document.addEventListener('click',async e=>{
   }
   if(b.dataset.preset){custom=b.dataset.preset==='custom';if(!custom)minutes=Number(b.dataset.preset);render();$('#custom')?.focus();return;}
   const a=b.dataset.action,id=b.dataset.id;if(!a)return;
-  if(a==='start')await act('start',{minutes});
+  if(a==='start')await act('start',{minutes,mode:sessionMode});
   else if(a==='cancel')ask('Dừng phiên tập trung?',`Bạn sẽ mất ${earned(state.session)} credit đã tích lũy trong phiên này.`,()=>act('cancel'));
   else if(a==='redeem'){const m=Number(document.getElementById('m-'+id).value);
     ask(`Mở ${id} trong ${m} phút?`,`${m} credit bị trừ ngay khi xác nhận và thời gian bắt đầu tính từ lúc đó, kể cả khi bạn chưa mở website. Kết thúc sớm không hoàn credit.`,

@@ -277,8 +277,21 @@ app.whenReady().then(()=>{
   win.on('close',e=>{if(engine.s.session&&!quitting){const choice=dialog.showMessageBoxSync(win,{type:'question',buttons:['Tiếp tục tập trung','Đóng và hủy phiên'],defaultId:0,cancelId:0,message:'Đóng ứng dụng sẽ hủy phiên và không cộng credit.'});if(choice===0)e.preventDefault();else{engine.stop('Đóng ứng dụng');quitting=true;}}});
   // Chỉ thoát sau khi cửa sổ chính thực sự đóng: lựa chọn tiếp tục tập trung vẫn được tôn trọng.
   win.on('closed',()=>{win=null;app.quit();});
-  powerMonitor.on('suspend',()=>{engine.stop('Máy chuyển sang chế độ ngủ');broadcast();});
-  powerMonitor.on('lock-screen',()=>{engine.stop('Máy đã khóa màn hình');broadcast();});
+  // Khoá màn hình và máy ngủ có Ý NGHĨA NGƯỢC NHAU ở hai loại phiên.
+  //
+  //   Phiên trên máy — bạn hứa ngồi ở máy. Khoá hoặc ngủ là vi phạm, huỷ như cũ.
+  //   Phiên ngoài máy — bạn hứa RỜI máy. Khoá là điều kiện để bắt đầu tính giờ, và
+  //     máy ngủ trong lúc khoá còn là bằng chứng mạnh hơn rằng không ai đụng vào nó.
+  //
+  // Đây là chỗ duy nhất trong ứng dụng biết Windows vừa khoá hay mở khoá. Engine
+  // không tự đoán được, và người dùng thì không được phép tự khai.
+  const ngoaiMay=()=>engine.s.session&&engine.s.session.mode==='away';
+  powerMonitor.on('suspend',()=>{if(!ngoaiMay())engine.stop('Máy chuyển sang chế độ ngủ');broadcast();});
+  powerMonitor.on('lock-screen',()=>{
+    if(ngoaiMay())engine.action('screenLock'); else engine.stop('Máy đã khóa màn hình');
+    broadcast();
+  });
+  powerMonitor.on('unlock-screen',()=>{if(ngoaiMay())engine.action('screenUnlock');broadcast();});
   // ── Chặn ứng dụng Windows ──────────────────────────────────────────────────
   // Không giết tiến trình nào. Khi ứng dụng bị chặn lên tiền cảnh thì phủ một cửa sổ
   // luôn-trên-cùng lên trên nó, đúng giao diện trang chặn website. Người dùng đổi credit

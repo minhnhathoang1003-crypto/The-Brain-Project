@@ -1,5 +1,5 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
-const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES,VERSION,HISTORY_DAYS}=require('../src/engine.cjs');
+const {Engine,initial,migrate,DAY,MAX_LOCK_MINUTES,VERSION,HISTORY_DAYS,IDLE_GRACE_MS,AWAY_ARM_MS}=require('../src/engine.cjs');
 const {PLANS,tier,limits,load}=require('../src/license.cjs');
 // Từ ngày bật bán, không có bản quyền nghĩa là bậc 'free'. Phần lớn test trong file
 // này kiểm hành vi của engine chứ không kiểm ranh giới trả phí, nên đặt nền là 'pro'.
@@ -10,7 +10,121 @@ function harness(){let now=Date.now();const e=new Engine(initial(),()=>now);retu
 test('credit only after full completion; never awarded twice',()=>{const h=harness();h.e.action('start',{minutes:1});for(let i=0;i<59;i++)h.advance(1000);assert.equal(h.e.s.credits,0);h.advance(1000);assert.equal(h.e.s.credits,.2);h.advance(1000);assert.equal(h.e.s.credits,.2);assert.equal(h.e.s.lastSession.status,'completed');});
 test('exact 5:1 ratio and today counter',()=>{const h=harness();h.complete();assert.equal(h.e.s.credits,5);assert.equal(h.e.snapshot().todayMinutes,25);assert.equal(h.e.s.history[0].day,DAY());});
 test('cancellation forfeits all partial credit',()=>{const h=harness();h.e.action('start',{minutes:1});h.advance(1000);h.e.action('cancel');assert.equal(h.e.s.credits,0);assert.equal(h.e.s.session,null);assert.equal(h.e.s.lastSession.status,'interrupted');assert.throws(()=>h.e.action('cancel'));});
-test('idle, suspend gap, clock rollback and restart forfeit credit',()=>{for(const which of ['idle','gap','rollback','restart']){const h=harness();h.e.action('start',{minutes:1});if(which==='idle')h.advance(1000,300);if(which==='gap')h.advance(11000);if(which==='rollback')h.advance(-1000);if(which==='restart')h.e.recover();assert.equal(h.e.s.session,null,which);assert.equal(h.e.s.credits,0,which);}});
+test('ngủ, đồng hồ lùi và khởi động lại vẫn mất credit ngay',()=>{
+  for(const which of ['gap','rollback','restart']){
+    const h=harness();h.e.action('start',{minutes:1});
+    if(which==='gap')h.advance(11000);
+    if(which==='rollback')h.advance(-1000);
+    if(which==='restart')h.e.recover();
+    assert.equal(h.e.s.session,null,which);assert.equal(h.e.s.credits,0,which);
+  }
+});
+
+// Ứng dụng thật tick mỗi giây. advance() nhảy một phát, mà nhảy quá 10 giây là chạm
+// bộ bảo vệ "máy ngủ" — nên mọi khoảng dài phải đi từng nhịp như đời thật.
+const nhip=(h,ms,idle=0)=>{for(let i=0;i<ms;i+=1000)h.advance(1000,idle);};
+
+test('không hoạt động: CẢNH BÁO trước, chỉ huỷ khi hết thời gian ân hạn',()=>{
+  // Trước 0.8.0 chạm ngưỡng là huỷ ngay và im lặng. Đọc một bài dài trên màn hình
+  // năm phút không chạm chuột là mất cả phiên, mà chỉ biết sau khi đã mất.
+  const h=harness();h.e.action('start',{minutes:5});
+  h.advance(1000,300);                                  // chạm đúng ngưỡng
+  assert.ok(h.e.s.session,'chạm ngưỡng chưa được huỷ');
+  assert.equal(h.e.s.session.warnUntil,h.at()+IDLE_GRACE_MS,'phải đặt hạn chót để giao diện đếm ngược');
+
+  nhip(h,IDLE_GRACE_MS-2000,300);                       // vẫn vắng mặt, chưa hết ân hạn
+  assert.ok(h.e.s.session,'chưa hết ân hạn thì chưa được huỷ');
+
+  nhip(h,3000,300);                                     // hết ân hạn
+  assert.equal(h.e.s.session,null,'hết ân hạn mà vẫn vắng thì huỷ');
+  assert.match(h.e.s.lastSession.reason,/không hoạt động/);
+  assert.equal(h.e.s.credits,0);
+});
+
+test('chạm phím trở lại là cảnh báo tự tắt, không cần bấm nút nào',()=>{
+  const h=harness();h.e.action('start',{minutes:5});
+  h.advance(1000,300);
+  assert.ok(h.e.s.session.warnUntil,'đang cảnh báo');
+  h.advance(1000,0);                                    // có thao tác trở lại
+  assert.equal(h.e.s.session.warnUntil,null,'phải tự gỡ cảnh báo');
+ nhip(h,IDLE_GRACE_MS*2,0);
+  assert.ok(h.e.s.session,'đang dùng máy thì không bao giờ bị huỷ vì vắng mặt');
+});
+
+test('phiên ngoài máy: không khoá màn hình kịp thì huỷ',()=>{
+  const h=harness();h.e.action('start',{minutes:25,mode:'away'});
+  assert.equal(h.e.s.session.mode,'away');
+  assert.equal(h.e.s.session.lockedAt,null,'chưa khoá thì chưa tính giờ');
+  h.advance(AWAY_ARM_MS-1000);
+  assert.ok(h.e.s.session,'còn trong thời gian chờ khoá');
+  h.advance(2000);
+  assert.equal(h.e.s.session,null);
+  assert.match(h.e.s.lastSession.reason,/Chưa khoá màn hình/);
+});
+
+test('phiên ngoài máy: đo bằng đồng hồ khoá, ngủ giữa chừng KHÔNG mất gì',()=>{
+  // Đây là điểm khác cốt lõi với phiên trên máy. Máy ngủ trong lúc màn hình khoá là
+  // chuyện bình thường, và ngủ còn là bằng chứng MẠNH HƠN rằng không ai đụng vào máy.
+  const h=harness();h.e.action('start',{minutes:25,mode:'away'});
+  h.e.action('screenLock');
+  assert.equal(h.e.s.session.lockedAt,h.at());
+
+  h.advance(60000);                                     // một phút bình thường
+  assert.ok(h.e.s.session,'vẫn đang chạy');
+  h.advance(11*60000);                                  // khoảng nhảy lớn = máy ngủ
+  assert.ok(h.e.s.session,'phiên ngoài máy không được huỷ vì máy ngủ');
+  assert.equal(h.e.s.session.elapsedMs,12*60000,'đo bằng đồng hồ tường từ lúc khoá');
+
+  h.advance(13*60000);                                  // đủ 25 phút
+  assert.equal(h.e.s.session,null);
+  assert.equal(h.e.s.lastSession.status,'completed');
+  assert.equal(h.e.s.credits,5,'25 phút = 5 credit, đúng tỉ lệ cố định');
+});
+
+test('phiên ngoài máy: mở khoá sớm là mất sạch, đủ giờ là được cộng',()=>{
+  const som=harness();som.e.action('start',{minutes:25,mode:'away'});
+  som.e.action('screenLock');
+  som.advance(20*60000);
+  som.e.action('screenUnlock');
+  assert.equal(som.e.s.session,null);
+  assert.equal(som.e.s.credits,0,'mở khoá sớm không được cộng gì');
+  assert.match(som.e.s.lastSession.reason,/Mở khoá máy trước khi hết giờ/);
+
+  const du=harness();du.e.action('start',{minutes:25,mode:'away'});
+  du.e.action('screenLock');
+  du.advance(25*60000);
+  assert.equal(du.e.s.session,null,'đủ giờ thì hoàn tất ngay cả khi chưa mở khoá');
+  assert.equal(du.e.s.credits,5);
+});
+
+test('phiên ngoài máy KHÔNG bị ngưỡng vắng mặt đụng tới',()=>{
+  // Cả điểm của nó là bạn không ở máy. Áp ngưỡng vắng mặt vào đây là vô nghĩa.
+  const h=harness();h.e.action('start',{minutes:25,mode:'away'});
+  h.e.action('screenLock');
+  h.advance(10*60000,9999);                             // vắng mặt rất lâu
+  assert.ok(h.e.s.session,'vắng mặt là chuyện đương nhiên của phiên ngoài máy');
+  assert.equal(h.e.s.session.warnUntil,null,'không cảnh báo vắng mặt ở phiên ngoài máy');
+});
+
+test('loại phiên chỉ nhận hai giá trị, mặc định là trên máy',()=>{
+  const h=harness();
+  h.e.action('start',{minutes:1});
+  assert.equal(h.e.s.session.mode,'onscreen','không khai thì mặc định trên máy');
+  h.e.action('cancel');
+  for(const rac of ['offscreen','AWAY','',null,0,{}])
+    assert.throws(()=>h.e.action('start',{minutes:1,mode:rac}),JSON.stringify(rac));
+});
+
+test('lệnh khoá/mở khoá màn hình không đụng được vào phiên trên máy',()=>{
+  // main.cjs gọi hai lệnh này từ sự kiện của Windows. Chúng không được là lối tắt
+  // để phiên trên máy trốn ngưỡng vắng mặt.
+  const h=harness();h.e.action('start',{minutes:5});
+  h.e.action('screenLock');
+  assert.equal(h.e.s.session.lockedAt,undefined,'phiên trên máy không có đồng hồ khoá');
+  h.e.action('screenUnlock');
+  assert.ok(h.e.s.session,'không được huỷ oan');
+  assert.equal(h.e.s.credits,0);
+});
 test('redeem debits once, allows stacking another target, and expires back to blocked',()=>{
   const h=harness();h.complete();h.complete();          // 10 credit trước khi mở gì
   h.e.action('redeem',{id:'youtube.com',minutes:5});

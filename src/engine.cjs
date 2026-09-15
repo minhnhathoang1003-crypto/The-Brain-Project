@@ -4,6 +4,26 @@ const RATIO = 5;                    // 5 phút tập trung = 1 credit
 const PACKS = [1, 5, 10, 15, 30];   // các gói phút có thể đổi
 const VERSION = 8;
 const IDLE_CHOICES = [120, 300, 600, 900];
+
+// Chạm ngưỡng không hoạt động thì CẢNH BÁO trước, chờ ngần này giây rồi mới huỷ.
+// Trước 0.8.0 phiên bị huỷ ngay và im lặng — đọc một bài dài trên màn hình năm phút
+// không chạm chuột là mất cả phiên, mà chỉ biết sau khi đã mất.
+// Chạm phím bất kỳ là ngưỡng của Windows tự về 0 và cảnh báo tự tắt; không cần nút nào.
+const IDLE_GRACE_MS = 60000;
+
+// Hai loại phiên. Khác nhau ở chỗ MÁY KIỂM CHỨNG BẰNG GÌ, không phải ở lời khai.
+//   'onscreen' — bạn hứa ngồi ở máy. Kiểm bằng thao tác bàn phím/chuột.
+//   'away'     — bạn rời máy làm việc khác. Kiểm bằng MÀN HÌNH BỊ KHOÁ.
+//
+// Vì sao không có nút "tôi đang làm việc ngoài máy" giữa phiên: lời khai không kiểm
+// chứng được sẽ in ra credit, và nó xuất hiện đúng lúc người dùng đang bị cám dỗ —
+// tức đúng bề mặt hợp lý hoá mà cả phần mềm này tồn tại để dẹp bỏ. Chọn loại phiên
+// phải nằm ở LÚC BẮT ĐẦU, trước khi biết mình sẽ thèm gì.
+const SESSION_MODES = ['onscreen', 'away'];
+
+// Bắt đầu phiên ngoài máy rồi có ngần này thời gian để khoá màn hình (Win+L).
+// Không khoá thì phiên huỷ — nếu không, "ngoài máy" lại thành lời khai suông.
+const AWAY_ARM_MS = 60000;
 const THEMES = ['system', 'light', 'dark'];
 const DEFAULT_PRESETS = [25, 50, 90];
 // Quà cho lần chạy đầu tiên, để người dùng mới có sẵn ít thời gian dùng khi cần gấp.
@@ -126,17 +146,43 @@ class Engine {
     this.s.credits=round(this.s.credits+earned);
     return earned;
   }
+  // Hoàn tất phiên và cộng credit. Gọi từ tick() và từ lúc mở khoá máy.
+  finish() {
+    const s=this.s, now=this.clock();
+    const credits=this.award(s.session.durationMs/60000);
+    s.session=null; s.lastSession={status:'completed',reason:null,credits,at:now}; this.commit();
+    return credits;
+  }
   tick(idle=0) {
     const s=this.s, now=this.clock(), delta=now-this.lastTick; this.lastTick=now;
-    if(s.session) {
+    if(s.session&&s.session.mode==='away') {
+      // ── Phiên ngoài máy ────────────────────────────────────────────────────
+      // KHÔNG đo bằng delta của tick, mà bằng đồng hồ tường từ lúc khoá màn hình.
+      // Lý do: máy ngủ trong lúc khoá là chuyện bình thường, và ngủ lại còn là bằng
+      // chứng MẠNH HƠN cho việc không ai đụng vào máy. Đo bằng tick thì mỗi lần ngủ
+      // là mất thời gian đã tích, hoặc tệ hơn, bị coi là gian lận.
+      if(!s.session.lockedAt) {
+        if(now>=s.session.armedUntil)
+          this.stop(`Chưa khoá màn hình trong ${Math.round(AWAY_ARM_MS/1000)} giây. Phiên ngoài máy tính giờ bằng thời gian máy bị khoá.`);
+      } else if(now-s.session.lockedAt>=s.session.durationMs) {
+        s.session.elapsedMs=now-s.session.lockedAt;
+        this.finish();
+      } else {
+        s.session.elapsedMs=now-s.session.lockedAt;
+      }
+    } else if(s.session) {
+      // ── Phiên trên máy ─────────────────────────────────────────────────────
       if(delta<0||delta>10000) this.stop('Máy ngủ hoặc đồng hồ hệ thống thay đổi');
-      else if(idle>=s.idleSeconds) this.stop('Máy không hoạt động quá ngưỡng đã đặt');
-      else {
+      else if(idle>=s.idleSeconds) {
+        // Chạm ngưỡng: đặt hạn chót rồi cảnh báo, đừng huỷ ngay. Người đang đọc một
+        // bài dài trên màn hình vẫn đang tập trung thật.
+        if(!s.session.warnUntil) { s.session.warnUntil=now+IDLE_GRACE_MS; this.commit(); }
+        else if(now>=s.session.warnUntil) this.stop('Máy không hoạt động quá ngưỡng đã đặt');
+      } else {
+        // Có thao tác trở lại: gỡ cảnh báo. Không cần người dùng bấm gì.
+        if(s.session.warnUntil) { s.session.warnUntil=null; this.commit(); }
         s.session.elapsedMs+=delta;
-        if(s.session.elapsedMs>=s.session.durationMs) {
-          const credits=this.award(s.session.durationMs/60000);
-          s.session=null; s.lastSession={status:'completed',reason:null,credits,at:now}; this.commit();
-        }
+        if(s.session.elapsedMs>=s.session.durationMs) this.finish();
       }
     }
     if(s.grants.some(g=>g.until<=now)) { s.grants=s.grants.filter(g=>g.until>now); this.commit(); }
@@ -152,9 +198,28 @@ class Engine {
         requireThat(!open().length,'Hãy kết thúc thời gian giải trí trước khi tập trung.');
         const minutes=Number(p.minutes);
         requireThat(Number.isInteger(minutes)&&minutes>=1&&minutes<=180,'Thời lượng phải từ 1 đến 180 phút.');
-        s.session={startedAt:now,durationMs:minutes*60000,elapsedMs:0}; this.lastTick=now; break;
+        const mode=p.mode===undefined?'onscreen':String(p.mode);
+        requireThat(SESSION_MODES.includes(mode),'Loại phiên không hợp lệ.');
+        s.session={startedAt:now,durationMs:minutes*60000,elapsedMs:0,mode,warnUntil:null};
+        // Phiên ngoài máy chưa tính giờ cho tới khi màn hình bị khoá.
+        if(mode==='away'){ s.session.lockedAt=null; s.session.armedUntil=now+AWAY_ARM_MS; }
+        this.lastTick=now; break;
       }
       case 'cancel': requireThat(s.session,'Không có phiên nào đang chạy.'); this.stop('Bạn đã dừng phiên'); break;
+      // Hai lệnh dưới đây do main.cjs gọi khi Windows báo khoá/mở khoá màn hình.
+      // KHÔNG lộ ra giao diện: người dùng không tự khai được trạng thái khoá.
+      case 'screenLock': {
+        if(!s.session||s.session.mode!=='away'||s.session.lockedAt) break;
+        s.session.lockedAt=now; s.session.armedUntil=null; break;
+      }
+      case 'screenUnlock': {
+        if(!s.session||s.session.mode!=='away') break;
+        if(!s.session.lockedAt) break;                       // chưa từng khoá, chưa tính gì
+        s.session.elapsedMs=now-s.session.lockedAt;
+        if(s.session.elapsedMs>=s.session.durationMs) this.finish();
+        else this.stop('Mở khoá máy trước khi hết giờ. Phiên ngoài máy chỉ tính khi màn hình còn khoá.');
+        break;
+      }
       case 'redeem': {
         requireThat(!locked(),'Đang trong chế độ khóa. Không đổi được credit cho tới khi hết giờ khóa.');
         requireThat(!s.session,'Không thể đổi credit trong phiên tập trung.');
@@ -259,4 +324,4 @@ class Engine {
       lockUntil, now, credits:this.s.credits, packs:PACKS, session:!!this.s.session };
   }
 }
-module.exports={Engine,initial,migrate,hostOf,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS};
+module.exports={Engine,initial,migrate,hostOf,DAY,RATIO,PACKS,THEMES,VERSION,MAX_PRESETS,WELCOME_CREDITS,LOCK_PACKS,MAX_LOCK_MINUTES,HISTORY_DAYS,IDLE_GRACE_MS,AWAY_ARM_MS,SESSION_MODES};
