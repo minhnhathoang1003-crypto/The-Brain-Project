@@ -4,6 +4,12 @@
 // nếu hai nơi lệch nhau, nên không thể quên cập nhật chỗ này.
 // Chạy lại bằng: node scripts/changelog.cjs
 const CHANGELOG=[
+  {v:"0.8.1", items:[
+    "<b>Bấm dấu X không còn tắt mất bộ chặn nữa.</b> Phần chặn ứng dụng và game chỉ hoạt động khi The Brain Project còn chạy — mà trước đây bấm X là thoát hẳn, tức là bạn vô hiệu hoá một tính năng mình đã trả tiền mà không hề biết. Nay ứng dụng có biểu tượng ở khay hệ thống, và <b>lần đầu bạn đóng cửa sổ thì nó hỏi một lần</b>: thu nhỏ xuống khay, hay thoát hẳn. Trả lời xong là nhớ, không hỏi lại. Đổi ý bất cứ lúc nào trong ⚙ → Ứng dụng. Chặn website không bị ảnh hưởng dù chọn cách nào — tiện ích trình duyệt tự giữ danh sách.",
+    "<b>Thu nhỏ xuống khay không giết phiên tập trung.</b> Đang tập trung mà bấm X thì cửa sổ ẩn đi, đồng hồ vẫn chạy, và ứng dụng không hỏi gì cả — chẳng có gì bị huỷ để mà hỏi. Chọn *Thoát* từ menu chuột phải ở khay thì vẫn hỏi lại như cũ, vì lúc đó phiên mất thật.",
+    "<b>Bớt chữ trên màn hình chính.</b> Bốn khối chữ giải thích đã được bỏ đi: cơ chế đổi credit khi có mục đang mở, dòng nhắc <code>Win+L</code> trước khi bắt đầu, cảnh báo mất credit ở màn hình chờ, và một nửa màn hình chờ khoá máy. Chúng nói đúng, nhưng nói lúc chưa có gì xảy ra — rồi nói lại lần nữa đúng lúc cần. Ý nghĩa của hai chế độ *Trên máy* và *Ngoài máy* chuyển vào chú thích khi rê chuột. Cảnh báo trong lúc đang tập trung thì giữ nguyên, vì ở đó credit thật đang treo lơ lửng.",
+    "<b>Sửa: cột trái bị khuất mất phần dưới.</b> Hai khối chữ bỏ đi ở trên chính là thứ đẩy nội dung vượt quá chiều cao khung khi cửa sổ không đủ cao.",
+  ]},
   {v:"0.8.0", items:[
     "<b>Rời máy quá lâu không còn bị huỷ phiên ngay lập tức.</b> Trước đây chạm ngưỡng là mất phiên, không báo trước — đọc một bài dài trên màn hình năm phút không chạm chuột cũng đủ mất sạch. Nay ứng dụng hỏi *\"Bạn còn ở đó không?\"* và đếm ngược 60 giây. Chạm phím hoặc chuột là tiếp tục; không có nút nào phải bấm.",
     "<b>Phiên ngoài máy — tập trung cho việc không cần máy tính.</b> Chọn *Ngoài máy* trước khi bắt đầu, rồi khoá màn hình bằng <code>Win+L</code>. Ứng dụng tính giờ bằng <b>thời gian máy bị khoá</b>, nên đọc sách hay học bài cũng kiếm được credit đúng tỉ lệ 5 phút = 1 credit như mọi phiên khác. Mở khoá trước khi hết giờ là mất toàn bộ credit của phiên. Máy ngủ giữa chừng thì không sao — máy ngủ là bằng chứng rõ hơn rằng bạn không dùng nó.",

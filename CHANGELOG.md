@@ -1,5 +1,12 @@
 # Có gì mới
 
+## 0.8.1
+
+- **Bấm dấu X không còn tắt mất bộ chặn nữa.** Phần chặn ứng dụng và game chỉ hoạt động khi The Brain Project còn chạy — mà trước đây bấm X là thoát hẳn, tức là bạn vô hiệu hoá một tính năng mình đã trả tiền mà không hề biết. Nay ứng dụng có biểu tượng ở khay hệ thống, và **lần đầu bạn đóng cửa sổ thì nó hỏi một lần**: thu nhỏ xuống khay, hay thoát hẳn. Trả lời xong là nhớ, không hỏi lại. Đổi ý bất cứ lúc nào trong ⚙ → Ứng dụng. Chặn website không bị ảnh hưởng dù chọn cách nào — tiện ích trình duyệt tự giữ danh sách.
+- **Thu nhỏ xuống khay không giết phiên tập trung.** Đang tập trung mà bấm X thì cửa sổ ẩn đi, đồng hồ vẫn chạy, và ứng dụng không hỏi gì cả — chẳng có gì bị huỷ để mà hỏi. Chọn *Thoát* từ menu chuột phải ở khay thì vẫn hỏi lại như cũ, vì lúc đó phiên mất thật.
+- **Bớt chữ trên màn hình chính.** Bốn khối chữ giải thích đã được bỏ đi: cơ chế đổi credit khi có mục đang mở, dòng nhắc `Win+L` trước khi bắt đầu, cảnh báo mất credit ở màn hình chờ, và một nửa màn hình chờ khoá máy. Chúng nói đúng, nhưng nói lúc chưa có gì xảy ra — rồi nói lại lần nữa đúng lúc cần. Ý nghĩa của hai chế độ *Trên máy* và *Ngoài máy* chuyển vào chú thích khi rê chuột. Cảnh báo trong lúc đang tập trung thì giữ nguyên, vì ở đó credit thật đang treo lơ lửng.
+- **Sửa: cột trái bị khuất mất phần dưới.** Hai khối chữ bỏ đi ở trên chính là thứ đẩy nội dung vượt quá chiều cao khung khi cửa sổ không đủ cao.
+
 ## 0.8.0
 
 - **Rời máy quá lâu không còn bị huỷ phiên ngay lập tức.** Trước đây chạm ngưỡng là mất phiên, không báo trước — đọc một bài dài trên màn hình năm phút không chạm chuột cũng đủ mất sạch. Nay ứng dụng hỏi *"Bạn còn ở đó không?"* và đếm ngược 60 giây. Chạm phím hoặc chuột là tiếp tục; không có nút nào phải bấm.
